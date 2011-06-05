@@ -1,0 +1,115 @@
+/* Empty Attributes */
+img[alt=""], area[alt=""], *[class=""], a[href=""], a[href="#"], *[id=""], *[title=""]
+{ border: 5px dotted yellow !important; }
+
+/* Proposed Deprecation Due To CSS */
+body[background], table[background], td[background], th[background],
+input[border], table[border],
+table[cellpadding],
+table[cellspacing],
+object[codebase],
+img[height], object[height], table[height],
+a[name], form[name], img[name], object[name],
+a[target], area[target],
+td[valign], th[valign],
+img[width], object[width], table[width]
+{ border: 5px dotted orange !important; }
+
+/* W3C HTML 4 Strict Deprecated Attributes - http://www.w3.org/TR/html401/index/attributes.html */
+applet[align], caption[align], div[align], h1[align], h2[align], h3[align], h4[align], h5[align], h6[align], hr[align], iframe[align], img[align], input[align], legend[align], object[align], p[align], table[align],
+body[alink],
+applet[alt],
+applet[archive],
+body[background],
+body[bgcolor], td[bgcolor], tr[bgcolor], table[bgcolor],
+img[border], object[border],
+br[clear],
+applet[code],
+applet[codebase],
+basefont[color], font[color],
+dir[compact], dl[compact], menu[compact], ol[compact], ul[compact],
+basefont[face], font[face],
+applet[height], td[height], th[height],
+applet[hspace], img[hspace], object[hspace],
+script[language],
+body[link],
+applet[name],
+hr[noshade],
+td[nowrap], th[nowrap],
+applet[object],
+isindex[prompt],
+hr[size], font[size], basefont[size],
+ol[start],
+body[text],
+li[type], ol[type], ul[type],
+html[version],
+body[vlink],
+li[value],
+applet[vspace], img[vspace], object[vspace], 
+hr[width], td[width], th[width], applet[width], pre[width]
+{ border: 5px dotted red !important; }
+
+/* Non W3C Proprietary HTML Attributes - http://en.wikipedia.org/wiki/Non-standard_HTML_tags#Proprietary_HTML_attributes */
+body[bgproperties],
+*[bordercolor], *[bordercolordark], *[bordercolorlight],
+body[topmargin], body[rightmargin], body[bottommargin], body[leftmargin],
+table[frame]
+{ border: 5px dotted magenta !important; }
+
+
+
+/* Empty Elements */
+/* EDIT: span:empty, div:empty, p:empty */ li:empty, td:empty, th:empty 
+{ border: 5px solid yellow !important; }
+
+/* Proposed Deprecated Elements */
+input[type="button"], input[type="reset"], input[type="submit"], tt, big, small
+{ border: 5px solid orange !important; }
+
+/* W3C HTML 4 Strict Deprecated Elements - http://www.w3.org/TR/html401/index/elements.html */
+applet, basefont, center, dir, font, isindex, menu, s, strike, u,
+listing, plaintext, xmp
+{ border: 5px solid red !important; }
+
+/* Non W3C Proprietary HTML Elements - http://en.wikipedia.org/wiki/Non-standard_HTML_tags */
+/*EDIT: image */ audioscope, bgsound, blink, bq, comment, embed, fn, ilayer, keygen, layer, limittext, marquee, multicol, nobr, noembed, nolayer, nosmartquotes, rt, ruby, server, sidebar, spacer, wbr, xml, blackface, shadow
+{ border: 5px solid magenta !important }
+
+
+
+/* XHTML -  http://www.w3.org/TR/xhtml11/doctype.html */
+/* XHTML 1.0 Strict Deprecated Attributes  - http://www.w3.org/TR/xhtml1/#h-4.10 - http://www.w3.org/TR/xhtml11/changes.html#a_changes */
+a[name], applet[name], form[name], frame[name], iframe[name], img[name], map[name]
+{ border: 5px dotted lime !important }
+
+/* XHTML 1.0 Strict Prohibitions  http://www.w3.org/TR/xhtml1/#prohibitions */
+a > a,
+pre > img, pre > object, pre > big, pre > small, pre > sub, pre > sup,
+button > input, button > select, button > textarea, button > label, button > button, button > form, button > fieldset, button > iframe, button > isindex,
+label > label,
+form > form
+{ border: 5px solid lime !important }
+
+
+
+/* Deprecated Classes From Old Website */
+.toolbg, .ulnone, span.b, ul.list, .eleven, 
+.lines, .wide, .select, table.form, form td.b, table .top,
+.gallerypic, .iegallery, .pic, .image, .transparent,
+.wht, .blk, .blue, .dkgray, .ltgray, .brown, .quote, .greyhover
+{ border: 5px groove red !important; }
+
+/* Dreprecated JavaScript From Old Website */
+input[onfocus*="normal1px()"],
+input[onfocus*="change1px()"]
+{ border: 5px dashed red !important; }
+
+/* 404 Pages */
+a[href*="/designs/web/web1/"],
+a[href*="/designs/web/web2/"],
+a[href*="/designs/web/web3/"],
+a[href*="/designs/aitp/aitp-fvtc/"],
+a[href*="/designs/aitp/aitp/"],
+a[href*="/forms/contact.asp"], 
+a[href*="/forms/email.asp"]
+{ border: 5px double red !important; }
