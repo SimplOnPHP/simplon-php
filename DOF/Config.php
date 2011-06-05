@@ -20,6 +20,11 @@ class Config {
 		$USE_FORM_TEMPLATES,
 
 		$DATA_STORAGE;
+		
+	static
+		$class,
+		$method,
+		$params;
 	
 	/**
 	 * Loads all the parameters specific to a website and loads needed classes.
@@ -33,8 +38,8 @@ class Config {
 	
 	static function setup($ini = null) {
 		
-		if(file_exists(DEFAULT_INI))
-			self::fromArray(parse_ini_file(DEFAULT_INI));
+		if(file_exists(self::DEFAULT_INI))
+			self::fromArray(parse_ini_file(self::DEFAULT_INI));
 		
 		if(isset($ini)) {
 			if(is_array($ini)) {
@@ -45,6 +50,19 @@ class Config {
 		}
 		
 		spl_autoload_register(__NAMESPACE__ .'\Config::load_obj');
+		
+		
+		// Parses the URL
+		$server_request = $_SERVER['REQUEST_URI'];
+		if(strpos($server_request, '?') !== false)
+			$server_request = substr($server_request, 0, strpos($server_request, '?'));
+		$virtual_path = array_values(array_diff(
+			explode('/',$server_request), 
+			explode('/',self::$REMOTE_ROOT)
+		));
+		self::$class = @array_shift($virtual_path) ?: 'Home';
+		self::$method =  @array_shift($virtual_path) ?: 'index';
+		self::$params = array_values($virtual_path);
 	}
 	
 	static function fromArray(array $ini) {
@@ -66,7 +84,7 @@ class Config {
 		
 		foreach($test as $base => &$types) {
 			foreach($types as &$type) {
-				$file_to_load = $base.$type.DIRECTORY_SEPARATOR.$classToLoad.'.php';
+				$file_to_load = $base.DIRECTORY_SEPARATOR.$type.DIRECTORY_SEPARATOR.$classToLoad.'.php';
 				if( file_exists($file_to_load) ) {
 					require_once $file_to_load;
 					return;
