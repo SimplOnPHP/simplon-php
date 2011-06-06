@@ -59,9 +59,9 @@ class MySqlDS extends DataStorage
 	public function saveElement(&$element)
 	{
 		if( $element->id() ){
-			$this->updateElement(&$element);
+			$this->updateElement($element);
 		}else{
-			$this->createElement(&$element);
+			$this->createElement($element);
 		}
 	}
 	

@@ -3,7 +3,7 @@ namespace DOF;
 
 /**
  *
- * @author Rubén Schaffer Levine
+ * @author Rubï¿½n Schaffer Levine
  */
 abstract class DataStorage {
 	public $db;
@@ -39,9 +39,9 @@ abstract class DataStorage {
 
 	public function saveElement(&$element) {
 		if( $element->id() ){
-			$this->updateElement(&$element);
+			$this->updateElement($element);
 		}else{
-			$this->createElement(&$element);
+			$this->createElement($element);
 		}
 	}
 	

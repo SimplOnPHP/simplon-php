@@ -5,7 +5,7 @@ class Home extends DOF\Element
 	protected $cabeza;
 	protected $contenido;
 	
-	public function __construct($id=null,&$spetialDataStorage=null)
+	public function __construct($id=null,&$specialDataStorage=null)
 	{
 	    $this->id = new DOF\Id('Id','id');
 		$this->cabeza = new DOF\String('Cabeza','cabeza','vcusl');
@@ -16,7 +16,7 @@ class Home extends DOF\Element
 		
 		$this->repository('nota');
 		
-		parent::__construct($id,&$spetialDataStorage);
+		parent::__construct($id, $specialDataStorage);
 	}
 	
 	public function index() {
