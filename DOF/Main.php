@@ -1,7 +1,9 @@
 <?php
 namespace DOF;
+		
+spl_autoload_register( __NAMESPACE__ . '\\Main::load_obj');
 
-class Config {
+class Main {
 	const DEFAULT_INI = 'dof.ini';
 	
 	static
@@ -20,11 +22,21 @@ class Config {
 		$USE_FORM_TEMPLATES,
 
 		$DATA_STORAGE;
+	
+	static	
+		$AUTOLOAD_DIRS = array(
+			'.',
+			'DataStorages',
+			'Datas',
+			'Elements',
+			'Utilities',
+		);
 		
 	static
 		$class,
 		$method,
 		$params;
+		
 	
 	/**
 	 * Loads all the parameters specific to a website and loads needed classes.
@@ -49,8 +61,6 @@ class Config {
 			}
 		}
 		
-		spl_autoload_register(__NAMESPACE__ .'\Config::load_obj');
-		
 		
 		// Parses the URL
 		$server_request = $_SERVER['REQUEST_URI'];
@@ -74,24 +84,32 @@ class Config {
 	 * Includes a (class)file looking for it in the following order 1.- Site directory, 2.- Site template directory, 3.- DOF directory
 	 */
 	static function load_obj($classToLoad) {
-		$classToLoad = end(explode('\\', $classToLoad));
+		$pathExploded = explode('\\', $classToLoad);
 		
-		$test = array(
-			self::$LOCAL_ROOT => array('classes', 'data', 'elements'),
-			self::$GENERIC_TEMPLATES_PATH => array('classes', 'data', 'elements'),
-			self::$DOF_PATH => array('classes', 'data', 'elements', 'datastorages'),
-		);
+		if(reset($pathExploded) == 'DOF') {
+			$file_to_load = '../' . implode('/', $pathExploded) . '.php';
+			include_once $file_to_load;
+			return;
+		} else {
+			$classToLoad = end($pathExploded);
+			
+			$test = array(
+				self::$LOCAL_ROOT,
+				self::$GENERIC_TEMPLATES_PATH,
+				self::$DOF_PATH,
+			);
 		
-		foreach($test as $base => &$types) {
-			foreach($types as &$type) {
-				$file_to_load = $base.DIRECTORY_SEPARATOR.$type.DIRECTORY_SEPARATOR.$classToLoad.'.php';
-				if( file_exists($file_to_load) ) {
-					require_once $file_to_load;
-					return;
+			foreach($test as $base) {
+				foreach(self::$AUTOLOAD_DIRS as &$type) {
+					$file_to_load = $base.DIRECTORY_SEPARATOR.$type.DIRECTORY_SEPARATOR.$classToLoad.'.php';
+					if( file_exists($file_to_load) ) {
+						require_once $file_to_load;
+						return;
+					}
 				}
 			}
 		}
-		throw new \Exception("Can't find the file: $classToLoad.php");
+		//throw new \Exception("Can't find the file: $classToLoad.php");
 	}
-	
+	/**/
 }

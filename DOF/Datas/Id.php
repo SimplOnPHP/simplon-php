@@ -1,5 +1,5 @@
 <?php
-namespace DOF;
+namespace DOF\Datas;
 
 /**
 * ID para las tablas
@@ -9,10 +9,8 @@ namespace DOF;
 * @author	Ruben Schaffer
 * @todo
 */
-class Id extends Data
+class Id extends Abstract_
 {
-	public function setDefaultSqlType(){ $this->sqlType('BIGINT(20)'); }
-	
 	public function setDefaultsetVCUSLR()
 	{
 			$this->view(false);

@@ -1,16 +1,16 @@
 <?php
-class Home extends DOF\Element
+class Home extends DOF\Elements\Abstract_
 {
 	protected $id;
 	protected $cabeza;
 	protected $contenido;
 	
-	public function __construct($id=null,&$specialDataStorage=null)
+	public function __construct($id = null, &$specialDataStorage = null)
 	{
-	    $this->id = new DOF\Id('Id','id');
-		$this->cabeza = new DOF\String('Cabeza','cabeza','vcusl');
+	    $this->id = new DOF\Datas\Id('Id','id');
+		$this->cabeza = new DOF\Datas\String('Cabeza','cabeza','vcusl');
 		
-		$this->contenido = new DOF\HTMLText('Contenido: (Para copiar texto de Word utilizar la herramienta "Paste from Word")','contenido');
+		$this->contenido = new DOF\Datas\HTMLText('Contenido: (Para copiar texto de Word utilizar la herramienta "Paste from Word")','contenido');
 		
 		
 		
@@ -22,7 +22,6 @@ class Home extends DOF\Element
 	public function index() {
 		return "Hello world!";
 	}
-	
 	
 	public function inox() {
 		return "Inox world!";

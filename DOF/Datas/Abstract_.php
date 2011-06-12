@@ -1,10 +1,10 @@
 <?php
-namespace DOF;
+namespace DOF\Datas;
 /**
- * @todo Agregar posibilidad de especificar indices de búsqueda:
- * una posible solución es la de usar el parametro $vcuslr usando el metodo search()
- * de ahi entender si un dato se va a usar para la búsqueda
- * y también dar la posibilidad de un "override" para especificar
+ * @todo Agregar posibilidad de especificar indices de bï¿½squeda:
+ * una posible soluciï¿½n es la de usar el parametro $vcuslr usando el metodo search()
+ * de ahi entender si un dato se va a usar para la bï¿½squeda
+ * y tambiï¿½n dar la posibilidad de un "override" para especificar
  * de modo explicito, si se quiere o no un indice en dicho dato.
  * Basandose sobre el tipo de dato, elegir el tipo de indice
  * o basarse sobr un atributo del dato.
@@ -52,8 +52,7 @@ namespace DOF;
 
 
 
-abstract class Data extends BaseObject
-{
+abstract class Abstract_ extends \DOF\BaseObject {
 	/**
 	 * Data value
 	 *
@@ -63,12 +62,12 @@ abstract class Data extends BaseObject
 	protected $val;
 
 	/**
-	 * Data type
+	 * DOF type, will be translated to the data type of the used db.
 	 *
 	 * @access protected
 	 * @var string
 	 */
-	protected $sqlType;
+	protected $type;
 	
 	
 	/**
@@ -95,15 +94,6 @@ abstract class Data extends BaseObject
 	 * @var ing
 	 */
 	protected $asField;
-
-	/**
-	 * ing to stablish the DOFdata name for the HTML/forms tag
-	 * Must of times this is not used since the default established in the function bellow is used for automation across the system.
-	 *
-	 * @access protected
-	 * @var ing
-	 */
-	protected $inputName;
 	
 	
 	/**
@@ -148,19 +138,7 @@ abstract class Data extends BaseObject
 	protected $internalJS;
 	protected $internalCSS;
 	
-	protected static $flags = array(
-		'v' => 'view',
-		'c' => 'create',
-		'u' => 'update',
-		's' => 'search',
-		'l' => 'list',
-		'r' => 'required',
-	);
-	
-	protected static $operands = array(
-		'+' => true,
-		'-' => false,
-	);
+
 	
 	/**
 	 *
@@ -188,7 +166,6 @@ abstract class Data extends BaseObject
 		}else{
 			$this->setDefaultsetVCUSLR();
 		}
-		$this->setDefaultSqlType();
 		
 		
 		/*@todo verificar que esto verdadaramente no se requeire*/
@@ -207,38 +184,13 @@ abstract class Data extends BaseObject
 	 */
 	function setVCUSLR($vcuslr)
 	{
-		$this->setFlags($vcuslr);
+		if(strpos($vcuslr,'v')!==false){ $this->view=true; }else{ $this->view=false; }
+		if(strpos($vcuslr,'c')!==false){ $this->create=true; }else{ $this->create=false; }
+		if(strpos($vcuslr,'u')!==false){ $this->update=true; }else{ $this->update=false; }
+		if(strpos($vcuslr,'s')!==false){ $this->search=true; }else{ $this->search=false; }
+		if(strpos($vcuslr,'l')!==false){ $this->list=true; }else{ $this->list=false; }
+		if(strpos($vcuslr,'r')!==false){ $this->required=true; }else{ $this->required=false; }
 	}
-	
-	// +vclr-u
-	// -vclr+u
-	// +vclr-u
-	function setFlags($flags)
-	{
-		if(isset($operands[$flags[0]]))
-			for($i = 0; $i < strlen($flags); $i++)
-				if(isset($operands[$flags[$i]]))
-					$operand = $operands[$flags[$i]];
-				else
-					$this->{$this->flags[$flags[$i]]} = $operand;
-		else
-			foreach($this->flags as $short => $property)
-				$this->$property = (strpos($flags, $short) !== false);
-	}
-	
-	function enableFlags($flags)
-	{
-		foreach($this->flags as $short => $property)
-			if(strpos($flags, $short) !== false) $this->$property = true;
-	}
-	
-	function disableFlags($flags)
-	{
-		foreach($this->flags as $short => $property)
-			if(strpos($flags, $short) !== false) $this->$property = false;
-	}
-	
-	public function setDefaultSqlType(){ $this->sqlType('VARCHAR(200)'); }
 
 	function setDefaultsetVCUSLR()
 	{
@@ -440,7 +392,3 @@ abstract class Data extends BaseObject
 	{
 	}
 }
-
-
-
-?>

@@ -1,11 +1,11 @@
 <?php
-namespace DOF;
+namespace DOF\DataStorages;
 
 /**
  *
  * @author Rub�n Schaffer Levine
  */
-abstract class DataStorage {
+abstract class Abstract_ {
 	public $db;
 
 	/**

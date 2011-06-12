@@ -1,5 +1,5 @@
 <?php
-namespace DOF;
+namespace DOF\Elements;
 
 /**
  * This is the core element to build the site. DOF (Data Oriented FrameWork) is based on data representation, stoarge and manipulation.
@@ -13,8 +13,7 @@ namespace DOF;
  *
  * @author RSL
  */
-class Element extends BaseObject
-{
+class Abstract_ extends \DOF\BaseObject {
 	protected $dir;
 	protected $repository;
 	protected $tempFormPrefix;
@@ -46,7 +45,7 @@ class Element extends BaseObject
 		
 		//Asings the storage element for the DOFelement. (a global one : or a particular one)
 		if(!$specialDataStorage){
-			$this->dataStorage = Includer::$DATA_STORAGE;
+			$this->dataStorage = \DOF\Main::$DATA_STORAGE;
 		}else{
 			$this->dataStorage=&$specialDataStorage;
 		}
@@ -325,7 +324,7 @@ class Element extends BaseObject
 	
 	public function createForm($template=null, $mensaje=null,$action=null,$name='forma1',$method='post')
 	{
-		return updateForm($template,$mensaje,$action,false,$name,$method);
+		return $this->updateForm($template,$mensaje,$action,false,$name,$method);
 	}
 
 	//@todo verify and implement or remove the use of mesaje
@@ -478,18 +477,25 @@ class Element extends BaseObject
         	$letter=substr($name,0,1);
         	$Xname=substr($name,1);
         	
-        	if($this->$Xname instanceof Data && $letter=='O' )
-        	{
-   				if($arguments){ $this->$Xname->val($arguments[0]); }
-	        	else{ return $this->$Xname; }
-        	} else if($this->$Xname instanceof Data && $letter=='F' ) {
-	           	if($arguments){ $this->$Xname->val($arguments[0]); }
-	        	else{ return $this->$Xname->field(); }
-        	} else if($this->$Xname instanceof Data && $letter=='L' ) {
-	           	if($arguments){ $this->$Xname->val($arguments[0]); }
-	        	else{ return $this->$Xname->label(); }
-        	}else{
-        		return parent::__call($letter.$Xname, $arguments);
+			if(isset($this->$Xname) && ($this->$Xname instanceof Data)) {
+				switch($letter) {
+					case 'O': 
+		   				if($arguments){ $this->$Xname->val($arguments[0]); }
+			        	else{ return $this->$Xname; }
+						break;
+					case 'F':
+						if($arguments){ $this->$Xname->val($arguments[0]); }
+        				else{ return $this->$Xname->field(); }
+						break;
+					case 'L':
+						if($arguments){ $this->$Xname->val($arguments[0]); }
+	        			else{ return $this->$Xname->label(); }
+						break;
+					default:
+						throw new \Exception('Letter '.$letter.' not recognized!');
+				}
+			} else{
+        		return parent::__call($name, $arguments);
         	}
         }
     }
