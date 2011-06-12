@@ -30,7 +30,7 @@ class MySql extends Abstract_
 			if($filters instanceof Filter){ $filters = $this->formatFilters($filters); }
 			//if($range){ $range = $this->formatRange($range); }
 			 
-			return $this->db->queryAsArray( "Select ".$whatToGet." FROM ".$fromWhere." ".(($filters)?" WHERE ".$filters:'').' '.(($range)?" LIMIT ".$range:'') );
+			return $this->db->query("Select ".$whatToGet." FROM ".$fromWhere." ".(($filters)?" WHERE ".$filters:'').' '.(($range)?" LIMIT ".$range:'') )->fetchAll();
 			
 		} else if(!is_string($where)) {
 			throw new Exception(__CLASS__ . '->'. __METHOD__ .'() needs a valid DOF\Type\Element');
@@ -39,16 +39,14 @@ class MySql extends Abstract_
 	
 	public function formatFilters($filters)
 	{
-		if($filters instanceof DsEval)
-		{
-			foreach( $filters->operatorsOperadsArray() as $operator=>$operand )
-			{
+		if($filters instanceof DsEval) {
+			foreach( $filters->operatorsOperadsArray() as $operator=>$operand ) {
 				$ret[]= $DsEval->firstOperand().' '.$operator.' '.$operand;
 			}
 			
 			return implode($DsEval->boolOperator(),$ret);
 			
-		}else if($filters instanceof DsBoolOp){
+		} else if($filters instanceof DsBoolOp) {
 			
 			foreach($filters->operands() as $BoolOp)
 			{
@@ -56,35 +54,31 @@ class MySql extends Abstract_
 			}
 			return implode($filters->boolOperator(),$ret);
 			
-		}else{
+		} else {
 			return $filters;
 		}
 	}
 	
 
-	public function saveElement(&$element)
-	{
-		if( $element->id() ){
+	public function saveElement(&$element) {
+		if( $element->id() ) {
 			$this->updateElement($element);
-		}else{
+		} else {
 			$this->createElement($element);
 		}
 	}
 	
-	public function createElement(&$element)
-	{
+	public function createElement(&$element) {
 		//check( $this->createQuery($element) );
 		$this->db->query( $this->createQuery($element) );
 	}
 	
-	public function updateElement(&$element)
-	{
+	public function updateElement(&$element) {
 		//check($this->updateQuery($element, $element->Fid()."=".$element->id() ) );
 		$this->db->query( $this->updateQuery($element, $element->Fid()."=".$element->id()) );
 	}
 	
-	public function deleteElement(&$element)
-	{
+	public function deleteElement(&$element) {
 		//check($this->deleteQuery($element, $element->Fid()."=".$element->id() ) );
 		$this->db->query( $this->deleteQuery($element, $element->Fid()."=".$element->id() ) );
 	}
@@ -92,9 +86,8 @@ class MySql extends Abstract_
 
 	
 	
-	public function getElementData(&$element)
-	{
-		return $this->db->queryAsUniArray( $this->getQuery( $element, $element->Fid()."=".$element->id() )  );
+	public function getElementData(&$element) {
+		return $this->db->query( $this->getQuery( $element, $element->Fid()."=".$element->id() ) , \PDO::FETCH_COLUMN,0)->fetchAll();
 	}
 	
 	
