@@ -13,7 +13,8 @@ namespace DOF\Elements;
  *
  * @author RSL
  */
-class Abstract_ extends \DOF\BaseObject {
+class Element extends \DOF\BaseObject {
+	protected $Fid = 'id';
 	protected $dir;
 	protected $repository;
 	protected $tempFormPrefix;
@@ -217,7 +218,7 @@ class Abstract_ extends \DOF\BaseObject {
 		
 		//check($formImput);
 		
-		if(!$action){ $action = $adminUrl.'Ajax/process'.ucfirst($formType).'Form';}
+		if(!$action){ $action = \DOF\Main::$REMOTE_ROOT.'/ajax/process'.ucfirst($formType).'Form';}
 		
 		//--------------
 		
@@ -238,7 +239,7 @@ class Abstract_ extends \DOF\BaseObject {
 		}
 		
 		
-		$ret="\n\r<form action='$action' $enctype  method='$method'>".$ret;
+		$ret= "\n\r<form action='$action' $enctype  method='$method'>" . @$ret;
 		
 		$ret.="
 		<input name='class' value='".$this->getClass()."' type='hidden' />
@@ -268,20 +269,20 @@ class Abstract_ extends \DOF\BaseObject {
 		
 		$prePrefix=$prefix;
 
-		//make shure $template has a proper file name
+		//make sure $template has a proper file name
 		if( !is_string($template) ){ $template = $this->getTemplatePath( 'forms/'.$this->getClass().ucfirst($formType) ); }
 		else { $template = $this->getTemplatePath( 'forms/'.trim($template) ); }
 
 		//if there is not template or it must be redone redo it.
-		if( (CREATE_FORM_TEMPLATES AND !file_exists($template) ) ){
+		if( (\DOF\Main::$CREATE_FROM_TEMPLATES AND !file_exists($template) ) ){
 			file_put_contents($template, $this->formElementGenerator($formType, $action, $method) );
-		}else if( OVERWRITE_FORM_TEMPLATES ){
+		} else if( \DOF\Main::$OVERWRITE_FROM_TEMPLATES ) {
 			unlink($template);
 			file_put_contents($template, $this->formElementGenerator($formType, $action, $method) );
 		}
 		
 		//if templates must be used and there is a template.
-		if(USE_FORM_TEMPLATES && file_exists($template)){
+		if(\DOF\Main::$USE_FROM_TEMPLATES && file_exists($template)){
 			$form = file_get_html($template);
 			
 			//form acction
@@ -348,7 +349,7 @@ class Abstract_ extends \DOF\BaseObject {
 		if(!$template OR $template==$this->getClass().'.php'){
 			//if the default class template exits use it
 
-			$file = file_exists( TEMPLATES_ROOT.'forms/'.$this->getClass().'.php' ) ;
+			$file = file_exists( \DOF\Main::$TEMPLATES_ROOT.'forms/'.$this->getClass().'.php' ) ;
 			if($file)
 			{
 				$template = file_get_html($this->getClass());
@@ -384,7 +385,7 @@ class Abstract_ extends \DOF\BaseObject {
 				$template.="</div>";
 				
 				//if enabeled write the template into a file.
-				if(CREATE_LAYOUT_TEMPLATES)
+				if(\DOF\Main::$CREATE_LAYOUT_TEMPLATES)
 				{
 					$file = fopen ($file, "w");
 					fwrite($file, $template);
@@ -460,7 +461,9 @@ class Abstract_ extends \DOF\BaseObject {
 
 	public function getDOFDataAttributeKeys()
 	{
-		return $this->getAttributeKeys('Data');
+		// This should look into vcsrl attribute of each data 
+		// or get from a run-time generated array
+		return $this->attributeKeys('Data');
 	}
 	
 	
@@ -499,31 +502,24 @@ class Abstract_ extends \DOF\BaseObject {
         	}
         }
     }
-	 
-    
-/**
- *
- */
-function getTemplatePath($template) {
-	global $adminPath;
-	global $siteTemplatePath;
-	global $dofPath;
-
-	if( file_exists($adminPath.'templates/'.$template.'.html') ){  return $adminPath.'templates/'.$template.'.html'; }else
-	if( file_exists($siteTemplatePath.'templates/'.$template.'.html') ){  return $siteTemplatePath.'templates/'.$template.'.html'; }else
-	if( file_exists($dofPath.'templates/'.$template.'.html') ){  return $dofPath.'templates/'.$template.'.html'; }
-	else { 	return $adminPath.'templates/'.$template.'.html'; }
-}
-    
-    
-    
-/*@todo determina if this method is neceary or not
- updateInDS // este debe ser automatico desde el save si se tiene id se genera
-*/
+		 
+	    
+	/**
+	 *
+	 */
+	function getTemplatePath($template) {
+		global $adminPath;
+		global $siteTemplatePath;
+		global $dofPath;
+	
+		if( file_exists($adminPath.'templates/'.$template.'.html') ){  return $adminPath.'templates/'.$template.'.html'; }else
+		if( file_exists($siteTemplatePath.'templates/'.$template.'.html') ){  return $siteTemplatePath.'templates/'.$template.'.html'; }else
+		if( file_exists($dofPath.'templates/'.$template.'.html') ){  return $dofPath.'templates/'.$template.'.html'; }
+		else { 	return $adminPath.'templates/'.$template.'.html'; }
+	}
+	
+	/*@todo determina if this method is neceary or not
+	 updateInDS // este debe ser automatico desde el save si se tiene id se genera
+	*/
 	
 }
-
-
-
-
-?>

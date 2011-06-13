@@ -1,6 +1,6 @@
 <?php
 namespace DOF\Datas;
 
-class String extends Abstract_ {
+class String extends Data {
 	
 }

@@ -9,7 +9,7 @@ namespace DOF\Datas;
 * @author	Ruben Schaffer
 * @todo
 */
-class Id extends Abstract_
+class Id extends Data
 {
 	public function setDefaultsetVCUSLR()
 	{

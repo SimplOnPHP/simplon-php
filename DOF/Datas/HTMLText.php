@@ -1,7 +1,7 @@
 <?php
 namespace DOF\Datas;
 
-class HTMLText extends Abstract_
+class HTMLText extends Data
 {
 	//IMP falta hacer que realmente salga un editor en vez de la textArea
 	public function updateInput($printval=true)

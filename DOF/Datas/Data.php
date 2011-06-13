@@ -52,7 +52,7 @@ namespace DOF\Datas;
 
 
 
-abstract class Abstract_ extends \DOF\BaseObject {
+abstract class Data extends \DOF\BaseObject {
 	/**
 	 * Data value
 	 *

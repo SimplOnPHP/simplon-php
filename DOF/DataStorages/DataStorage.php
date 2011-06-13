@@ -5,7 +5,7 @@ namespace DOF\DataStorages;
  *
  * @author Rub�n Schaffer Levine
  */
-abstract class Abstract_ {
+abstract class DataStorage {
 	public $db;
 
 	/**

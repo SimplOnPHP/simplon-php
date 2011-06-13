@@ -19,9 +19,9 @@ DOF\Main::setup(array(
 	'OVERWRITE_LAYOUT_TEMPLATES' => true,
 	'USE_LAYOUT_TEMPLATES' => true,
 	
-	'CREATE_FORM_TEMPLATES' => true,
-	'OVERWRITE_FORM_TEMPLATES' => true,
-	'USE_FORM_TEMPLATES' => true,
+	'CREATE_FROM_TEMPLATES' => true,
+	'OVERWRITE_FROM_TEMPLATES' => true,
+	'USE_FROM_TEMPLATES' => true,
 	
 	'DATA_STORAGE' => new DOF\DataStorages\MySql('localhost','root','','sample_site'),
 ));
@@ -50,11 +50,24 @@ $debugger = new Dubrox_PhpDebugger(array(
 /**
  * @TODO: allow debugging of this fragment of code.
  */
-if(class_exists(DOF\Main::$class) && ($obj = new DOF\Main::$class) && ($obj instanceof DOF\Elements\Abstract_)) {
-	echo call_user_func_array(array($obj, DOF\Main::$method), DOF\Main::$params);
+if(class_exists(DOF\Main::$class)) {
+	$rc = new ReflectionClass(DOF\Main::$class);
+	if( 
+		isset(DOF\Main::$method)
+		&&
+		($obj = $rc->newInstanceArgs(DOF\Main::$construct_params))
+		&&
+		($obj instanceof DOF\Elements\Element)
+	){
+		echo call_user_func_array(array($obj, DOF\Main::$method), DOF\Main::$obj_params);
+	} else {
+		var_dump(DOF\Main::$method);
+		unset($obj);
+		header('HTTP/1.1 403 Access forbidden');
+		return;
+	}
 } else {
-	unset($obj);
-	header('HTTP/1.1 403 Access forbidden');
+	header('HTTP/1.1 404 File not found');
 	return;
 }
 //TODO: stuff

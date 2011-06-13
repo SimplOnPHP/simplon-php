@@ -1,10 +1,8 @@
 <IfModule mod_rewrite.c>
 Options +FollowSymLinks
 RewriteEngine on
-RewriteBase /
 
-RewriteCond %{SERVER_ADDR} ^127.0.0.1
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(.*)$ /proyectos/FWR/MultiSite/sample_site/index.php [QSA,L]
+RewriteRule ^(.*)$ index.php [QSA,L]
 
 </IfModule>

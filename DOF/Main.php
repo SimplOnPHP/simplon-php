@@ -17,9 +17,9 @@ class Main {
 		$OVERWRITE_LAYOUT_TEMPLATES,
 		$USE_LAYOUT_TEMPLATES,
 
-		$CREATE_FORM_TEMPLATES,
-		$OVERWRITE_FORM_TEMPLATES,
-		$USE_FORM_TEMPLATES,
+		$CREATE_FROM_TEMPLATES,
+		$OVERWRITE_FROM_TEMPLATES,
+		$USE_FROM_TEMPLATES,
 
 		$DATA_STORAGE;
 	
@@ -35,7 +35,8 @@ class Main {
 	static
 		$class,
 		$method,
-		$params;
+		$construct_params,
+		$obj_params;
 		
 	
 	/**
@@ -71,8 +72,11 @@ class Main {
 			explode('/',self::$REMOTE_ROOT)
 		));
 		self::$class = @array_shift($virtual_path) ?: 'Home';
-		self::$method =  @array_shift($virtual_path) ?: 'index';
-		self::$params = array_values($virtual_path);
+		self::$construct_params = @array_values($virtual_path) ?: array();
+		
+		$GET_virtual_path = array_values(explode('/',@$_GET[0]));
+		self::$method = @array_shift($GET_virtual_path) ?: 'index';
+		self::$obj_params = @array_shift($GET_virtual_path) ?: array();
 	}
 	
 	static function fromArray(array $ini) {

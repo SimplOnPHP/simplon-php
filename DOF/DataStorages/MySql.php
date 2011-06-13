@@ -1,8 +1,7 @@
 <?php
 namespace DOF\DataStorages;
-use DOF;
 
-class MySql extends Abstract_
+class MySql extends DataStorage
 {
 	/*@var db MySqlDataBase */
 	public $db;

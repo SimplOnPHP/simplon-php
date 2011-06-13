@@ -1,5 +1,5 @@
 <?php
-class Home extends DOF\Elements\Abstract_
+class Home extends DOF\Elements\Element
 {
 	protected $id;
 	protected $cabeza;
@@ -19,11 +19,11 @@ class Home extends DOF\Elements\Abstract_
 		parent::__construct($id, $specialDataStorage);
 	}
 	
-	public function index() {
+	public static function index() {
 		return "Hello world!";
 	}
 	
-	public function inox() {
+	public static function inox() {
 		return "Inox world!";
 	}
 	
