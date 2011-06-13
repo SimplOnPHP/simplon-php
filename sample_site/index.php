@@ -70,6 +70,5 @@ if(class_exists(DOF\Main::$class)) {
 	header('HTTP/1.1 404 File not found');
 	return;
 }
-//TODO: stuff
 
 echo $debugger->toHtml();
