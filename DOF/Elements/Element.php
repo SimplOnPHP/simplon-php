@@ -28,6 +28,7 @@ class Element extends \DOF\BaseObject {
 	protected $dataStorage;
 	protected $autoDSRepositoryGeneration = true;
 	
+	
 	/**
 	* Costructor.
 	*
@@ -531,4 +532,20 @@ class Element extends \DOF\BaseObject {
 	function encodeURL($construct_params, $method, $method_params = array()) {
 		return \DOF\Main::encodeURL($this->getClass(), $construct_params, $method, $method_params);
 	}
+	
+	
+	function show($what) {
+		$output = '';
+		foreach($this as $data) {
+			if($data instanceof \DOF\Datas\Data && $data->$what()) {
+				$output.= $data->{'show'.ucfirst($what)}();
+			}
+		}
+		echo $output;
+	}
+	
+	function process($what) {
+		
+	}
+	
 }

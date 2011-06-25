@@ -261,89 +261,31 @@ abstract class Data extends \DOF\BaseObject {
 		$this->fillFromArray($_REQUEST);
 	}
 	
-	/**
-	 * Returns the DOFdata value as it must be rendered in HTML
-	 *
-	 * @return ing
-	 */
-	public function HTML()
+	
+	private function showView()
 	{
-		if($this->val()){ return $this->val(); }
-		else{ return ' '; }
-	}
-
-	/**
-	 * Returns the DOFdata value as it must when show on a DOF "admin" list (table)
-	 *
-	 * @return ing
-	 */
-	public function TableHTML()
-	{
-		return $this->HTML();
+		if($this->val())
+		{
+			return $this->val();
+		} else {
+			return '';
+		}
 	}
 	
-	/**
-	 * Returns the DOFdata value as it must when show in WML
-	 * @return ing
-	 */
-	public function WML()
+	private function showCreate()
 	{
-		return $this->HTML();
-	}
-
-	
-	/**
-	 * Returns the DOFdata value as it must when show in WML
-	 * @return ing
-	 */
-	public function XML()
-	{
-		return $this->HTML();
+		return $this->showUpdate(false);
 	}
 	
-	/**
-	 * Returns the DOFdata value as it must when show in WML
-	 * @return ing
-	 */
-	public function JSON()
+	private function showUpdate($fill = true)
 	{
-		check( $this->getClass().' does not have properly implmented the JSON method (try defining it at Data object first)' );
+		$id = $this->field().'-'.rand(999, 999999);
+		return '<label class="label-'.$this->getClass().'" for="'.$id.'">'.$this->label().'</label>' . '<input id="'.$id.'" class="input-'.$this->getClass().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
 	}
 	
-	/**
-	 * Returns the input field for HTML forms ment to create a new element
-	 *
-	 * @return string
-	 *
-	 */
-	public function createInput()
+	private function showSearch()
 	{
-		return $this->updateInput(false);
-	}
-
-	/**
-	 * Returns the input field for HTML forms ment to update an existing element
-	 *
-	 * @param $printval specifies if the curren data value should be displayes as the predefined value of the input
-	 *
-	 * @return string
-	 *
-	 */
-	public function updateInput($printval=true)
-	{
-		//chek($this);
-		return "<input class='I".$this->getClass()."' size='45' name='".$this->inputName($prefijoNombre)."'".(($printval)?" value='".$this->val()."'":"")." type='text' />";
-	}
-
-	/**
-	 * Returns the input field for HTML forms ment to allow searches over the stored DOF elments that contain the DOF data at the specific moment
-	 *
- 	 * @param $printval specifies if the curren data value should be displayes as the predefined value of the input
-	 * @return ing
-	 */
-	public function searchInput($printval=true)
-	{
-		return $this->updateInput($printval);
+		return $this->showUpdate(true);
 	}
 	
 	/**
