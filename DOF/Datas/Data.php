@@ -243,7 +243,7 @@ abstract class Data extends \DOF\BaseObject {
 	 */
 	public function fillFromArray(&$array)
 	{
-		//chek($this->QueryField().'---');
+		chek($this->QueryField().'---');
 		//chek($arreglo[$this->QueryField()]);
 		$this->val($array[$this->QueryField()]);
 		//chek($this->val());
@@ -272,18 +272,17 @@ abstract class Data extends \DOF\BaseObject {
 		}
 	}
 	
-	private function showCreate()
+	function showCreate()
 	{
 		return $this->showUpdate(false);
 	}
 	
-	private function showUpdate($fill = true)
+	function showUpdate($fill = true)
 	{
-		$id = $this->field().'-'.rand(999, 999999);
-		return '<label class="label-'.$this->getClass().'" for="'.$id.'">'.$this->label().'</label>' . '<input id="'.$id.'" class="input-'.$this->getClass().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
+		return  '<input id="'.$id.'" class="input-'.$this->getClass().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
 	}
 	
-	private function showSearch()
+	function showSearch()
 	{
 		return $this->showUpdate(true);
 	}

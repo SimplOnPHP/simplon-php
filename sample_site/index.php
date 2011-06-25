@@ -7,6 +7,29 @@ error_reporting(0); ini_set('display_errors',false);
 date_default_timezone_set('America/Mexico_City');
 setlocale(LC_ALL, 'es_MX.UTF-8', 'es_ES.UTF-8');
 
+
+//var_dump($_SERVER);
+
+
+
+$basePath = substr($_SERVER['PHP_SELF'], 0, -9);
+$parts = explode('?',$_SERVER['REQUEST_URI']);
+
+$construct_params = explode('/', substr($parts[0], strlen($basePath)) );
+$class = array_shift($construct_params);
+
+$method_params = explode('/',$parts[1]);
+$method = array_shift($method_params);
+
+
+//var_dump($class);
+//var_dump($construct_params);
+
+//var_dump($method);
+//var_dump($method_params);
+
+
+
 require '../DOF/Main.php';
 DOF\Main::setup(array(
 	'LOCAL_ROOT' => __DIR__,
@@ -47,11 +70,14 @@ $debugger = new Dubrox_PhpDebugger(array(
 	),
 ));
 
+
+
 /**
  * @TODO: allow debugging of this fragment of code.
  */
-if(class_exists(DOF\Main::$class)) {
-	$rc = new ReflectionClass(DOF\Main::$class);
+//if(class_exists(DOF\Main::$class)) {
+if(class_exists($class)) {
+	$rc = new ReflectionClass($class);
 	if( 
 		isset(DOF\Main::$method)
 		&&
@@ -68,7 +94,7 @@ if(class_exists(DOF\Main::$class)) {
 	}
 } else {
 	//header('HTTP/1.1 404 File not found');
-	echo 'otracosa';
+	echo 'No esta el metodo '.$method.' en el objeto '.$class ;
 	return;
 }
 

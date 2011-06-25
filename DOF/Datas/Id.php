@@ -21,7 +21,7 @@ class Id extends Data
 			$this->required(false);
 	}
 	
-	public function updateInput($printval=true)
+	public function showUpdate($printval=true)
 	{
 		if($printval && $this->val())
 		{

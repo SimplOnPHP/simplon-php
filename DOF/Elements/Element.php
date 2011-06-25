@@ -54,7 +54,8 @@ class Element extends \DOF\BaseObject {
 		
 		//checking if there is already a dataStorage and repository for this element
 		if($this->autoDSRepositoryGeneration) {
-			$this->dataStorage->ensureElementRepository($this);
+			//@todo RSL 24-06-2011 the line below was just removed to enable work y beta stage but is need in final version
+			//$this->dataStorage->ensureElementRepository($this);
 		}
 		
 		//if there is a storage and an ID it fills the element with the proper info.
@@ -78,7 +79,8 @@ class Element extends \DOF\BaseObject {
 		
 		if( $this->id() ){
 			/*@var $this->dataStorage DataStorage*/
-			$dataArray = $this->dataStorage->getElementData( $this );
+			//@todo RSL 24-06-2011 the line below was just removed to enable work y beta stage but is need in final version
+			//$dataArray = $this->dataStorage->getElementData( $this );
 			
 			//check($dataArray);
 			
@@ -202,7 +204,7 @@ class Element extends \DOF\BaseObject {
 	
 	
 	//@todo verify and implement or remove the use of mesaje
-	public function formElementGenerator($formType=null, $action=null, $method='post')
+	public function formGenerator($formType=null, $action=null, $method='post')
 	{
 		global $prefix;
 		
@@ -215,11 +217,11 @@ class Element extends \DOF\BaseObject {
 			else  {$formType='create';}
 		}
 		
-		$formImput = $formType.'Input';
+		//$formImput = $formType.'Input';
 		
 		//check($formImput);
 		
-		if(!$action){ $action = \DOF\Main::$REMOTE_ROOT.'/ajax/process'.ucfirst($formType).'Form';}
+		if(!$action){ $action = \DOF\Main::$REMOTE_ROOT.'/'.$this->getClass().'?process'.ucfirst($formType);}
 		
 		//--------------
 		
@@ -232,8 +234,8 @@ class Element extends \DOF\BaseObject {
 		
 			if($data instanceof \DOF\Datas\Data && $data->$formType()  )
 			{
-				$ret.='<div class="L'.$keydata.'">'.$data->label().'</div>';
-				$ret.='<div class="I'.$keydata.'">'.$data->$formImput().'</div>'."\n\r";
+				$ret.='<div of="'.$keydata.'" class="label-'.$this->getClass().'">'.$data->label().'</div>';
+				$ret.='<div id="'.$keydata.'" class="input-'.$this->getClass().'">'.$data->{'show'.ucfirst($formType)}().'</div>'."\n\r";
 			
 				if($data instanceof \DOF\Datas\File){ $enctype='enctype="multipart/form-data"'; }
 			}
@@ -251,20 +253,45 @@ class Element extends \DOF\BaseObject {
 		return $ret;
 	}
 	
-	
-	public function updateForm ( $template=null, $mesaje=null,$action=null,$method='post')
+	public function showCreate($template=null, $message=null,$action=null, $method='post')
+	{
+		//check($action);
+		return $this->formGetter('create', false, $template, $message, $action, $method);
+	}
+		
+	public function showUpdate($template=null, $mesaje=null,$action=null,$method='post')
 	{
 		//check($action);
 		return $this->formGetter('update', true, $template, $mesaje,$action,$method);
 	}
 	
+
+
+	public function showView()
+	{
+			
+		var_dump($this);
+		
+		
+		foreach($this as $keydata=>$data)
+		{
+			//if( $data instanceof DOF\Datas\Data && $data->view() )
+			if( $data->view() )
+			{
+				$data->showView();
+			}
+		}
+	}
+
 	
 	//@todo verify and implement or remove the use of mesaje
 	public function formGetter($formType, $reloadInputs=true, $template=null, $mesaje=null,$action=null,$method='post')
 	{
 		//$formType = 'update';
-		var_dump($this);
-		var_dump(func_get_args());
+		//var_dump($this);
+		//var_dump(func_get_args());
+		
+		/*
 		global $prefix;
 		
 		if(!$prefix){$prefix=1;}
@@ -304,9 +331,13 @@ class Element extends \DOF\BaseObject {
 			$form = $form->save();
 			
 		}else{ // else create the default template to be used
-			$form = $this->formElementGenerator($formType, $action, $method);
+			$form = $this->formGenerator($formType, $action, $method);
 		}
+		*/
 		
+		$form = $this->formGenerator($formType, $action, $method);
+		
+
 	
 	//FormWarper
 		$prefix=$prePrefix;
@@ -325,11 +356,7 @@ class Element extends \DOF\BaseObject {
 		return $ret;
 	}
 	
-	public function createForm($template=null, $message=null,$action=null, $method='post')
-	{
-		//check($action);
-		return $this->formGetter('create', false, $template, $message, $action, $method);
-	}
+
 
 	//@todo verify and implement or remove the use of mesaje
 	public function filterForm($template=null, $mesaje=null,$action=null,$printval=true, $name='forma1',$method='post')
@@ -544,8 +571,14 @@ class Element extends \DOF\BaseObject {
 		echo $output;
 	}
 	
-	function process($what) {
+	function processCreate(){
 		
+		var_dump($_REQUEST);
+			
+		$this->fillFromRequest();
+		
+		
+		//$this->showView();
 	}
 	
 }
