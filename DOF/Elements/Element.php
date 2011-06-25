@@ -229,12 +229,12 @@ class Element extends \DOF\BaseObject {
 		foreach($this as $keydata=>$data) {
 			//echo $keydata ;
 		
-			if($data instanceof Data && $data->$formType()  )
+			if($data instanceof \DOF\Datas\Data && $data->$formType()  )
 			{
 				$ret.='<div class="L'.$keydata.'">'.$data->label().'</div>';
 				$ret.='<div class="I'.$keydata.'">'.$data->$formImput().'</div>'."\n\r";
 			
-				if($data instanceof File){ $enctype='enctype="multipart/form-data"'; }
+				if($data instanceof \DOF\Datas\File){ $enctype='enctype="multipart/form-data"'; }
 			}
 		}
 		
@@ -262,7 +262,8 @@ class Element extends \DOF\BaseObject {
 	public function formGetter($formType, $reloadInputs=true, $template=null, $mesaje=null,$action=null,$method='post')
 	{
 		//$formType = 'update';
-		
+		var_dump($this);
+		var_dump(func_get_args());
 		global $prefix;
 		
 		if(!$prefix){$prefix=1;}
@@ -323,9 +324,10 @@ class Element extends \DOF\BaseObject {
 		return $ret;
 	}
 	
-	public function createForm($template=null, $mensaje=null,$action=null,$name='forma1',$method='post')
+	public function createForm($template=null, $message=null,$action=null, $method='post')
 	{
-		return $this->updateForm($template,$mensaje,$action,false,$name,$method);
+		//check($action);
+		return $this->formGetter('create', false, $template, $message, $action, $method);
 	}
 
 	//@todo verify and implement or remove the use of mesaje
@@ -522,4 +524,11 @@ class Element extends \DOF\BaseObject {
 	 updateInDS // este debe ser automatico desde el save si se tiene id se genera
 	*/
 	
+	
+	
+	
+	
+	function encodeURL($construct_params, $method, $method_params = array()) {
+		return \DOF\Main::encodeURL($this->getClass(), $construct_params, $method, $method_params);
+	}
 }

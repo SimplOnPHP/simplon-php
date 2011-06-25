@@ -36,7 +36,7 @@ class Main {
 		$class,
 		$method,
 		$construct_params,
-		$obj_params;
+		$method_params;
 		
 	
 	/**
@@ -62,7 +62,10 @@ class Main {
 			}
 		}
 		
-		
+		self::decodeURL();
+	}
+	
+	static function decodeURL() {
 		// Parses the URL
 		$server_request = $_SERVER['REQUEST_URI'];
 		if(strpos($server_request, '?') !== false)
@@ -74,9 +77,15 @@ class Main {
 		self::$class = @array_shift($virtual_path) ?: 'Home';
 		self::$construct_params = @array_values($virtual_path) ?: array();
 		
-		$GET_virtual_path = array_values(explode('/',@$_GET[0]));
+		//var_dump($_SERVER);exit();
+		
+		$GET_virtual_path = array_values(explode('/',@$_SERVER['QUERY_STRING']));
 		self::$method = @array_shift($GET_virtual_path) ?: 'index';
-		self::$obj_params = @array_shift($GET_virtual_path) ?: array();
+		self::$method_params = @$GET_virtual_path ?: array();
+	}
+	
+	static function encodeURL($class, $construct_params, $method, $method_params) {
+		
 	}
 	
 	static function fromArray(array $ini) {

@@ -19,8 +19,9 @@ class Home extends DOF\Elements\Element
 		parent::__construct($id, $specialDataStorage);
 	}
 	
-	public static function index() {
-		return "Hello world!";
+	public static function index($a= null, $b = null) {
+		//var_dump(func_get_args());
+		return "Hello world! $a $b";
 	}
 	
 	public static function inox() {

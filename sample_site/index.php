@@ -59,7 +59,7 @@ if(class_exists(DOF\Main::$class)) {
 		&&
 		($obj instanceof DOF\Elements\Element)
 	){
-		echo call_user_func_array(array($obj, DOF\Main::$method), DOF\Main::$obj_params);
+		echo call_user_func_array(array($obj, DOF\Main::$method), DOF\Main::$method_params);
 	} else {
 		var_dump(DOF\Main::$method);
 		unset($obj);
@@ -67,7 +67,8 @@ if(class_exists(DOF\Main::$class)) {
 		return;
 	}
 } else {
-	header('HTTP/1.1 404 File not found');
+	//header('HTTP/1.1 404 File not found');
+	echo 'otracosa';
 	return;
 }
 
