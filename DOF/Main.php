@@ -1,15 +1,5 @@
 <?php
-namespace DOF;
-		
-		
-		
-		
-/*@todo poner esto en otra parte */		
-function check($var)
-{
-	var_dump($var);
-}		
-		
+namespace DOF;		
 		
 spl_autoload_register( __NAMESPACE__ . '\\Main::load_obj');
 
@@ -60,7 +50,6 @@ class Main {
 	}
 	
 	static function setup($ini = null) {
-		
 		if(file_exists(self::DEFAULT_INI))
 			self::fromArray(parse_ini_file(self::DEFAULT_INI));
 		
@@ -72,10 +61,24 @@ class Main {
 			}
 		}
 		
+		include(self::$DOF_PATH.'/Utilities/check.php');
+		
 		self::decodeURL();
 	}
 	
 	static function decodeURL() {
+			
+		/*
+		$basePath = substr($_SERVER['PHP_SELF'], 0, -9);
+		$parts = explode('?',$_SERVER['REQUEST_URI']);
+		
+		$construct_params = explode('/', substr($parts[0], strlen($basePath)) );
+		$class = array_shift($construct_params);
+		
+		$method_params = explode('/',$parts[1]);
+		$method = array_shift($method_params);
+		*/		
+		
 		// Parses the URL
 		$server_request = $_SERVER['REQUEST_URI'];
 		if(strpos($server_request, '?') !== false)

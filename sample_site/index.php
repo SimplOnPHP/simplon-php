@@ -11,7 +11,7 @@ setlocale(LC_ALL, 'es_MX.UTF-8', 'es_ES.UTF-8');
 //var_dump($_SERVER);
 
 
-
+/*
 $basePath = substr($_SERVER['PHP_SELF'], 0, -9);
 $parts = explode('?',$_SERVER['REQUEST_URI']);
 
@@ -20,7 +20,7 @@ $class = array_shift($construct_params);
 
 $method_params = explode('/',$parts[1]);
 $method = array_shift($method_params);
-
+*/
 
 //var_dump($class);
 //var_dump($construct_params);
@@ -76,8 +76,8 @@ $debugger = new Dubrox_PhpDebugger(array(
  * @TODO: allow debugging of this fragment of code.
  */
 //if(class_exists(DOF\Main::$class)) {
-if(class_exists($class)) {
-	$rc = new ReflectionClass($class);
+if(class_exists(DOF\Main::$class)) {
+	$rc = new ReflectionClass(DOF\Main::$class);
 	if( 
 		isset(DOF\Main::$method)
 		&&
@@ -94,7 +94,7 @@ if(class_exists($class)) {
 	}
 } else {
 	//header('HTTP/1.1 404 File not found');
-	echo 'No esta el metodo '.$method.' en el objeto '.$class ;
+	echo 'No esta el metodo '.DOF\Main::$method.' en el objeto '.DOF\Main::$class ;
 	return;
 }
 
