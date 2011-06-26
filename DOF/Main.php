@@ -1,6 +1,16 @@
 <?php
 namespace DOF;
 		
+		
+		
+		
+/*@todo poner esto en otra parte */		
+function check($var)
+{
+	var_dump($var);
+}		
+		
+		
 spl_autoload_register( __NAMESPACE__ . '\\Main::load_obj');
 
 class Main {

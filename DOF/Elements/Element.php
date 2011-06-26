@@ -92,12 +92,13 @@ class Element extends \DOF\BaseObject {
 	
 	public function fillFromArray(&$array)
 	{
+		
 		foreach($this as $data)
 		{
-			if($data instanceof Data )
-			{
-				$data->fillFromArray($array);
-			}
+			if($data instanceof \DOF\Datas\Data )
+				{
+					$data->fillFromArray($array);
+				}
 		}
 	}
 	
@@ -110,15 +111,9 @@ class Element extends \DOF\BaseObject {
 	 */
 	public function fillFromRequest()
 	{
-		foreach($this as $data)
-		{
-			if($data instanceof Data )
-			{
-				$data->fillFromRequest();
-			}
-		}
-		
-		return $this;
+		global $_REQUEST;
+				
+		$this->fillFromArray($_REQUEST);
 	}
 	
 	public function saveInDS()
@@ -269,16 +264,12 @@ class Element extends \DOF\BaseObject {
 
 	public function showView()
 	{
-			
-		var_dump($this);
-		
-		
 		foreach($this as $keydata=>$data)
 		{
-			//if( $data instanceof DOF\Datas\Data && $data->view() )
-			if( $data->view() )
-			{
-				$data->showView();
+			
+			if( $data instanceof \DOF\Datas\Data && $data->view() )
+			{	
+				echo '<div>'.$data->showView().'</div>';
 			}
 		}
 	}
@@ -573,10 +564,10 @@ class Element extends \DOF\BaseObject {
 	
 	function processCreate(){
 		
-		var_dump($_REQUEST);
+		//var_dump($_REQUEST);
 			
 		$this->fillFromRequest();
-		
+		$this->saveInDS();
 		
 		//$this->showView();
 	}

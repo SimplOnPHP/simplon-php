@@ -209,7 +209,7 @@ abstract class Data extends \DOF\BaseObject {
 	 */
 	public function __toString()
 	{
-		return $this->HTML();
+		return $this->showView();
 	}
 	
 	/**
@@ -243,7 +243,6 @@ abstract class Data extends \DOF\BaseObject {
 	 */
 	public function fillFromArray(&$array)
 	{
-		chek($this->QueryField().'---');
 		//chek($arreglo[$this->QueryField()]);
 		$this->val($array[$this->QueryField()]);
 		//chek($this->val());
@@ -262,7 +261,7 @@ abstract class Data extends \DOF\BaseObject {
 	}
 	
 	
-	private function showView()
+	function showView()
 	{
 		if($this->val())
 		{
