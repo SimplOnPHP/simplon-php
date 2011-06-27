@@ -9,26 +9,22 @@ namespace DOF\Datas;
 * @author	Ruben Schaffer
 * @todo
 */
-class Id extends Data
+class Id extends Integer
 {
-	public function setDefaultsetVCUSLR()
-	{
-			$this->view(false);
-			$this->create(false);
-			$this->update(true);
-			$this->search(false);
-			$this->list(false);
-			$this->required(false);
-	}
+	protected
+		$view = false,
+		$create = false,
+		$update = true;
 	
-	public function showUpdate($printval=true)
+	public function showInput($fill)
 	{
-		if($printval && $this->val())
+		if($this->val())
 		{
-			return "<input name='".$this->field()."'".(($printval)?" value='".$this->val()."'":"")." type='hidden' />";
+			return "<input name='".$this->field()."'".(($fill)?" value='".$this->val()."'":"")." type='hidden' />";
+		} else {
+			throw new \DOF\Exception('Cannot show this field with empty value!');
 		}
 	}
 	
-	public function label(){}
-	
+	public function label() {}
 }

@@ -11,9 +11,8 @@ class Home extends DOF\Elements\Element
 		$this->cabeza = new DOF\Datas\String('Cabeza','cabeza','vcusl');
 		
 		$this->contenido = new DOF\Datas\HTMLText('Contenido: (Para copiar texto de Word utilizar la herramienta "Paste from Word")','contenido');
-		
-		
-		$this->repository('nota');
+				
+		$this->repository('home');
 		
 		parent::__construct($id, $specialDataStorage);
 	}

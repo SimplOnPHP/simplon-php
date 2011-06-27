@@ -28,6 +28,7 @@ class Element extends \DOF\BaseObject {
 	protected $dataStorage;
 	protected $autoDSRepositoryGeneration = true;
 	
+	protected $dataAttributes;
 	
 	/**
 	* Costructor.
@@ -60,27 +61,20 @@ class Element extends \DOF\BaseObject {
 		
 		//if there is a storage and an ID it fills the element with the proper info.
 		if($id) {
-			$this->id($id);
-			
-			//check($this->id());
-			
 			$this->fillFromDSById($id);
-			
-			//check($this->id());
 		}
 
 		// Tells the DOFdata whose thier "container" in case any of it has context dependent info or functions.
 		$this->asignAsDataParent($this);
 	}
 
-	public function fillFromDSById($id=null)
+	public function fillFromDSById($id = null)
 	{
-		if(isset($id)){$this->id($id);}
+		if(isset($id)) $this->id($id);
 		
-		if( $this->id() ){
+		if($this->id()){
 			/*@var $this->dataStorage DataStorage*/
-			//@todo RSL 24-06-2011 the line below was just removed to enable work y beta stage but is need in final version
-			//$dataArray = $this->dataStorage->getElementData( $this );
+			$dataArray = $this->dataStorage->getElementData( $this );
 			
 			//check($dataArray);
 			
@@ -111,8 +105,6 @@ class Element extends \DOF\BaseObject {
 	 */
 	public function fillFromRequest()
 	{
-		global $_REQUEST;
-				
 		$this->fillFromArray($_REQUEST);
 	}
 	
@@ -154,7 +146,7 @@ class Element extends \DOF\BaseObject {
 				
 				foreach($this as $keydata=>$data)
 				{
-					if($data instanceof Data && $data->view() )
+					if($data instanceof \DOF\Datas\Data && $data->view() )
 					{
 						$template.="\t".'<div class="D-'.$keydata.'">';
 						$template.="\t"."\t".$data->HTML();
@@ -227,9 +219,11 @@ class Element extends \DOF\BaseObject {
 		foreach($this as $keydata=>$data) {
 			//echo $keydata ;
 		
-			if($data instanceof \DOF\Datas\Data && $data->$formType()  )
+			if($data instanceof \DOF\Datas\Data && $data->$formType())
 			{
-				$ret.='<div of="'.$keydata.'" class="label-'.$this->getClass().'">'.$data->label().'</div>';
+				if($data->label())
+					$ret.='<label for="'.$keydata.'" class="label-'.$this->getClass().'">'.$data->label().'</label>';
+				
 				$ret.='<div id="'.$keydata.'" class="input-'.$this->getClass().'">'.$data->{'show'.ucfirst($formType)}().'</div>'."\n\r";
 			
 				if($data instanceof \DOF\Datas\File){ $enctype='enctype="multipart/form-data"'; }
@@ -330,7 +324,7 @@ class Element extends \DOF\BaseObject {
 		
 
 	
-	//FormWarper
+	//FormWrapper
 		$prefix=$prePrefix;
 		if($prefix!=1){ $floatBox=' floatBox'; }
 		$ret.="<div id='".$this->getClass().$this->id()."' class='Cambio$prefix $floatBox'>";
@@ -341,7 +335,7 @@ class Element extends \DOF\BaseObject {
 		$ret.="<div class='cabezaFormulario'>Cambia ".$this->getClass()."</div>";
 		$ret.=$form;
 		$ret.="</div>";
-	//FormWarper
+	//FormWrapper
 
 	
 		return $ret;
@@ -382,7 +376,7 @@ class Element extends \DOF\BaseObject {
 				/*@var $data Data */
 				foreach($this as $keydata=>$data)
 				{
-					if($data instanceof Data && $data->update()  )
+					if($data instanceof \DOF\Datas\Data && $data->update()  )
 					{
 						$template.="\t".'<div class="I'.$keydata.'">';
 						if($printval && $data->updateInput()){
@@ -469,7 +463,7 @@ class Element extends \DOF\BaseObject {
 	{
 		foreach($this as $data)
 		{
-			if($data instanceof Data)
+			if($data instanceof \DOF\Datas\Data)
 			{
 				if( $data->hasMethod('dataParent')  )
 				{
@@ -491,7 +485,7 @@ class Element extends \DOF\BaseObject {
     public function __call($name, $arguments)
     {
         
-    	if($this->$name instanceof Data )
+    	if(@$this->$name instanceof \DOF\Datas\Data)
         {
         	if($arguments){ $this->$name->val($arguments[0]); return; }
         	else{ return $this->$name->val(); }
@@ -501,7 +495,7 @@ class Element extends \DOF\BaseObject {
         	$letter=substr($name,0,1);
         	$Xname=substr($name,1);
         	
-			if(isset($this->$Xname) && ($this->$Xname instanceof Data)) {
+			if(@$this->$Xname instanceof \DOF\Datas\Data) {
 				switch($letter) {
 					case 'O': 
 		   				if($arguments){ $this->$Xname->val($arguments[0]); }
@@ -518,7 +512,7 @@ class Element extends \DOF\BaseObject {
 					default:
 						throw new \Exception('Letter '.$letter.' not recognized!');
 				}
-			} else{
+			} else {
         		return parent::__call($name, $arguments);
         	}
         }
@@ -563,13 +557,25 @@ class Element extends \DOF\BaseObject {
 	}
 	
 	function processCreate(){
-		
-		//var_dump($_REQUEST);
-			
 		$this->fillFromRequest();
 		$this->saveInDS();
+	}
+	
+	function processUpdate(){
+		$this->fillFromRequest();
+		$this->updateInDS();
+	}
+	
+	function dataAttributes() {
+		if(!$this->dataAttributes) {
+			foreach($this as $key => $attr) {
+				if($attr instanceof \DOF\Datas\Data) {
+					$this->dataAttributes[] = $key;
+				}
+			}
+		}
 		
-		//$this->showView();
+		return $this->dataAttributes;
 	}
 	
 }

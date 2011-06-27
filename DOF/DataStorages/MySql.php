@@ -22,7 +22,7 @@ class MySql extends DataStorage
 	public function getElementsData(&$element, $filters = null, $range = '0,500' ) {
 		/*@var element Element*/
 		
-		if($element instanceof Data) {
+		if($element instanceof \DOF\Datas\Data) {
 			$whatToGet = $this->getWhatFromElement($element);
 			$fromWhere = $element->repository();
 			if(!$filters){ $filters = $this->getFiltersFromElement($element); }else
@@ -68,13 +68,36 @@ class MySql extends DataStorage
 	}
 	
 	public function createElement(&$element) {
-		//check( $this->createQuery($element) );
-		$this->db->query( $this->createQuery($element) );
+		foreach($element->dataAttributes() as $dataKey)
+		{
+			$column = $element->{'F'.$dataKey}();
+			
+			$colums[] = $column;
+			$values[':'.$column] = $element->$dataKey();
+		}
+		
+		return $this->db->prepare('
+			INSERT INTO '.$element->repository().' 
+			('. implode(', ',$colums) .') 
+			VALUES ('. implode(', ',array_keys($values)) .')
+		')->execute($values);
 	}
 	
 	public function updateElement(&$element) {
-		//check($this->updateQuery($element, $element->Fid()."=".$element->id() ) );
-		$this->db->query( $this->updateQuery($element, $element->Fid()."=".$element->id()) );
+		foreach($element->dataAttributes() as $dataKey)
+		{
+			$column = $element->{'F'.$dataKey}();
+			
+			$sets[] = $column.'=:'.$column;
+			$values[':'.$column] = $element->$dataKey();
+		}
+		$values[':'.$element->Fid()] = $element->id();
+		
+		return $this->db->prepare('
+			UPDATE '.$element->repository().' 
+			SET '. implode(', ',$sets) .'
+			WHERE '. $element->Fid().'=:'.$element->Fid() .'
+		')->execute($values);
 	}
 	
 	public function deleteElement(&$element) {
@@ -82,11 +105,23 @@ class MySql extends DataStorage
 		$this->db->query( $this->deleteQuery($element, $element->Fid()."=".$element->id() ) );
 	}
 
-
-	
-	
 	public function getElementData(&$element) {
-		return $this->db->query( $this->getQuery( $element, $element->Fid()."=".$element->id() ) , \PDO::FETCH_COLUMN,0)->fetchAll();
+		foreach($element->dataAttributes() as $dataKey)
+		{
+			$column = $element->{'F'.$dataKey}();
+			
+			$columns[] = $column;
+		}
+		$values[':'.$element->Fid()] = $element->id();
+		
+		$query = $this->db->prepare('
+			SELECT '.implode(', ',$columns).' 
+			FROM '.$element->repository().' 
+			WHERE '. $element->Fid().'=:'.$element->Fid() .'
+			LIMIT 1
+		');
+		$query->execute($values);
+		return $query->fetch();
 	}
 	
 	
@@ -96,7 +131,7 @@ class MySql extends DataStorage
 //--------------SQL dependant
 	public function processRange($range)
 	{
-		return 'LIMIT '.$range[0].', '.$range[1];
+		return 'LIMIT ' . $range;
 	}
 	
 	public function processConditions($conditions)
@@ -104,89 +139,10 @@ class MySql extends DataStorage
 		return $conditions;
 	}
 
-	
-	//@todo implement ORDER by in a simple way
-	public function getQuery( &$element,$conditions=null, $range=array(0,100) )
-	{
-		if($range){ $range = $this->processRange($range); }
-		
-		if($conditions){ $conditions = $this->processConditions($conditions); }
-		
-		foreach($element->getDOFDataAttributeKeys() as $dataKey)
-		{
-			$dataKey = 'F'.$dataKey;
-			$selectColumns[] = $element->$dataKey();
-		}
-		$selectColumns = implode(', ',$selectColumns);
-		
-		return "Select ".$selectColumns." FROM ".$element->repository()." ".(($conditions)?" WHERE ".$conditions:'').' '.$range ;
-	}
-	
-	public function createQuery( &$element,$conditions=null )
-	{
-		if($conditions){ $conditions = $element->Fid()."=".$element->id(); }
-		
-		foreach($element->getDOFDataAttributeKeys() as $dataKey)
-		{
-			$value = $element->$dataKey();
-			
-			$objectKey = 'O'.$dataKey;
-			
-			if( !($element->$objectKey() instanceof Id) ){
-				if($this->evalQuotesUse($element->$objectKey()) && $value ){
-					$value="'$value'";
-					//@todo implement escape quotes to allow the use of single quotes in the string
-					//@todo implement anti injection code
-				}
-				if( $value===0 ){ $value='0'; }else
-				if( empty($value) ){ $value='NULL'; }
-	
-				$fieldKey = 'F'.$dataKey;
-				
-				$colums[] = $dataKey;
-				$values[] = $value;
-			}
-		}
-		$colums = implode(', ',$colums);
-		$values = implode(', ',$values);
-		
-		return "INSERT INTO ".$element->repository().' ('.$colums.') VALUES ('.$values.') ' ;
-	}
-		
-	public function updateQuery( &$element,$conditions=null )
-	{
-		if($conditions){ $conditions = $element->Fid()."=".$element->id(); }
-		
-		foreach($element->getDOFDataAttributeKeys() as $dataKey)
-		{
-			$value = $element->$dataKey();
-			
-			$objectKey = 'O'.$dataKey;
-			
-			if( !($element->$objectKey() instanceof Id) ){
-				if($this->evalQuotesUse($element->$objectKey()) && $value ){
-					$value="'$value'";
-					//@todo implement escape quotes to allow the use of single quotes in the string
-					//@todo implement anti injection code
-				}
-				if( $value===0 ){ $value='0'; }else
-				if( empty($value) ){ $value='NULL'; }
-	
-				$fieldKey = 'F'.$dataKey;
-				
-				$updateValues[] = $element->$fieldKey().'='.$value;
-			}
-		}
-		$updateValues = implode(', ',$updateValues);
-		
-		return "UPDATE ".$element->repository().' set '.$updateValues.' '.(($conditions)?" WHERE ".$conditions:'') ;
-	}
-
-		
 	public function deleteQuery( &$element,$conditions=null )
 	{
 		if(!$conditions){
-			foreach($element->getDOFDataAttributeKeys() as $dataKey)
+			foreach($element->dataAttributes() as $dataKey)
 			{
 				$value = $element->$dataKey();
 				
@@ -229,7 +185,7 @@ class MySql extends DataStorage
 	
 	public function isValidElementRepository(&$element) {
 		foreach($element as $attribute)
-			if(($value instanceof Data) && !in_array($columns ,$this->db->query('SHOW COLUMNS FROM '.$element->repository(), \PDO::FETCH_COLUMN,0)->fetchAll())) {
+			if(($value instanceof \DOF\Datas\Data) && !in_array($columns ,$this->db->query('SHOW COLUMNS FROM '.$element->repository(), \PDO::FETCH_COLUMN,0)->fetchAll())) {
 				return false;
 				//$this->db->query('CREATE TABLE `'.$element->repository.'` ()');
 			}

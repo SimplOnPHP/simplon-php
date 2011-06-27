@@ -13,9 +13,7 @@ namespace DOF\Datas;
 
 /**
 * __construct($label=null,$campo=null,$inputName=null,$val=null)	Si los parametros estan vacios causará que se use la clase
-* __toString() 														Define como se parsea el objeto como string
-* strQueryField()													Regresa el campo que se debe usar para Querys a la Fuente de datos
-* strQueryFieldSelect()												Regresa el campo que se debe usar para generar consultas a la Fuente de datos - En SQL puede permite (SELECTS) complejos usando la asigancion " AS "
+* __toString()										Regresa el campo que se debe usar para generar consultas a la Fuente de datos - En SQL puede permite (SELECTS) complejos usando la asigancion " AS "
 * inputName($prefijo=null)											Regresa la str del name del input para los formularios
 * fillFromArray($arreglo)											Asigna el valor del dato a partir de un arreglo con todos los datos de un mismo elemento o consulta (esto es porque algunos datos puedne depender de otros)
 * fillFromRequest($prefijo=null, &$arreglo=null)					Asigna el valor del dato a partir de un arreglo con llaves como los nombres de los inputs generalmente REQUEST
@@ -53,6 +51,7 @@ namespace DOF\Datas;
 
 
 abstract class Data extends \DOF\BaseObject {
+	
 	/**
 	 * Data value
 	 *
@@ -100,37 +99,37 @@ abstract class Data extends \DOF\BaseObject {
 	 * indicates if the DOFdata must be used when generating the default HTML template
 	 * @var boolean
 	 */
-	protected $view;
+	protected $view = true;
 	
 	/**
 	 * indicates if the DOFdata must be used in the add(capture) from
 	 * @var boolean
 	 */
-	protected $create;
+	protected $create = true;
 	
 	/**
 	 * indicates if the DOFdata must be used in the update from
 	 * @var boolean
 	 */
-	protected $update;
+	protected $update = true;
 	
 	/**
 	 * indicates if the DOFdata must be used in the search from
 	 * @var boolean
 	 */
-	protected $search;
+	protected $search = false;
 	
 	/**
 	 * indicates if the DOFdata must be used when several items are listed on a html table or list
 	 * @var boolean
 	 */
-	protected $list;
+	protected $list = false;
 	
 	/**
 	 * indicates if the DOFdata must have a value in order to allow the storage of it's dataParent DOFelement
 	 * @var boolean
 	 */
-	protected $required;
+	protected $required = false;
 	
 	protected $externalJS;
 	protected $externalCSS;
@@ -156,15 +155,13 @@ abstract class Data extends \DOF\BaseObject {
 	{
 		//check($label);
 		
-		if( $val ){$this->val=$val;}
-		if($label){$this->label=$label;}
-		if($field){$this->field=$field;}
+		$this->val = $val;
+		$this->label=$label;
+		$this->field=$field;
 		
 		if($vcuslr)
 		{
 			$this->setVCUSLR($vcuslr);
-		}else{
-			$this->setDefaultsetVCUSLR();
 		}
 		
 		
@@ -184,22 +181,15 @@ abstract class Data extends \DOF\BaseObject {
 	 */
 	function setVCUSLR($vcuslr)
 	{
+		// @todo: Optimizar esta parte
+		// Ej: $this->view( strpos($vcuslr,'v')!==false );
+		
 		if(strpos($vcuslr,'v')!==false){ $this->view=true; }else{ $this->view=false; }
 		if(strpos($vcuslr,'c')!==false){ $this->create=true; }else{ $this->create=false; }
 		if(strpos($vcuslr,'u')!==false){ $this->update=true; }else{ $this->update=false; }
 		if(strpos($vcuslr,'s')!==false){ $this->search=true; }else{ $this->search=false; }
 		if(strpos($vcuslr,'l')!==false){ $this->list=true; }else{ $this->list=false; }
 		if(strpos($vcuslr,'r')!==false){ $this->required=true; }else{ $this->required=false; }
-	}
-
-	function setDefaultsetVCUSLR()
-	{
-		$this->view(true);
-		$this->create(true);
-		$this->update(true);
-		$this->search(false);
-		$this->list(false);
-		$this->required(false);
 	}
 	
 	/**
@@ -211,17 +201,6 @@ abstract class Data extends \DOF\BaseObject {
 	{
 		return $this->showView();
 	}
-	
-	/**
-	 * provides the tha name of the field that must be used to create, update or retrive this data from the data source.
-	 *
-	 * @return ing
-	 */
-	public function QueryField()
-	{
-		if( $this->field ){  return $this->field; }
-		else { return $this->Class(); }
-	}
 
 	/**
 	 * Gives the name of the field for the create or update forms (usualy an HTML form)
@@ -231,8 +210,7 @@ abstract class Data extends \DOF\BaseObject {
 	 */
 	public function inputName()
 	{
-		if($this->inputName ){ return $this->inputName; }
-		else{ return $this->QueryField(); }
+		return $this->inputName ?: $this->field();
 	}
 
 	/**
@@ -243,9 +221,7 @@ abstract class Data extends \DOF\BaseObject {
 	 */
 	public function fillFromArray(&$array)
 	{
-		//chek($arreglo[$this->QueryField()]);
-		$this->val($array[$this->QueryField()]);
-		//chek($this->val());
+		$this->val(@$array[$this->field()]);
 	}
 	
 	/**
@@ -256,46 +232,40 @@ abstract class Data extends \DOF\BaseObject {
 	 */
 	public function fillFromRequest()
 	{
-		global $_REQUEST;
 		$this->fillFromArray($_REQUEST);
 	}
 	
 	
 	function showView()
 	{
-		if($this->val())
-		{
-			return $this->val();
-		} else {
-			return '';
-		}
+		return $this->val();
 	}
+	
+	abstract function showInput($fill);
 	
 	function showCreate()
 	{
-		return $this->showUpdate(false);
+		return $this->showInput(false);
 	}
 	
-	function showUpdate($fill = true)
+	function showUpdate()
 	{
-		return  '<input id="'.$id.'" class="input-'.$this->getClass().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
+		return $this->showInput(true);
 	}
 	
 	function showSearch()
 	{
-		return $this->showUpdate(true);
+		return $this->showInput(true);
 	}
 	
 	/**
-	 * Regresa la  para poner como etiqueta antes de los inputs.
+	 * Returns the label for the input
 	 *
 	 * @return ing
 	 */
 	public function label()
 	{
-		//return "<span>get_class($this)</span>";
-		if($this->label){ return $this->label; }
-		else { return get_class($this); }
+		return $this->label ?: $this->getClass();
 	}
 
 	

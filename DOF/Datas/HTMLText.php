@@ -3,15 +3,9 @@ namespace DOF\Datas;
 
 class HTMLText extends Data
 {
-	//IMP falta hacer que realmente salga un editor en vez de la textArea
-	public function updateInput($printval=true)
+	function showInput($fill)
 	{
-		global $prefijo;
-	
-		$ret.="<textarea class='input".$this->getClass()." editor' id='".$this->inputName().$prefijo."' name='".$this->inputName()."'>".(($printval)?"$this->val":"")."</textarea>\n";
-
-		return $ret;
+		//@todo: display a RichText editor instead of Textarea
+		return  "<textarea class='input".$this->getClass()." editor' id='".$this->inputName()."' name='".$this->inputName()."'>".(($fill)? $this->val :"")."</textarea>";
 	}
-
-
 }
