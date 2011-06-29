@@ -16,7 +16,7 @@ namespace DOF\Elements;
 class Element extends \DOF\BaseObject {
 	protected $Fid = 'id';
 	protected $dir;
-	protected $repository;
+	protected $storage;
 	protected $tempFormPrefix;
 
 	protected $externalJS;
@@ -26,9 +26,10 @@ class Element extends \DOF\BaseObject {
 
 	/*@var dataStorage DataStorage*/
 	protected $dataStorage;
-	protected $autoDSRepositoryGeneration = true;
 	
 	protected $dataAttributes;
+	
+	protected $storageChecked;
 	
 	/**
 	* Costructor.
@@ -53,11 +54,8 @@ class Element extends \DOF\BaseObject {
 			$this->dataStorage=&$specialDataStorage;
 		}
 		
-		//checking if there is already a dataStorage and repository for this element
-		if($this->autoDSRepositoryGeneration) {
-			//@todo RSL 24-06-2011 the line below was just removed to enable work y beta stage but is need in final version
-			//$this->dataStorage->ensureElementRepository($this);
-		}
+		//checking if there is already a dataStorage and storage for this element
+		$this->dataStorage->ensureElementStorage($this);
 		
 		//if there is a storage and an ID it fills the element with the proper info.
 		if($id) {
@@ -472,15 +470,6 @@ class Element extends \DOF\BaseObject {
 			}
 		}
 	}
-
-
-	public function getDOFDataAttributeKeys()
-	{
-		// This should look into vcsrl attribute of each data 
-		// or get from a run-time generated array
-		return $this->attributeKeys('Data');
-	}
-	
 	
     public function __call($name, $arguments)
     {
@@ -566,16 +555,21 @@ class Element extends \DOF\BaseObject {
 		$this->updateInDS();
 	}
 	
+	function attributesTypes($type = '\\DOF\\Datas\\Data') {
+		foreach($this as $key => $attr) {
+			if($attr instanceof $type) {
+				$a[] = $key;
+			}
+		}
+		
+		return $a;
+	}
+	
 	function dataAttributes() {
 		if(!$this->dataAttributes) {
-			foreach($this as $key => $attr) {
-				if($attr instanceof \DOF\Datas\Data) {
-					$this->dataAttributes[] = $key;
-				}
-			}
+			$this->dataAttributes = $this->attributesTypes();
 		}
 		
 		return $this->dataAttributes;
 	}
-	
 }

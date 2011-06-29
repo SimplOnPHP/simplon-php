@@ -5,6 +5,15 @@ class MySql extends DataStorage
 {
 	/*@var db MySqlDataBase */
 	public $db;
+	
+	static $typesMap = array(
+		'Id'		=> 'INT NOT NULL AUTO_INCREMENT',
+		'Integer'	=> 'int',
+		'Float'  	=> 'float',
+		
+		'String'	=> 'varchar(240)',
+		'HTMLText'	=> 'text',
+	);
 
 	public function __construct($server,$user,$password,$dataBase) {
 		$this->db = new \PDO(
@@ -24,7 +33,7 @@ class MySql extends DataStorage
 		
 		if($element instanceof \DOF\Datas\Data) {
 			$whatToGet = $this->getWhatFromElement($element);
-			$fromWhere = $element->repository();
+			$fromWhere = $element->storage();
 			if(!$filters){ $filters = $this->getFiltersFromElement($element); }else
 			if($filters instanceof Filter){ $filters = $this->formatFilters($filters); }
 			//if($range){ $range = $this->formatRange($range); }
@@ -77,7 +86,7 @@ class MySql extends DataStorage
 		}
 		
 		return $this->db->prepare('
-			INSERT INTO '.$element->repository().' 
+			INSERT INTO '.$element->storage().' 
 			('. implode(', ',$colums) .') 
 			VALUES ('. implode(', ',array_keys($values)) .')
 		')->execute($values);
@@ -94,7 +103,7 @@ class MySql extends DataStorage
 		$values[':'.$element->Fid()] = $element->id();
 		
 		return $this->db->prepare('
-			UPDATE '.$element->repository().' 
+			UPDATE '.$element->storage().' 
 			SET '. implode(', ',$sets) .'
 			WHERE '. $element->Fid().'=:'.$element->Fid() .'
 		')->execute($values);
@@ -116,7 +125,7 @@ class MySql extends DataStorage
 		
 		$query = $this->db->prepare('
 			SELECT '.implode(', ',$columns).' 
-			FROM '.$element->repository().' 
+			FROM '.$element->storage().' 
 			WHERE '. $element->Fid().'=:'.$element->Fid() .'
 			LIMIT 1
 		');
@@ -164,7 +173,7 @@ class MySql extends DataStorage
 			}
 		}
 		
-		return "DELETE FROM ".$element->repository().' '.(($conditions)?" WHERE ".$conditions:'') ;
+		return "DELETE FROM ".$element->storage().' '.(($conditions)?" WHERE ".$conditions:'') ;
 	}
 		
 	
@@ -179,33 +188,67 @@ class MySql extends DataStorage
 		{return true; }
 	}
 	
-	public function isSetElementRepository(&$element) {
-		return in_array($element->repository(), $this->db->query('SHOW TABLES', \PDO::FETCH_COLUMN,0)->fetchAll());
+	public function isSetElementStorage(&$element) {
+		return in_array($element->storage(), $this->db->query('SHOW TABLES', \PDO::FETCH_COLUMN,0)->fetchAll());
 	}
 	
-	public function isValidElementRepository(&$element) {
+	public function isValidElementStorage(&$element) {
+		return true; // @todo: develop
 		foreach($element as $attribute)
-			if(($value instanceof \DOF\Datas\Data) && !in_array($columns ,$this->db->query('SHOW COLUMNS FROM '.$element->repository(), \PDO::FETCH_COLUMN,0)->fetchAll())) {
+			if(($value instanceof \DOF\Datas\Data) && !in_array($columns ,$this->db->query('SHOW COLUMNS FROM '.$element->storage(), \PDO::FETCH_COLUMN,0)->fetchAll())) {
 				return false;
-				//$this->db->query('CREATE TABLE `'.$element->repository.'` ()');
+				//$this->db->query('CREATE TABLE `'.$element->storage.'` ()');
 			}
 	}
 	
-	public function ensureElementRepository(&$element) {
-		if(!$this->isSetElementRepository($element)) {
-			// $this->db->query('CREATE SCHEMA `'.$element->repository.'`');
-			/*
-			$this->db->query('CREATE TABLE `'.$element->repository().'` (
-				`idnew_table` INT NOT NULL ,
-				`hola` VARCHAR(45) NULL ,
-				`banana` POINT NULL ,
-				PRIMARY KEY (`idnew_table`) ,
-				INDEX `sdfgs` (`hola` ASC, `banana` DESC)
-			)');
-			*/
-		} else if(!$this->isValidElementRepository($element)) {
-		
+	public function ensureElementStorage(\DOF\Elements\Element &$element) {
+		if($element->storageChecked()) {
+			$return = $element->storageChecked();
+		} else {
+			if(!$this->isSetElementStorage($element)) {
+				// @todo: Create Table ONLY IN DEVELOPMENT MODE
+				
+				// $this->db->query('CREATE SCHEMA `'.$element->storage.'`');
+				foreach($this->getDataTypes($element) as $data => $type) {
+					$q_data_part[]= "`$data` $type";
+				}
+				foreach($element->dataAttributes() as $dataName) {
+					if($element->{'O'.$dataName}()->search()) {
+						$q_index_part[]= "`Index$dataName` (`$dataName` ASC)";
+					}
+				}
+				if(isset($q_index_part)) {
+					$q_index_part = ',INDEX '.implode(', ',$q_index_part);
+				}
+				
+				$q = 'CREATE TABLE `'.$element->storage().'` (
+					'.implode(', ',$q_data_part).',
+					PRIMARY KEY (`'. $element->Fid() .'`)
+					'.$q_index_part.'
+				)';
+				
+				$return = $this->db->query($q);
+			} else if(!$this->isValidElementStorage($element)) {
+				// @todo: alter table ONLY IN DEVELOPMENT MODE
+				$return = false;
+			} else {
+				$return = true;
+			}
+			$element->storageChecked($return);
 		}
-		return true;
+		return $return;
+	}
+
+	public function getDataTypes(\DOF\Elements\Element &$element) {
+		// @todo: check
+		$result = array();
+		foreach(self::$typesMap as $class => $type)
+		{
+			if($array = $element->attributesTypes('\\DOF\\Datas\\'.$class)) {
+				$result = array_merge($result, array_combine($array, array_fill(0, count($array), $type)));
+			}
+		}
+		
+		return $result;
 	}
 }

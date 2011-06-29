@@ -12,7 +12,7 @@ class Home extends DOF\Elements\Element
 		
 		$this->contenido = new DOF\Datas\HTMLText('Contenido: (Para copiar texto de Word utilizar la herramienta "Paste from Word")','contenido');
 				
-		$this->repository('home');
+		$this->storage('home');
 		
 		parent::__construct($id, $specialDataStorage);
 	}
