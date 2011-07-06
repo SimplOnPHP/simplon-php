@@ -2,6 +2,6 @@
 /*@todo poner esto en otra parte */		
 function check($var)
 {
-	var_dump($var);
+	echo '<br>'.print_r($var).'<br>';
 }
 ?>

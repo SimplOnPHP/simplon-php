@@ -188,17 +188,43 @@ class MySql extends DataStorage
 		{return true; }
 	}
 	
-	public function isSetElementStorage(&$element) {
+	public function isSetElementStorage(\DOF\Elements\Element &$element) {
 		return in_array($element->storage(), $this->db->query('SHOW TABLES', \PDO::FETCH_COLUMN,0)->fetchAll());
 	}
 	
-	public function isValidElementStorage(&$element) {
-		return true; // @todo: develop
-		foreach($element as $attribute)
-			if(($value instanceof \DOF\Datas\Data) && !in_array($columns ,$this->db->query('SHOW COLUMNS FROM '.$element->storage(), \PDO::FETCH_COLUMN,0)->fetchAll())) {
-				return false;
-				//$this->db->query('CREATE TABLE `'.$element->storage.'` ()');
+	public function isValidElementStorage(\DOF\Elements\Element &$element) {
+		
+		// Verify that we have the same Datas in the element and in the DB
+		$dbColumns = $this->db->query('SHOW COLUMNS FROM '.$element->storage(), \PDO::FETCH_COLUMN,0)->fetchAll();
+		$elementData = $this->getDataTypes($element);
+		
+		if( !array_diff($dbColumns, array_keys($elementData) ) && !array_diff(array_keys($elementData), $dbColumns) ) //verifys that both element and DB have the same Data
+		{
+			foreach($this->db->query('SHOW COLUMNS FROM '.$element->storage())->fetchAll() as $dbColumn){
+				
+				//CheckType
+				if(  $elementData[$dbColumn['Field']] != $dbColumn['Type'] ){ return false; }
+				
+				//CheckNull
+				if(  
+					(  $dbColumn['Null'] == 'YES' && $element->{'O'.$dbColumn['Field']()->required()}  )  
+					OR
+					(  $dbColumn['Null'] == 'NO' && !$element->{'O'.$dbColumn['Field']()->required()}   )
+					
+				  ){ return false; }
+				  
+				 //key @todo verify and improve
+				 if( 
+				 	(  $dbColumn['Key'] && $dbColumn['Key'] !='PRI' && !$element->{'O'.$dbColumn['Field']()->search()}  ) 
+					OR
+					(  $dbColumn['Key'] =='PRI' && $element->Fid() != $dbColumn['Field']   ) 
+				   ){ return false; } 
+				
 			}
+			
+			return true;
+		}
+		return false;
 	}
 	
 	public function ensureElementStorage(\DOF\Elements\Element &$element) {
