@@ -21,7 +21,7 @@ class Id extends Integer
 	{
 		if($this->val())
 		{
-			return "<input name='".$this->field()."'".(($fill)?" value='".$this->val()."'":"")." type='hidden' />";
+			return '<input class="DOF input '.$this->getClass().'" name="'.$this->field().'" '.(($fill)?" value='".$this->val()."'":"")." type='hidden' />";
 		} else {
 			throw new \DOF\Exception('Cannot show this field with empty value!');
 		}

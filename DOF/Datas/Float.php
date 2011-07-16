@@ -15,6 +15,6 @@ class Float extends Data {
 	
 	public function showInput($fill)
 	{
-		return '<input name="'.$this->field().'" '.(($fill)?'value="'.$this->val().'"':'').' />';
+		return '<input class="DOF input '.$this->getClass().'" name="'.$this->field().'" '.(($fill)?'value="'.$this->val().'"':'').' />';
 	}
 }

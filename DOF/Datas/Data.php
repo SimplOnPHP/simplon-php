@@ -139,13 +139,6 @@ abstract class Data extends \DOF\BaseObject {
 	 * @var boolean
 	 */
 	protected $required = false;
-	
-	protected $externalJS;
-	protected $externalCSS;
-
-	protected $internalJS;
-	protected $internalCSS;
-	
 
 	
 	/**
@@ -245,7 +238,7 @@ abstract class Data extends \DOF\BaseObject {
 	}
 	
 	
-	function showView()
+	function showView($template = null)
 	{
 		return $this->val();
 	}

@@ -12,6 +12,7 @@ class Main {
 
 		$DOF_PATH,
 		$GENERIC_TEMPLATES_PATH,
+		$MASTER_TEMPLATE,
 
 		$CREATE_LAYOUT_TEMPLATES,
 		$OVERWRITE_LAYOUT_TEMPLATES,
@@ -20,6 +21,10 @@ class Main {
 		$CREATE_FROM_TEMPLATES,
 		$OVERWRITE_FROM_TEMPLATES,
 		$USE_FROM_TEMPLATES,
+		
+		$JS_FLAVOUR = 'jQuery',
+	
+		$DEV_MODE = false,
 
 		$DATA_STORAGE;
 	
@@ -38,6 +43,7 @@ class Main {
 		$construct_params,
 		$method_params;
 		
+	static $elm_count = '0';
 	
 	/**
 	 * Loads all the parameters specific to a website and loads needed classes.
@@ -106,6 +112,11 @@ class Main {
 			self::$$const = $value;
 	}
 	
+	static function createFile($file_path) {
+		// @todo: implement
+		return true;
+	}
+	
 	/**
 	 * Includes a (class)file looking for it in the following order 1.- Site directory, 2.- Site template directory, 3.- DOF directory
 	 */
@@ -113,7 +124,7 @@ class Main {
 		$pathExploded = explode('\\', $classToLoad);
 		
 		if(reset($pathExploded) == 'DOF') {
-			$file_to_load = '../' . implode('/', $pathExploded) . '.php';
+			$file_to_load = '../' . str_replace('\\', '/', $classToLoad) . '.php';
 			include_once $file_to_load;
 			return;
 		} else {

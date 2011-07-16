@@ -30,13 +30,15 @@ $method = array_shift($method_params);
 
 
 
+
 require '../DOF/Main.php';
 DOF\Main::setup(array(
 	'LOCAL_ROOT' => __DIR__,
 	'REMOTE_ROOT' => dirname($_SERVER['PHP_SELF']),
 	
 	'DOF_PATH' => realpath('../DOF'),
-	'GENERIC_TEMPLATES_PATH' => realpath('../sample_site_template'),
+	'GENERIC_TEMPLATES_PATH' => realpath('Templates'),
+	'MASTER_TEMPLATE' => realpath('Templates') . '/Master.html',
 
 	'CREATE_LAYOUT_TEMPLATES' => true,
 	'OVERWRITE_LAYOUT_TEMPLATES' => true,
@@ -45,8 +47,13 @@ DOF\Main::setup(array(
 	'CREATE_FROM_TEMPLATES' => true,
 	'OVERWRITE_FROM_TEMPLATES' => true,
 	'USE_FROM_TEMPLATES' => true,
+
+	'JS_FLAVOUR' => 'jQuery',
 	
-	'DATA_STORAGE' => new DOF\DataStorages\MySql('localhost','root','','sample_site'),
+	'DEV_MODE' => true,
+	
+	'DATA_STORAGE' => new DOF\DataStorages\MySql('localhost','sample_site','root',''),
+	//'DATA_STORAGE' => new DOF\DataStorages\SQLite('localhost',__DIR__.'/sample_site.sqlite'),
 ));
 
 require DOF\Main::$DOF_PATH . '/PlugIns/dpd/DubroxPhpDebugger.class.php';

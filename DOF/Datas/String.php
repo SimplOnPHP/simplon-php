@@ -5,7 +5,7 @@ class String extends Data {
 	
 	protected $view = true;
 	protected $create = true;
-	protected $update = false;
+	protected $update = true;
 	
 	function showInput($fill)
 	{
