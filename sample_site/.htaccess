@@ -3,6 +3,6 @@ Options +FollowSymLinks
 RewriteEngine on
 
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(.*)$ index.php [QSA,L]
+RewriteRule ^(.*)$ /multisite/sample_site/index.php [QSA,L]
 
 </IfModule>

@@ -14,7 +14,8 @@ class Id extends Integer
 	protected
 		$view = false,
 		$create = false,
-		$update = true;
+		$update = true,
+		$required = true;
 	
 	public function showInput($fill)
 	{

@@ -56,9 +56,18 @@ abstract class Data extends \DOF\BaseObject {
 	 * Data value
 	 *
 	 * @access protected
-	 * @var unknown_type
+	 * @var mixed
 	 */
 	protected $val;
+	
+	
+	/**
+	 * Default value
+	 *
+	 * @access protected
+	 * @var mixed
+	 */
+	protected $default = NULL;
 
 	/**
 	 * DOF type, will be translated to the data type of the used db.
@@ -210,7 +219,7 @@ abstract class Data extends \DOF\BaseObject {
 	 */
 	public function inputName()
 	{
-		return $this->inputName ?: $this->field();
+		return @$this->inputName ?: $this->field();
 	}
 
 	/**

@@ -5,9 +5,10 @@ class MySql extends DataStorage
 {
 	/*@var db MySqlDataBase */
 	public $db;
+	protected $metadata;
 	
 	static $typesMap = array(
-		'Id'		=> 'INT NOT NULL AUTO_INCREMENT',
+		'Id'		=> 'INT AUTO_INCREMENT',
 		'Integer'	=> 'int',
 		'Float'  	=> 'float',
 		
@@ -17,8 +18,8 @@ class MySql extends DataStorage
 
 	public function __construct($server,$user,$password,$dataBase) {
 		$this->db = new \PDO(
-			'mysql:dbname='.$dataBase.';host='.$server, 
-			$user, 
+			'mysql:dbname='.$dataBase.';host='.$server,
+			$user,
 			$password,
 			array(
 				\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES \'UTF8\'',
@@ -188,17 +189,65 @@ class MySql extends DataStorage
 		{return true; }
 	}
 	
-	public function isSetElementStorage(&$element) {
+	public function isSetElementStorage(\DOF\Elements\Element &$element) {
 		return in_array($element->storage(), $this->db->query('SHOW TABLES', \PDO::FETCH_COLUMN,0)->fetchAll());
 	}
+
 	
-	public function isValidElementStorage(&$element) {
+	private function metadata(\DOF\Elements\Element &$element) {
+		if( !isset($this->metadata[$element->getClass()]) ) {
+			$this->metadata[$element->getClass()]= array(
+				'columns' => $this->db->query('Show columns from '.$element->storage() )->fetchAll(),
+				'index' => $this->db->query('Show index from '.$element->storage() )->fetchAll(),
+			);
+		}
+		
+		return $this->metadata[$element->getClass()];
+	}	
+	
+	
+	public function isValidElementStorage(\DOF\Elements\Element &$element) {
 		return true; // @todo: develop
 		foreach($element as $attribute)
 			if(($value instanceof \DOF\Datas\Data) && !in_array($columns ,$this->db->query('SHOW COLUMNS FROM '.$element->storage(), \PDO::FETCH_COLUMN,0)->fetchAll())) {
+				$this->metadata($element);
+				
+				
+				
+				
+				
+				
 				return false;
 				//$this->db->query('CREATE TABLE `'.$element->storage.'` ()');
 			}
+	}
+	
+	private function createTableStatement(\DOF\Elements\Element &$element) {
+		// @todo: embellish the code
+		foreach($this->getDataTypes($element) as $dataName => $type) {
+			$dataObj = $element->{'O'.$dataName};
+			$default_required = $dataObj->required()
+				? ' NOT NULL'
+				: ($dataObj->default() ? ' DEFAULT '.$dataObj->default() : ' DEFAULT NULL');
+			
+			$q_data_part[]= "`$dataName` $type" . $default_required;
+		}
+		foreach($element->dataAttributes() as $dataName) {
+			if($element->{'O'.$dataName}()->search()) {
+				$q_index_part[]= "`Index$dataName` (`$dataName` ASC)";
+			}
+		}
+		if(isset($q_index_part)) {
+			$q_index_part = ',INDEX '.implode(', ',$q_index_part);
+		}
+		
+		$q = 'CREATE TABLE `'.$element->storage().'` (
+			'.implode(', ',$q_data_part).',
+			PRIMARY KEY (`'. $element->Fid() .'`)
+			'.$q_index_part.'
+		)';
+		
+		return $q;
 	}
 	
 	public function ensureElementStorage(\DOF\Elements\Element &$element) {
@@ -209,25 +258,7 @@ class MySql extends DataStorage
 				// @todo: Create Table ONLY IN DEVELOPMENT MODE
 				
 				// $this->db->query('CREATE SCHEMA `'.$element->storage.'`');
-				foreach($this->getDataTypes($element) as $data => $type) {
-					$q_data_part[]= "`$data` $type";
-				}
-				foreach($element->dataAttributes() as $dataName) {
-					if($element->{'O'.$dataName}()->search()) {
-						$q_index_part[]= "`Index$dataName` (`$dataName` ASC)";
-					}
-				}
-				if(isset($q_index_part)) {
-					$q_index_part = ',INDEX '.implode(', ',$q_index_part);
-				}
-				
-				$q = 'CREATE TABLE `'.$element->storage().'` (
-					'.implode(', ',$q_data_part).',
-					PRIMARY KEY (`'. $element->Fid() .'`)
-					'.$q_index_part.'
-				)';
-				
-				$return = $this->db->query($q);
+				$return = $this->db->query($this->createTableStatement($element));
 			} else if(!$this->isValidElementStorage($element)) {
 				// @todo: alter table ONLY IN DEVELOPMENT MODE
 				$return = false;
@@ -242,10 +273,14 @@ class MySql extends DataStorage
 	public function getDataTypes(\DOF\Elements\Element &$element) {
 		// @todo: check
 		$result = array();
-		foreach(self::$typesMap as $class => $type)
-		{
-			if($array = $element->attributesTypes('\\DOF\\Datas\\'.$class)) {
-				$result = array_merge($result, array_combine($array, array_fill(0, count($array), $type)));
+		foreach($element->dataAttributes() as $dataName) {
+			foreach(self::$typesMap as $class => $type)
+			{
+				$class = '\\DOF\\Datas\\'.$class;
+				if($element->{'O'.$dataName}() instanceof $class) {
+					$result[$dataName]= $type;
+					break;
+				}
 			}
 		}
 		

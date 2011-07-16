@@ -214,6 +214,7 @@ class Element extends \DOF\BaseObject {
 		
 		/*@var $data Data */
 		$enctype = '';
+		$ret = '';
 		foreach($this as $keydata=>$data) {
 			//echo $keydata ;
 		
@@ -270,6 +271,7 @@ class Element extends \DOF\BaseObject {
 	//@todo verify and implement or remove the use of mesaje
 	public function formGetter($formType, $reloadInputs=true, $template=null, $mesaje=null,$action=null,$method='post')
 	{
+		$ret = false;
 		//$formType = 'update';
 		//var_dump($this);
 		//var_dump(func_get_args());
@@ -323,14 +325,15 @@ class Element extends \DOF\BaseObject {
 
 	
 	//FormWrapper
-		$prefix=$prePrefix;
+		//$prefix=$prePrefix; // @todo: fix prefix :P
+		$prefix = '';
 		if($prefix!=1){ $floatBox=' floatBox'; }
 		$ret.="<div id='".$this->getClass().$this->id()."' class='Cambio$prefix $floatBox'>";
-		if($prefix!=1)
+		/*if($prefix!=1)
 		{
 			$ret.="<span class='linkPointer cancelar' onclick=\"quita('#".$this->getClass().$this->id()."')\"><img src='./imgs/borrar.png' class='over'/></span>";
-		}
-		$ret.="<div class='cabezaFormulario'>Cambia ".$this->getClass()."</div>";
+		}*/
+		$ret.='<header class="form-header">'.ucfirst($formType).' '.$this->getClass().'</header>';
 		$ret.=$form;
 		$ret.="</div>";
 	//FormWrapper
@@ -556,9 +559,9 @@ class Element extends \DOF\BaseObject {
 	}
 	
 	function attributesTypes($type = '\\DOF\\Datas\\Data') {
-		foreach($this as $key => $attr) {
-			if($attr instanceof $type) {
-				$a[] = $key;
+		foreach($this as $name => $data) {
+			if($data instanceof $type) {
+				$a[] = $name;
 			}
 		}
 		
@@ -571,5 +574,34 @@ class Element extends \DOF\BaseObject {
 		}
 		
 		return $this->dataAttributes;
+	}
+	
+	//vcsrl
+	public function datasForView(){
+		foreach($this as $data) {
+			if($data instanceof \DOF\Datas\Data && $data->$what()) {
+				$output.= $data->{'show'.ucfirst($what)}();
+			}
+		}		
+	}
+	
+	public function datasForCreate(){
+		
+	}
+	
+	public function datasForUpdate(){
+		
+	}	
+	
+	public function datasForSearch(){
+		
+	}	
+	
+	public function datasForList(){
+		
+	}	
+		
+	public function datasRequired(){
+		
 	}
 }

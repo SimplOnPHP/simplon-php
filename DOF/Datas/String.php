@@ -9,6 +9,6 @@ class String extends Data {
 	
 	function showInput($fill)
 	{
-		return  '<input id="'.$id.'" class="input-'.$this->getClass().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
+		return  '<input class="input '.str_replace('\\', ' ', $this->getClass()).'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
 	}
 }
