@@ -2,6 +2,5 @@
 /*@todo poner esto en otra parte */		
 function check($var)
 {
-	echo '<br>'.print_r($var).'<br>';
+	echo '<pre style="display:block">'.print_r($var,1).'</pre>';
 }
-?>

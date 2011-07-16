@@ -14,13 +14,14 @@ class Id extends Integer
 	protected
 		$view = false,
 		$create = false,
-		$update = true;
+		$update = true,
+		$required = true;
 	
 	public function showInput($fill)
 	{
 		if($this->val())
 		{
-			return "<input name='".$this->field()."'".(($fill)?" value='".$this->val()."'":"")." type='hidden' />";
+			return '<input class="DOF input '.$this->getClass().'" name="'.$this->field().'" '.(($fill)?" value='".$this->val()."'":"")." type='hidden' />";
 		} else {
 			throw new \DOF\Exception('Cannot show this field with empty value!');
 		}

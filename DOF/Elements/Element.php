@@ -240,6 +240,10 @@ class Element extends \DOF\BaseObject {
 		return $ret;
 	}
 	
+	public function templateFilePath($show_type, $alternative = '', $template_type = 'html') {
+		return \DOF\Main::$GENERIC_TEMPLATES_PATH . '/' . $show_type . '/' .$this->getClass() . $alternative . '.' .$template_type;
+	}
+	
 	public function showCreate($template=null, $message=null,$action=null, $method='post')
 	{
 		//check($action);
@@ -254,19 +258,81 @@ class Element extends \DOF\BaseObject {
 	
 
 
-	public function showView()
+	public function showView($template_file = null)
 	{
-		foreach($this as $keydata=>$data)
-		{
+		$dom = \phpQuery::newDocumentFileHTML(\DOF\Main::$MASTER_TEMPLATE);
+		$dom['head']->append(
+			'<script type="text/javascript" src="'. 
+			implode('"></script>'."\n".'<script type="text/javascript" src="', $this->getJS(__METHOD__)).
+			'"></script>'
+		);
+		
+		if(!isset($template_file)) {
+			// get default path
+			$template_file = $this->templateFilePath('View');
+		}
+		
+		if(!file_exists($template_file) || \DOF\Main::$OVERWRITE_LAYOUT_TEMPLATES) {
+			// create and fill file
+			$html = '<div class="DOF '.$this->getClass().'">';
+			foreach($this as $keydata=>$data)
+			{
+				if( $data instanceof \DOF\Datas\Data && $data->view() )
+				{	
+					$html.= '<div class="DOF '.$keydata.'">'.$data->showView().'</div>';
+				}
+			}
+			$html.= '</div>';
+			$dom['body'] = $html;
+			// save file
+			file_put_contents($template_file, $dom.'');
+		} else {
+			// opens file
+			$dom['body'] = file_get_contents($template_file);
 			
-			if( $data instanceof \DOF\Datas\Data && $data->view() )
-			{	
-				echo '<div>'.$data->showView().'</div>';
+			// fill file with data 
+			foreach($this as $keydata=>$data)
+			{
+				if( $data instanceof \DOF\Datas\Data && $data->view() )
+				{
+					$dom['.DOF.'.$this->getClass().' .DOF.'.$keydata] = $data->showView($dom['.DOF.'.$this->getClass().' .DOF.'.$keydata]);
+				}
 			}
 		}
+		
+		echo $dom;
 	}
 
-	
+	public function getJS($method, $compress = false) {
+		$method = end(explode('::',$method));
+		$base = \DOF\Main::$LOCAL_ROOT . '/JS/' . \DOF\Main::$JS_FLAVOUR;
+		
+		foreach($this->dataAttributes() as $data) {
+			$class = end(explode('\\',$this->{'O'.$data}()->getClass()));
+			$local_js = $base . "/Inits/$class.$method.js";
+			
+			if(file_exists($local_js))
+				$a_js[] = $local_js;
+		}
+		
+		if($compress) {
+			// @todo: compress in one file and return the file path
+		}
+		
+		// converts to remote paths
+		$a_js = array_map(
+			function($fp) {
+				return str_replace(\DOF\Main::$LOCAL_ROOT, \DOF\Main::$REMOTE_ROOT, $fp);
+			},
+			array_merge(
+				glob($base . '/Libs/*'),
+				@$a_js ?: array()
+			)
+		);
+		
+		return $a_js;
+	}
+		
 	//@todo verify and implement or remove the use of mesaje
 	public function formGetter($formType, $reloadInputs=true, $template=null, $mesaje=null,$action=null,$method='post')
 	{
@@ -534,17 +600,6 @@ class Element extends \DOF\BaseObject {
 		return \DOF\Main::encodeURL($this->getClass(), $construct_params, $method, $method_params);
 	}
 	
-	
-	function show($what) {
-		$output = '';
-		foreach($this as $data) {
-			if($data instanceof \DOF\Datas\Data && $data->$what()) {
-				$output.= $data->{'show'.ucfirst($what)}();
-			}
-		}
-		echo $output;
-	}
-	
 	function processCreate(){
 		$this->fillFromRequest();
 		$this->saveInDS();
@@ -562,7 +617,7 @@ class Element extends \DOF\BaseObject {
 			}
 		}
 		
-		return $a;
+		return @$a ?: array();
 	}
 	
 	function dataAttributes() {

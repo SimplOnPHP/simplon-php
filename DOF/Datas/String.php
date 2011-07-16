@@ -5,10 +5,10 @@ class String extends Data {
 	
 	protected $view = true;
 	protected $create = true;
-	protected $update = false;
+	protected $update = true;
 	
 	function showInput($fill)
 	{
-		return  '<input id="'.$id.'" class="input-'.$this->getClass().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
+		return  '<input id="'.$id.'" class="DOF input '.$this->getClass().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
 	}
 }
