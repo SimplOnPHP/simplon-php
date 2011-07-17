@@ -27,5 +27,11 @@ class Id extends Integer
 		}
 	}
 	
+	function setVCUSLR($vcuslr)
+	{
+		parent::setVCUSLR($vcuslr);
+		$this->required = true;
+	}
+	
 	public function label() {}
 }

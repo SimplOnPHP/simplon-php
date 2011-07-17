@@ -14,15 +14,10 @@ namespace DOF\Elements;
  * @author RSL
  */
 class Element extends \DOF\BaseObject {
-	protected $Fid = 'id';
+	protected $field_id = 'id';
 	protected $dir;
 	protected $storage;
 	protected $tempFormPrefix;
-
-	protected $externalJS;
-	protected $externalCSS;
-	protected $internalJS;
-	protected $internalCSS;
 
 	/*@var dataStorage DataStorage*/
 	protected $dataStorage;
@@ -47,6 +42,8 @@ class Element extends \DOF\BaseObject {
 	{
 		//On heirs put here the asignation of DOFdata and attributes
 		
+		if(!$this->storage) $this->storage(end(explode('::',$this->getClass())));
+		
 		//Asings the storage element for the DOFelement. (a global one : or a particular one)
 		if(!$specialDataStorage){
 			$this->dataStorage = \DOF\Main::$DATA_STORAGE;
@@ -63,7 +60,16 @@ class Element extends \DOF\BaseObject {
 		}
 
 		// Tells the DOFdata whose thier "container" in case any of it has context dependent info or functions.
-		$this->asignAsDataParent($this);
+		$this->assignAsDatasParent();
+		
+		$this->assignDatasName();
+	}
+	
+	public function index() {
+		return '
+			<h1>'.$this->getClass().' works!</h1>
+			<p><a href="'.$this->encodeURL(array(), 'showCreate').'">Create a new '.$this->getClass().'</a></p>
+		';
 	}
 
 	public function fillFromDSById($id = null)
@@ -82,15 +88,10 @@ class Element extends \DOF\BaseObject {
 		}
 	}
 	
-	public function fillFromArray(&$array)
+	public function fillFromArray(array &$array_of_data)
 	{
-		
-		foreach($this as $data)
-		{
-			if($data instanceof \DOF\Datas\Data )
-				{
-					$data->fillFromArray($array);
-				}
+		foreach($this->dataAttributes() as $dataName) {
+			$this->$dataName($array_of_data[$dataName]);
 		}
 	}
 	
@@ -103,209 +104,141 @@ class Element extends \DOF\BaseObject {
 	 */
 	public function fillFromRequest()
 	{
-		$this->fillFromArray($_REQUEST);
+		return $this->fillFromArray($_REQUEST);
 	}
 	
 	public function saveInDS()
 	{
 		/*@var $this->dataStorage DataStorage*/
-		$this->dataStorage->saveElement($this);
+		return $this->dataStorage->saveElement($this);
 	}
 	
 	public function createInDS()
 	{
 		/*@var $this->dataStorage DataStorage*/
-		$this->dataStorage->createElement($this);
+		return $this->dataStorage->createElement($this);
 	}
 		
 	public function updateInDS()
 	{
 		/*@var $this->dataStorage DataStorage*/
-		$this->dataStorage->updateElement($this);
+		return $this->dataStorage->updateElement($this);
 	}
 
 	public function deleteFromDS()
 	{
 		/*@var $this->dataStorage DataStorage*/
-		$this->dataStorage->deleteElement($this);
-	}
-	
-	public function toHtml($template=null)
-	{
-		//if no template is received
-		if(!$template){
-			//if the default class template exits use it
-			if(file_exists(TEMPLATES_ROOT.'layout/'.$this->getClass()))
-			{
-				$template = file_get_html($this->getClass());
-				
-			}else{ //if not generate it in RAM
-				$template="<div class='".$this->getClass()."'>"."\n";
-				
-				foreach($this as $keydata=>$data)
-				{
-					if($data instanceof \DOF\Datas\Data && $data->view() )
-					{
-						$template.="\t".'<div class="D-'.$keydata.'">';
-						$template.="\t"."\t".$data->HTML();
-						$template.="\t".'</div>'."\n";
-					}
-				}
-				$template.="</div>";
-				
-				//if enabeled write the template into a file.
-				if(CREATE_LAYOUT_TEMPLATES)
-				{
-					$file = fopen (TEMPLATES_ROOT.'layout/'.$this->getClass(), "w");
-					fwrite($file, $template);
-					fclose ($file);
-				}
-			}
-		}
-		
-		//if the template is a string
-		if(is_string($template)){
-			//try to opene it as a file
-			if( file_exists(TEMPLATES_ROOT.'layout/'.$template) )
-			{
-				$template = file_get_html($template);
-			}else{ //if it's not a file open it as a HTML string
-				$template = str_get_html($template);
-			}
-		}
-		
-		//if the template is a simple dom object proceed to process it.
-		if($template instanceof simple_html_dom_node)
-		{
-			$this->processTemplate($template);
-		}else{ // if not sound the alarm
-			throw new Exception("<br />".$this->getClass()." received the invalid template: <br>".$template);
-			return;
-		}
-	}
-
-	
-	
-	
-	
-	//@todo verify and implement or remove the use of mesaje
-	public function formGenerator($formType=null, $action=null, $method='post')
-	{
-		global $prefix;
-		
-		if(!$prefix){$prefix=1;}
-		$prePrefix=$prefix;
-		$name=$prefix.$this->getClass();
-		
-		if(!$formType){
-			if($this->id()) {$formType='update';}
-			else  {$formType='create';}
-		}
-		
-		//$formImput = $formType.'Input';
-		
-		//check($formImput);
-		
-		if(!$action){ $action = \DOF\Main::$REMOTE_ROOT.'/'.$this->getClass().'?process'.ucfirst($formType);}
-		
-		//--------------
-		
-		
-		
-		/*@var $data Data */
-		$enctype = '';
-		$ret = '';
-		foreach($this as $keydata=>$data) {
-			//echo $keydata ;
-		
-			if($data instanceof \DOF\Datas\Data && $data->$formType())
-			{
-				if($data->label())
-					$ret.='<label for="'.$keydata.'" class="label-'.$this->getClass().'">'.$data->label().'</label>';
-				
-				$ret.='<div id="'.$keydata.'" class="input-'.$this->getClass().'">'.$data->{'show'.ucfirst($formType)}().'</div>'."\n\r";
-			
-				if($data instanceof \DOF\Datas\File){ $enctype='enctype="multipart/form-data"'; }
-			}
-		}
-		
-		
-		$ret= "\n\r<form action='$action' $enctype  method='$method'>" . @$ret;
-		
-		$ret.="
-		<input name='class' value='".$this->getClass()."' type='hidden' />
-		<input name='prefijo' value='".$prefix."' type='hidden' />
-		<input class='button' name='saveButton' value='Enviar' type='submit' />";
-		$ret.="</form>\n\r";
-		
-		return $ret;
+		return $this->dataStorage->deleteElement($this);
 	}
 	
 	public function templateFilePath($show_type, $alternative = '', $template_type = 'html') {
 		return \DOF\Main::$GENERIC_TEMPLATES_PATH . '/' . $show_type . '/' .$this->getClass() . $alternative . '.' .$template_type;
 	}
 	
-	public function showCreate($template=null, $message=null,$action=null, $method='post')
+	public function showCreate($template_file = null, $action = null)
 	{
-		//check($action);
-		return $this->formGetter('create', false, $template, $message, $action, $method);
-	}
-		
-	public function showUpdate($template=null, $mesaje=null,$action=null,$method='post')
-	{
-		//check($action);
-		return $this->formGetter('update', true, $template, $mesaje,$action,$method);
+		echo $this->obtainHtml(__METHOD__, $template_file, $action);
 	}
 	
-
-
-	public function showView($template_file = null)
+	/* */
+	public function showUpdate($template_file = null, $action = null)
 	{
-		$dom = \phpQuery::newDocumentFileHTML(\DOF\Main::$MASTER_TEMPLATE);
-		$dom['head']->append(
-			'<script type="text/javascript" src="'. 
-			implode('"></script>'."\n".'<script type="text/javascript" src="', $this->getJS(__METHOD__)).
-			'"></script>'
-		);
+		echo $this->obtainHtml(__METHOD__, $template_file, $action);
+	}
+
+	public function showView($template_file = '')
+	{
+		echo $this->obtainHtml(__METHOD__, $template_file, null);
+	}
 		
-		if(!isset($template_file)) {
+	//@todo verify and implement or remove the use of mesaje
+	public function obtainHtml($caller_method, $template_file = null, $action = null)
+	{
+		$caller_method = end(explode('::',$caller_method));
+		$VCSL = substr($caller_method, strlen('show'));
+		$vcsl = strtolower($VCSL);
+		$with_form = in_array($vcsl, array('create', 'update'));
+		 
+		if(!@$template_file) {
 			// get default path
-			$template_file = $this->templateFilePath('View');
+			$template_file = $this->templateFilePath($VCSL);
 		}
 		
 		if(!file_exists($template_file) || \DOF\Main::$OVERWRITE_LAYOUT_TEMPLATES) {
-			// create and fill file
-			$html = '<div class="DOF '.$this->getClass().'">';
-			foreach($this as $keydata=>$data)
+			$dom = \phpQuery::newDocumentFileHTML(\DOF\Main::$MASTER_TEMPLATE);
+			$dom['head']->append($this->getJS($caller_method, 'html'));
+			
+			foreach($this->attributesTypes('\\DOF\\Datas\\File') as $fileData)
 			{
-				if( $data instanceof \DOF\Datas\Data && $data->view() )
-				{	
-					$html.= '<div class="DOF '.$keydata.'">'.$data->showView().'</div>';
+				if( $fileData->$vcsl() ){
+					$enctype = ' enctype="multipart/form-data" ';
+					break;
 				}
 			}
-			$html.= '</div>';
+			
+			// create and fill file
+			$html = '';
+			if($with_form) {
+				$html.= '<form class="DOF '.$this->getClass().'" '
+					. ' action="'. (@$action ?: $this->encodeURL(array(), 'process'.$VCSL) ) .'" ' 
+					. ' method="post" ' 
+					. @$enctype 
+					.'>';
+			}
+			$html.= '<div class="DOF '.$this->getClass().'">';
+			foreach($this as $keydata => $data)
+			{
+				if( $data instanceof \DOF\Datas\Data && $data->$vcsl() )
+				{					
+					$html.= '<div class="DOF '.$keydata.'">';
+					
+					if($with_form) {
+						$data_id = 'DOF_'.$data->instanceId();
+						$dompart = \phpQuery::newDocumentHTML($data->$caller_method());
+						// @todo: Document that class input is MANDATORY
+						$dompart['.input']->attr('id', $data_id);
+						
+						$html.='<label for="'.$data_id.'">'.$data->label().'</label>';
+						$html.= $dompart['.input'];
+					} else {
+						$html.= $data->$caller_method();
+					}
+					
+					$html.= '</div>';
+				}
+			}
+			if($with_form) {
+				$html.= '<button name="commit" type="submit">Save</button>'
+					.'<button name="cancel" onclick="javascript:history.back()">Cancel</button>'
+					.'</div></form>';
+			} else {
+				$html.= '</div>';
+			}
 			$dom['body'] = $html;
+			
 			// save file
 			file_put_contents($template_file, $dom.'');
 		} else {
 			// opens file
-			$dom['body'] = file_get_contents($template_file);
+			$dom = \phpQuery::newDocumentFileHTML($template_file);
 			
 			// fill file with data 
-			foreach($this as $keydata=>$data)
-			{
-				if( $data instanceof \DOF\Datas\Data && $data->view() )
-				{
-					$dom['.DOF.'.$this->getClass().' .DOF.'.$keydata] = $data->showView($dom['.DOF.'.$this->getClass().' .DOF.'.$keydata]);
+			if($vcsl != 'create') {
+				foreach($this as $keydata=>$data) {
+					if($data instanceof \DOF\Datas\Data && $data->$vcsl())
+					{
+						$dom['.DOF.'.$this->getClass().' .DOF.'.$keydata] = $data->$caller_method($dom['.DOF.'.$this->getClass().' .DOF.'.$keydata]);
+					}
 				}
 			}
 		}
 		
-		echo $dom;
+		return $dom;
 	}
 
-	public function getJS($method, $compress = false) {
+	public function getJS($method, $return = 'array', $compress = false) {
 		$method = end(explode('::',$method));
+		// @todo: consider DOF directory too
 		$base = \DOF\Main::$LOCAL_ROOT . '/JS/' . \DOF\Main::$JS_FLAVOUR;
 		
 		foreach($this->dataAttributes() as $data) {
@@ -331,211 +264,42 @@ class Element extends \DOF\BaseObject {
 			)
 		);
 		
-		return $a_js;
+		switch($return) {
+			case 'html':
+				return ($a_js)
+					? '<script type="text/javascript" src="'. implode('"></script>'."\n".'<script type="text/javascript" src="', $a_js) . '"></script>'
+					: '';
+			case 'array':
+				return $a_js;
+		}
 	}
-		
-	//@todo verify and implement or remove the use of mesaje
-	public function formGetter($formType, $reloadInputs=true, $template=null, $mesaje=null,$action=null,$method='post')
-	{
-		$ret = false;
-		//$formType = 'update';
-		//var_dump($this);
-		//var_dump(func_get_args());
-		
-		/*
-		global $prefix;
-		
-		if(!$prefix){$prefix=1;}
-		
-		$prePrefix=$prefix;
-
-		//make sure $template has a proper file name
-		if( !is_string($template) ){ $template = $this->getTemplatePath( 'forms/'.$this->getClass().ucfirst($formType) ); }
-		else { $template = $this->getTemplatePath( 'forms/'.trim($template) ); }
-
-		//if there is not template or it must be redone redo it.
-		if( (\DOF\Main::$CREATE_FROM_TEMPLATES AND !file_exists($template) ) ){
-			file_put_contents($template, $this->formElementGenerator($formType, $action, $method) );
-		} else if( \DOF\Main::$OVERWRITE_FROM_TEMPLATES ) {
-			unlink($template);
-			file_put_contents($template, $this->formElementGenerator($formType, $action, $method) );
-		}
-		
-		//if templates must be used and there is a template.
-		if(\DOF\Main::$USE_FROM_TEMPLATES && file_exists($template)){
-			$form = file_get_html($template);
-			
-			//form acction
-			if($action){$form->find('form', 0)->action = $action;}
-
-			//form values
-			if($reloadInputs){
-				foreach($form->find('class^=I') as $element)
-				{
-					$keydata = substr($element->class(), 1);
-					$formImput = $formType.'Input';
-					
-					$element->outertext = $this->$keydata()->$formImput();
-				}
-			}
-			
-			$form = $form->save();
-			
-		}else{ // else create the default template to be used
-			$form = $this->formGenerator($formType, $action, $method);
-		}
-		*/
-		
-		$form = $this->formGenerator($formType, $action, $method);
-		
-
-	
-	//FormWrapper
-		//$prefix=$prePrefix; // @todo: fix prefix :P
-		$prefix = '';
-		if($prefix!=1){ $floatBox=' floatBox'; }
-		$ret.="<div id='".$this->getClass().$this->id()."' class='Cambio$prefix $floatBox'>";
-		/*if($prefix!=1)
-		{
-			$ret.="<span class='linkPointer cancelar' onclick=\"quita('#".$this->getClass().$this->id()."')\"><img src='./imgs/borrar.png' class='over'/></span>";
-		}*/
-		$ret.='<header class="form-header">'.ucfirst($formType).' '.$this->getClass().'</header>';
-		$ret.=$form;
-		$ret.="</div>";
-	//FormWrapper
-
-	
-		return $ret;
-	}
-	
-
-
-	//@todo verify and implement or remove the use of mesaje
-	public function filterForm($template=null, $mesaje=null,$action=null,$printval=true, $name='forma1',$method='post')
-	{
-		global $prefix;
-		
-		if(!$prefix){$prefix=1;}
-		
-		$prePrefix=$prefix;
-			
-		$name=$prefix.$name;
-			
-		if(!$action && $printval){ //Chage
-			$action = $adminUrl.'Ajax/pfagrega.php';
-		}else if(!$action &&  !$printval){//Add
-			$action= $adminUrl.'Ajax/pfNuevaAgrega.php';
-		}
-
-		//if no template is recived
-		if(!$template OR $template==$this->getClass().'.php'){
-			//if the default class template exits use it
-
-			$file = file_exists( \DOF\Main::$TEMPLATES_ROOT.'forms/'.$this->getClass().'.php' ) ;
-			if($file)
-			{
-				$template = file_get_html($this->getClass());
-			}else{ //if not generate it in RAM
-				$template="<div class='".$this->getClass()."'>"."\n";
-
-				$template.="<form action='".$action."' name='".$name."' method='".$method."' ".$multipart." >";
-		
-				/*@var $data Data */
-				foreach($this as $keydata=>$data)
-				{
-					if($data instanceof \DOF\Datas\Data && $data->update()  )
-					{
-						$template.="\t".'<div class="I'.$keydata.'">';
-						if($printval && $data->updateInput()){
-							$template.="\t"."\t".$data->label().$data->updateInput();
-						}else if($data->createInput()){
-							$template.="\t"."\t".$data->label().$data->createInput();
-						}
-						$template.="\t".'</div>'."\n";
-					}
-				}
-
-				$template.="
-			
-				<input name='class' value='".$this->getClass()."' type='hidden' />
-				<input name='prefijo' value=':**:variable:*:prefijo:**:' type='hidden' />
-				<input class='button' name=':**:variable:*:prefijo:**:BotonGuardar' value='Guardar' type='submit' />
-				<div class='clear'></div>";
-				
-				
-				$template.="</form>";
-				$template.="</div>";
-				
-				//if enabeled write the template into a file.
-				if(\DOF\Main::$CREATE_LAYOUT_TEMPLATES)
-				{
-					$file = fopen ($file, "w");
-					fwrite($file, $template);
-					fclose ($file);
-				}
-				
-				$prefix=$prePrefix;
-				
-				//to avoid to have to use processTemplate for just the prefix
-				$template = str_replace(':**:variable:*:prefijo:**:',$prefix,$template);
-				
-			}
-		}else if(is_string($template)){ //if the template is a string
-			//try to opene it as a file
-			if( file_exists($file) )
-			{
-				$template = file_get_html($file);
-			}else{ //if it's not a file open it as a HTML string
-				$template = str_get_html($template);
-			}
-		}
-		
-		//check($template);
-		
-		//if the template is a simple dom object proceed to process it.
-		if($template instanceof simple_html_dom_node)
-		{
-			$template = $this->processTemplate($template); //Note: this function may return a proper result with out runing this line -see return above.
-		}
-		
-		$prefix=$prePrefix;
-		
-		if($prefix!=1){ $floatBox=' floatBox'; }
-		
-		$ret.="<div id='".$this->getClass().$this->id()."' class='Cambio$prefix $floatBox'>";
-		
-		if($prefix!=1)
-		{
-			$ret.="<span class='linkPointer cancelar' onclick=\"quita('#".$this->getClass().$this->id()."')\"><img src='./imgs/borrar.png' class='over'/></span>";
-		}
-	
-		$ret.="<div class='cabezaFormulario'>Cambia ".$this->getClass()."</div>";
-		
-		$ret.=$template;
-		
-		$ret.="</div>";
-		
-		return $ret;
-	}
-
-	
-	
 	
 	/**
-	* Tells the DOFdata whose thier "container" in case any of it has context dependent info or functions.
+	* Tells the DOFdata whose their "container" in case any of it has context dependent info or functions.
 	*
 	* @param &$dataParent Reference to the logical data parent.
 	*/
-	public function asignAsDataParent(&$dataParent=null)
+	public function assignAsDatasParent(&$parent=null)
 	{
+		if(!isset($parent)) $parent = $this;
+		
 		foreach($this as $data)
 		{
 			if($data instanceof \DOF\Datas\Data)
 			{
-				if( $data->hasMethod('dataParent')  )
+				if( $data->hasMethod('parent')  )
 				{
-					$data->dataParent($dataParent);
+					$data->parent($parent);
 				}
+			}
+		}
+	}
+	
+	public function assignDatasName()
+	{
+		foreach($this as $name => $data) {
+			if($data instanceof \DOF\Datas\Data && !$data->name()) {
+				$data->name($name);
 			}
 		}
 	}
@@ -548,7 +312,7 @@ class Element extends \DOF\BaseObject {
         	if($arguments){ $this->$name->val($arguments[0]); return; }
         	else{ return $this->$name->val(); }
         	
-        }else{
+        } else {
         	
         	$letter=substr($name,0,1);
         	$Xname=substr($name,1);
@@ -559,10 +323,11 @@ class Element extends \DOF\BaseObject {
 		   				if($arguments){ $this->$Xname->val($arguments[0]); }
 			        	else{ return $this->$Xname; }
 						break;
+						/*
 					case 'F':
 						if($arguments){ $this->$Xname->val($arguments[0]); }
         				else{ return $this->$Xname->field(); }
-						break;
+						break;*/
 					case 'L':
 						if($arguments){ $this->$Xname->val($arguments[0]); }
 	        			else{ return $this->$Xname->label(); }
@@ -575,44 +340,36 @@ class Element extends \DOF\BaseObject {
         	}
         }
     }
-		 
-	    
-	/**
-	 *
-	 */
-	function getTemplatePath($template) {
-		global $adminPath;
-		global $siteTemplatePath;
-		global $dofPath;
-	
-		if( file_exists($adminPath.'templates/'.$template.'.html') ){  return $adminPath.'templates/'.$template.'.html'; }else
-		if( file_exists($siteTemplatePath.'templates/'.$template.'.html') ){  return $siteTemplatePath.'templates/'.$template.'.html'; }else
-		if( file_exists($dofPath.'templates/'.$template.'.html') ){  return $dofPath.'templates/'.$template.'.html'; }
-		else { 	return $adminPath.'templates/'.$template.'.html'; }
-	}
 	
 	/*@todo determina if this method is neceary or not
 	 updateInDS // este debe ser automatico desde el save si se tiene id se genera
 	*/
 	
-	
-	
-	
-	
-	function encodeURL($construct_params, $method, $method_params = array()) {
+	function encodeURL(array $construct_params, $method, array $method_params = array()) {
 		return \DOF\Main::encodeURL($this->getClass(), $construct_params, $method, $method_params);
 	}
 	
 	function processCreate(){
 		$this->fillFromRequest();
-		$this->saveInDS();
+		if($this->saveInDS()) {
+			header('Location: '.$this->encodeURL(array($this->id()), 'showUpdate'));
+		} else {
+			// @todo: error handling
+			user_error('Cannot save in DS!', E_USER_ERROR);
+		}
 	}
 	
 	function processUpdate(){
 		$this->fillFromRequest();
-		$this->updateInDS();
+		if($this->updateInDS()) {
+			header('Location: '.$this->encodeURL(array($this->id()), 'showUpdate'));
+		} else {
+			// @todo: error handling
+			user_error('Cannot save in DS!', E_USER_ERROR);
+		}
 	}
 	
+	// @todo: change name to attributesOfType
 	function attributesTypes($type = '\\DOF\\Datas\\Data') {
 		foreach($this as $name => $data) {
 			if($data instanceof $type) {

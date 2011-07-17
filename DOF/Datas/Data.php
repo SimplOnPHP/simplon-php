@@ -86,23 +86,6 @@ abstract class Data extends \DOF\BaseObject {
 	 */
 	protected $label;
 	
-	/**
-	 * Data name or field as it must be presented to DOFstorage objetcs and/or storage systems (like Data Dases)
-	 *
-	 * @access protected
-	 * @var ing
-	 */
-	protected $field;
-
-	/**
-	 * @todo remove this from here and integrate it some how to the DB storage Item, or at least stablisha a naming convention for this "misplaced" functionalities
-	 * Special to allow data field aliasing in SQL
-	 *
-	 * @access protected
-	 * @var ing
-	 */
-	protected $asField;
-	
 	
 	/**
 	 * indicates if the DOFdata must be used when generating the default HTML template
@@ -139,6 +122,8 @@ abstract class Data extends \DOF\BaseObject {
 	 * @var boolean
 	 */
 	protected $required = false;
+	
+	protected $name;
 
 	
 	/**
@@ -153,13 +138,12 @@ abstract class Data extends \DOF\BaseObject {
 	 * if the letter is included (the order desn't matter) that use will be set to true if not to false.
 	 * see the help avobe to see what each of this does.
 	 */
-	public function __construct($label=null,$field=null,$vcuslr=null,$val=null)
+	public function __construct($label=null,$vcuslr=null,$val=null)
 	{
 		//check($label);
 		
 		$this->val = $val;
 		$this->label=$label;
-		$this->field=$field;
 		
 		if($vcuslr)
 		{
@@ -172,7 +156,7 @@ abstract class Data extends \DOF\BaseObject {
 	}
 	
 	/**
-	 * @todo modify this to allow to have + and or - operatos to modify a specif set without having to altern-nor check the others
+	 * @todo handle UPPER or lower letter to ADD or remove attributes
 	 *
 	 * Sets create, update, search, list, required acording to the letters in $acslr
 	 *
@@ -212,18 +196,7 @@ abstract class Data extends \DOF\BaseObject {
 	 */
 	public function inputName()
 	{
-		return @$this->inputName ?: $this->field();
-	}
-
-	/**
-	 * Gets the DOFdata value from an asociative array that may have many other values
-	 *
-	 * @param $arreglo
-	 * @return ing
-	 */
-	public function fillFromArray(&$array)
-	{
-		$this->val(@$array[$this->field()]);
+		return @$this->inputName ?: $this->name();
 	}
 	
 	/**
@@ -302,5 +275,5 @@ abstract class Data extends \DOF\BaseObject {
 	 */
 	public function afterDeleteQuery()
 	{
-	}
+	}	
 }

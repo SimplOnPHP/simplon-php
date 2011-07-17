@@ -62,63 +62,66 @@ abstract class SQL extends DataStorage
 
 	public function saveElement(&$element) {
 		if( $element->id() ) {
-			$this->updateElement($element);
+			return $this->updateElement($element);
 		} else {
-			$this->createElement($element);
+			return $this->createElement($element);
 		}
 	}
 	
 	public function createElement(&$element) {
-		foreach($element->dataAttributes() as $dataKey)
+		foreach($element->dataAttributes() as $column)
 		{
-			$column = $element->{'F'.$dataKey}();
-			
 			$colums[] = $column;
-			$values[':'.$column] = $element->$dataKey();
+			$values[':'.$column] = $element->$column();
 		}
 		
-		return $this->db->prepare('
+		$prepared = $this->db->prepare('
 			INSERT INTO '.$element->storage().' 
 			('. implode(', ',$colums) .') 
 			VALUES ('. implode(', ',array_keys($values)) .')
-		')->execute($values);
+		');
+		
+		$this->db->beginTransaction();
+		$prepared->execute($values);
+		
+		// @todo: place an alternative for MSSQL
+		$id = $this->db->lastInsertId();
+			
+		if($this->db->commit()) {
+			$element->id($id);
+			return $id;
+		} else {
+			return false;
+		}
 	}
 	
 	public function updateElement(&$element) {
-		foreach($element->dataAttributes() as $dataKey)
+		foreach($element->dataAttributes() as $column)
 		{
-			$column = $element->{'F'.$dataKey}();
-			
 			$sets[] = $column.'=:'.$column;
-			$values[':'.$column] = $element->$dataKey();
+			$values[':'.$column] = $element->$column();
 		}
-		$values[':'.$element->Fid()] = $element->id();
+		$values[':'.$element->field_id()] = $element->id();
 		
 		return $this->db->prepare('
 			UPDATE '.$element->storage().' 
 			SET '. implode(', ',$sets) .'
-			WHERE '. $element->Fid().'=:'.$element->Fid() .'
+			WHERE '. $element->field_id().'=:'.$element->field_id() .'
 		')->execute($values);
 	}
 	
 	public function deleteElement(&$element) {
-		//check($this->deleteQuery($element, $element->Fid()."=".$element->id() ) );
-		$this->db->query( $this->deleteQuery($element, $element->Fid()."=".$element->id() ) );
+		//check($this->deleteQuery($element, $element->field_id()."=".$element->id() ) );
+		$this->db->query( $this->deleteQuery($element, $element->field_id()."=".$element->id() ) );
 	}
 
 	public function getElementData(&$element) {
-		foreach($element->dataAttributes() as $dataKey)
-		{
-			$column = $element->{'F'.$dataKey}();
-			
-			$columns[] = $column;
-		}
-		$values[':'.$element->Fid()] = $element->id();
+		$values[':'.$element->field_id()] = $element->{$element->field_id()}();
 		
 		$query = $this->db->prepare('
-			SELECT '.implode(', ',$columns).' 
+			SELECT '.implode(', ',$element->dataAttributes()).' 
 			FROM '.$element->storage().' 
-			WHERE '. $element->Fid().'=:'.$element->Fid() .'
+			WHERE '. $element->field_id().'=:'.$element->field_id() .'
 			LIMIT 1
 		');
 		$query->execute($values);
@@ -157,10 +160,8 @@ abstract class SQL extends DataStorage
 					}
 					if( $value===0 ){ $value='0'; }else
 					if( empty($value) ){ $value='NULL'; }
-		
-					$fieldKey = 'F'.$dataKey;
 					
-					$conditions.= ' AND '.$element->$fieldKey().'='.$value;
+					$conditions.= ' AND '.$dataKey.'='.$value;
 				//}
 			}
 		}
@@ -181,7 +182,7 @@ abstract class SQL extends DataStorage
 	}
 	
 	public function isSetElementStorage(\DOF\Elements\Element &$element) {
-		return in_array($element->storage(), $this->db->query('SHOW TABLES', \PDO::FETCH_COLUMN,0)->fetchAll());
+		return in_array(strtolower($element->storage()), array_map('strtolower', $this->db->query('SHOW TABLES', \PDO::FETCH_COLUMN,0)->fetchAll()));
 	}
 	
 	public function alterTable(\DOF\Elements\Element &$element) {
@@ -203,7 +204,7 @@ abstract class SQL extends DataStorage
 		}
 		
 		foreach($this->db->query('SHOW INDEXES FROM '.$element->storage())->fetchAll() as $dbIndex){
-			//if( $dbIndex['Column_name']!=$element->Fid() && !$element->{'O'.$dbIndex['Column_name']}()->search() ) {
+			//if( $dbIndex['Column_name']!=$element->field_id() && !$element->{'O'.$dbIndex['Column_name']}()->search() ) {
 				// DROP INDEX
 				$alters[] = 'DROP INDEX `'.$dbIndex['Key_name'].'`';
 				/*
@@ -225,15 +226,15 @@ abstract class SQL extends DataStorage
 			}
 			
 			//ADD INDEXES
-			if($dataName!=$element->Fid() && $element->{'O'.$dataName}()->search() ) {
+			if($dataName!=$element->field_id() && $element->{'O'.$dataName}()->search() ) {
 				$alters[] = 'ADD INDEX `Index'.$dataName.'` (`'.$dataName.'` ASC)';
 			}
 		}
 		
-		$alters[] = 'ADD PRIMARY KEY (`'.$element->Fid().'`)';
+		$alters[] = 'ADD PRIMARY KEY (`'.$element->field_id().'`)';
 		
 		$q = 'ALTER TABLE `'.$element->storage().'` '.implode(', ', $alters);
-		var_dump($q);
+		// var_dump($q);
 		return $this->db->query($q);
 	}
 	
@@ -244,7 +245,7 @@ abstract class SQL extends DataStorage
 		$elementData = $this->getDataTypes($element);
 		$return = true;
 		
-		if( count($dbColumns) == count($elementData) && !array_diff($dbColumns, array_keys($elementData) ) ) //verifys that both element and DB have the same Data
+		if( count($dbColumns) == count($elementData) && !array_diff($dbColumns, array_keys($elementData)) ) //verifys that both element and DB have the same Data
 		{
 			
 			foreach($this->db->query('SHOW COLUMNS FROM '.$element->storage())->fetchAll() as $dbColumn){
@@ -281,13 +282,13 @@ abstract class SQL extends DataStorage
 				  
 				 //Check Indexes
 				 if(
-				 		($element->Fid()==$dbColumn['Field'] && $dbColumn['Key']!='PRI')
+				 		($element->field_id()==$dbColumn['Field'] && $dbColumn['Key']!='PRI')
 					 	OR
-					 	($dbColumn['Key']=='PRI' && $element->Fid()!=$dbColumn['Field'])
+					 	($dbColumn['Key']=='PRI' && $element->field_id()!=$dbColumn['Field'])
 					) {
 				 	user_error(
 						$dbColumn['Field'].' data has a Primary Key inconsistency:
-						'.$dbColumn['Field'].' -> '. (($element->{'O'.$dbColumn['Field']}()->search() || $element->Fid() == $dbColumn['Field']) ? 'index' : 'not index') .'
+						'.$dbColumn['Field'].' -> '. (($element->{'O'.$dbColumn['Field']}()->search() || $element->field_id() == $dbColumn['Field']) ? 'index' : 'not index') .'
 						Storage -> '. $dbColumn['Key']
 					,E_USER_WARNING);
 					$return = false;
@@ -296,7 +297,7 @@ abstract class SQL extends DataStorage
 				 if( ($dbColumn['Key'] XOR $element->{'O'.$dbColumn['Field']}()->search()) && ($dbColumn['Key']!='PRI') ){
 					user_error(
 						$dbColumn['Field'].' data has a Indexes inconsistency:
-						'.$dbColumn['Field'].' -> '. (($element->{'O'.$dbColumn['Field']}()->search() || $element->Fid() == $dbColumn['Field']) ? 'index' : 'not index') .'
+						'.$dbColumn['Field'].' -> '. (($element->{'O'.$dbColumn['Field']}()->search() || $element->field_id() == $dbColumn['Field']) ? 'index' : 'not index') .'
 						Storage -> '. ($dbColumn['Key']?'index':'not index')
 					,E_USER_WARNING);
 					$return = false;
@@ -332,14 +333,14 @@ abstract class SQL extends DataStorage
 		}
 		/*/
 		$dataType=$this->getDataTypes($element);
-		$dataType=$dataType[$element->Fid()];
+		$dataType=$dataType[$element->field_id()];
 		
-		$q_data_part[]= ' `'.$element->Fid().'` '.$dataType.' NOT NULL';
+		$q_data_part[]= ' `'.$element->field_id().'` '.$dataType.' NOT NULL';
 			 
 		/**/
 		$q = 'CREATE TABLE `'.$element->storage().'` (
 			'.implode(', ',$q_data_part).',
-			PRIMARY KEY (`'. $element->Fid() .'`)
+			PRIMARY KEY (`'. $element->field_id() .'`)
 			'.@$q_index_part.'
 		)';
 		
@@ -382,8 +383,8 @@ abstract class SQL extends DataStorage
 		$typesMap = array_reverse(self::$typesMap, true);
 		foreach($typesMap as $class => $type)
 		{
-			if($array = $element->attributesTypes('\\DOF\\Datas\\'.$class)) {
-				$result = array_merge($result, array_combine($array, array_fill(0, count($array), $type)));
+			if($attr_types = $element->attributesTypes('\\DOF\\Datas\\'.$class)) {
+				$result = array_merge($result, array_combine($attr_types, array_fill(0, count($attr_types), $type)));
 			}
 		}
 		

@@ -89,4 +89,8 @@ class BaseObject
 		
 		throw new Exception('The method: '.$name.' is not defined in the object: ' . get_class($this));
     }
+	
+	public function instanceId() {
+		return spl_object_hash($this);
+	}
 }

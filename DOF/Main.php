@@ -42,8 +42,6 @@ class Main {
 		$method,
 		$construct_params,
 		$method_params;
-		
-	static $elm_count = '0';
 	
 	/**
 	 * Loads all the parameters specific to a website and loads needed classes.
@@ -103,8 +101,11 @@ class Main {
 		self::$method_params = @$GET_virtual_path ?: array();
 	}
 	
-	static function encodeURL($class, $construct_params, $method, $method_params) {
-		
+	static function encodeURL($class, array $construct_params, $method, array $method_params = array()) {
+		return self::$REMOTE_ROOT . '/'
+			. $class . (@$construct_params ? '/' . implode('/',$construct_params) : '') 
+			. '?' 
+			. $method . (@$method_params ? '/' . implode('/',$method_params) : '');
 	}
 	
 	static function fromArray(array $ini) {
