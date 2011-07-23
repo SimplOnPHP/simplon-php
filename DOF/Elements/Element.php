@@ -42,7 +42,7 @@ class Element extends \DOF\BaseObject {
 	{
 		//On heirs put here the asignation of DOFdata and attributes
 		
-		if(!$this->storage) $this->storage(end(explode('::',$this->getClass())));
+		if(!$this->storage()) $this->storage(end(explode('::',$this->getClass())));
 		
 		//Asings the storage element for the DOFelement. (a global one : or a particular one)
 		if(!$specialDataStorage){
@@ -79,8 +79,6 @@ class Element extends \DOF\BaseObject {
 		if($this->id()){
 			/*@var $this->dataStorage DataStorage*/
 			$dataArray = $this->dataStorage->getElementData( $this );
-			
-			//check($dataArray);
 			
 			$this->fillFromArray($dataArray);
 		}else{
@@ -137,23 +135,23 @@ class Element extends \DOF\BaseObject {
 	
 	public function showCreate($template_file = null, $action = null)
 	{
-		echo $this->obtainHtml(__METHOD__, $template_file, $action);
+		return $this->obtainHtml(__METHOD__, $template_file, $action);
 	}
 	
 	/* */
 	public function showUpdate($template_file = null, $action = null)
 	{
-		echo $this->obtainHtml(__METHOD__, $template_file, $action);
+		return $this->obtainHtml(__METHOD__, $template_file, $action);
 	}
 
 	public function showView($template_file = '')
 	{
-		echo $this->obtainHtml(__METHOD__, $template_file, null);
+		return $this->obtainHtml(__METHOD__, $template_file, null);
 	}
 		
-	//@todo verify and implement or remove the use of mesaje
+	// @todo: allow to obtain only the dom part inherent to the element (and not the whole web page)
 	public function obtainHtml($caller_method, $template_file = null, $action = null)
-	{
+	{	
 		$caller_method = end(explode('::',$caller_method));
 		$VCSL = substr($caller_method, strlen('show'));
 		$vcsl = strtolower($VCSL);
@@ -198,7 +196,9 @@ class Element extends \DOF\BaseObject {
 						// @todo: Document that class input is MANDATORY
 						$dompart['.input']->attr('id', $data_id);
 						
-						$html.='<label for="'.$data_id.'">'.$data->label().'</label>';
+						if($data->label())
+							$html.='<label for="'.$data_id.'">'.$data->label().': </label>';
+						
 						$html.= $dompart['.input'];
 					} else {
 						$html.= $data->$caller_method();
@@ -236,18 +236,26 @@ class Element extends \DOF\BaseObject {
 		return $dom;
 	}
 
-	public function getJS($method, $return = 'array', $compress = false) {
+	public function getJS($method, $returnFormat = 'array', $compress = false) {
 		$method = end(explode('::',$method));
-		// @todo: consider DOF directory too
-		$base = \DOF\Main::$LOCAL_ROOT . '/JS/' . \DOF\Main::$JS_FLAVOUR;
+		$class = end(explode('\\',$this->getClass()));
+		
+		$local_js = \DOF\Main::$JS_FLAVOUR_BASE . "/Inits/$class.$method.js";
+		$a_js = file_exists($local_js) ? array($local_js) : array();
 		
 		foreach($this->dataAttributes() as $data) {
+			/*
 			$class = end(explode('\\',$this->{'O'.$data}()->getClass()));
-			$local_js = $base . "/Inits/$class.$method.js";
+			$local_js = \DOF\Main::$JS_FLAVOUR_BASE . "/Inits/$class.$method.js";
 			
 			if(file_exists($local_js))
 				$a_js[] = $local_js;
+			 * */
+			foreach($this->{'O'.$data}()->getJS($method) as $local_js)
+				if(file_exists($local_js))
+					$a_js[] = $local_js;
 		}
+		$a_js = array_unique($a_js);
 		
 		if($compress) {
 			// @todo: compress in one file and return the file path
@@ -258,13 +266,13 @@ class Element extends \DOF\BaseObject {
 			function($fp) {
 				return str_replace(\DOF\Main::$LOCAL_ROOT, \DOF\Main::$REMOTE_ROOT, $fp);
 			},
-			array_merge(
-				glob($base . '/Libs/*'),
-				@$a_js ?: array()
-			)
+			array_unique(array_merge(
+				glob(\DOF\Main::$JS_FLAVOUR_BASE . '/Libs/*'),
+				$a_js
+			))
 		);
 		
-		switch($return) {
+		switch($returnFormat) {
 			case 'html':
 				return ($a_js)
 					? '<script type="text/javascript" src="'. implode('"></script>'."\n".'<script type="text/javascript" src="', $a_js) . '"></script>'
@@ -317,7 +325,7 @@ class Element extends \DOF\BaseObject {
         	$letter=substr($name,0,1);
         	$Xname=substr($name,1);
         	
-			if(@$this->$Xname instanceof \DOF\Datas\Data) {
+			if(($letter == strtoupper($letter)) && (@$this->$Xname instanceof \DOF\Datas\Data)) {
 				switch($letter) {
 					case 'O': 
 		   				if($arguments){ $this->$Xname->val($arguments[0]); }

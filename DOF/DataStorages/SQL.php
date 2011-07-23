@@ -12,7 +12,9 @@ abstract class SQL extends DataStorage
 		'Float'  	=> 'float',
 		
 		'String'	=> 'varchar(240)',
+				
 		'HTMLText'	=> 'text',
+		'ElementContainer' => '_ForeignKey_',
 	);
 
 	abstract function __construct($server,$dataBase,$user,$password);
@@ -111,7 +113,6 @@ abstract class SQL extends DataStorage
 	}
 	
 	public function deleteElement(&$element) {
-		//check($this->deleteQuery($element, $element->field_id()."=".$element->id() ) );
 		$this->db->query( $this->deleteQuery($element, $element->field_id()."=".$element->id() ) );
 	}
 
@@ -167,18 +168,6 @@ abstract class SQL extends DataStorage
 		}
 		
 		return "DELETE FROM ".$element->storage().' '.(($conditions)?" WHERE ".$conditions:'') ;
-	}
-		
-	
-	
-	public function evalQuotesUse(&$data)
-	{
-		if (  strpos($data->sqlType(),'INT' ) !== false  ){ return false; }else
-		if (  strpos($data->sqlType(),'FLOAT' ) !== false  ){ return false; }else
-		if (  strpos($data->sqlType(),'DECIMAL' ) !== false  ){ return false; }else
-		if (  strpos($data->sqlType(),'DOUBLE' ) !== false  ){ return false; }else
-		if (  strpos($data->sqlType(),'INT' ) !== false  ){ return false; }else
-		{return true; }
 	}
 	
 	public function isSetElementStorage(\DOF\Elements\Element &$element) {
@@ -245,7 +234,8 @@ abstract class SQL extends DataStorage
 		$elementData = $this->getDataTypes($element);
 		$return = true;
 		
-		if( count($dbColumns) == count($elementData) && !array_diff($dbColumns, array_keys($elementData)) ) //verifys that both element and DB have the same Data
+		//verifys that both element and DB have the same Data
+		if( count($dbColumns) == count($elementData) && !array_diff($dbColumns, array_keys($elementData)) )
 		{
 			
 			foreach($this->db->query('SHOW COLUMNS FROM '.$element->storage())->fetchAll() as $dbColumn){
@@ -318,8 +308,8 @@ abstract class SQL extends DataStorage
 	}
 
 	public function createTable($element) {
-		// $this->db->query('CREATE SCHEMA `'.$element->storage.'`');
-		/*
+		// $this->db->query('CREATE SCHEMA `'.$element->storage().'`');
+		/* *
 		foreach($this->getDataTypes($element) as $data => $type) {
 			$q_data_part[]= "`$data` $type";
 		}
@@ -337,7 +327,7 @@ abstract class SQL extends DataStorage
 		
 		$q_data_part[]= ' `'.$element->field_id().'` '.$dataType.' NOT NULL';
 			 
-		/**/
+		/* */
 		$q = 'CREATE TABLE `'.$element->storage().'` (
 			'.implode(', ',$q_data_part).',
 			PRIMARY KEY (`'. $element->field_id() .'`)
@@ -384,7 +374,15 @@ abstract class SQL extends DataStorage
 		foreach($typesMap as $class => $type)
 		{
 			if($attr_types = $element->attributesTypes('\\DOF\\Datas\\'.$class)) {
-				$result = array_merge($result, array_combine($attr_types, array_fill(0, count($attr_types), $type)));
+				if($type == '_ForeignKey_') {
+					foreach($attr_types as $attr){
+						$encapsuledElement=$element->{'O'.$attr}()->element();
+						$encapsuledElementDatasTypes = $this->getDataTypes($encapsuledElement);
+						$result[$attr] = str_replace('auto_increment', '', $encapsuledElementDatasTypes[$encapsuledElement->field_id()]);
+					}
+				} else {
+					$result = array_merge($result, array_combine($attr_types, array_fill(0, count($attr_types), $type)));
+				}
 			}
 		}
 		

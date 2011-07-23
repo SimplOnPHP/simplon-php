@@ -15,8 +15,6 @@ namespace DOF\Datas;
 * __construct($label=null,$campo=null,$inputName=null,$val=null)	Si los parametros estan vacios causará que se use la clase
 * __toString()										Regresa el campo que se debe usar para generar consultas a la Fuente de datos - En SQL puede permite (SELECTS) complejos usando la asigancion " AS "
 * inputName($prefijo=null)											Regresa la str del name del input para los formularios
-* fillFromArray($arreglo)											Asigna el valor del dato a partir de un arreglo con todos los datos de un mismo elemento o consulta (esto es porque algunos datos puedne depender de otros)
-* fillFromRequest($prefijo=null, &$arreglo=null)					Asigna el valor del dato a partir de un arreglo con llaves como los nombres de los inputs generalmente REQUEST
 * strValorQuery()													Valor como se debe usar en los Querys SQL  (es decir con comillas en el caso de los strings)
 * strQueryValueColum()												Da la asiganacion de valor para los Updates de SQL
 * HTML()															Regresa el valor como debe imprimirse en HTML
@@ -138,7 +136,7 @@ abstract class Data extends \DOF\BaseObject {
 	 * if the letter is included (the order desn't matter) that use will be set to true if not to false.
 	 * see the help avobe to see what each of this does.
 	 */
-	public function __construct($label=null,$vcuslr=null,$val=null)
+	public function __construct($label=null, $vcuslr=null, $val=null)
 	{
 		//check($label);
 		
@@ -169,14 +167,27 @@ abstract class Data extends \DOF\BaseObject {
 	{
 		// @todo: Optimizar esta parte
 		// Ej: $this->view( strpos($vcuslr,'v')!==false );
-		
-		if(strpos($vcuslr,'v')!==false){ $this->view=true; }else{ $this->view=false; }
-		if(strpos($vcuslr,'c')!==false){ $this->create=true; }else{ $this->create=false; }
-		if(strpos($vcuslr,'u')!==false){ $this->update=true; }else{ $this->update=false; }
-		if(strpos($vcuslr,'s')!==false){ $this->search=true; }else{ $this->search=false; }
-		if(strpos($vcuslr,'l')!==false){ $this->list=true; }else{ $this->list=false; }
-		if(strpos($vcuslr,'r')!==false){ $this->required=true; }else{ $this->required=false; }
+		$a_vcuslr = array(
+			'v' => 'view',
+			'c' => 'create',
+			'u' => 'update',
+			's' => 'search',
+			'l' => 'list',
+			'r' => 'required',
+		);
+		foreach(str_split($vcuslr) as $flag)
+			$this->{$a_vcuslr[strtolower($flag)]} = ($flag != strtolower($flag));
 	}
+	
+	
+	public function getJS($method) {
+		$method = end(explode('::',$method));
+		$class = end(explode('\\',$this->getClass()));
+		$local_js = \DOF\Main::$JS_FLAVOUR_BASE . "/Inits/$class.$method.js";
+		return array($local_js);
+	}
+	
+	
 	
 	/**
 	 * Tells PHP how to render this object as a string
@@ -197,17 +208,6 @@ abstract class Data extends \DOF\BaseObject {
 	public function inputName()
 	{
 		return @$this->inputName ?: $this->name();
-	}
-	
-	/**
-	 * Gets the DOFdata value from the REQUEST global array
-	 *
-	 * @param $arreglo =$_REQUEST	Arreglo desde el qeu se obtendrá el dato
-	 * @param $prefijo =$null		Prefijo con el qeu se diferecio el input
-	 */
-	public function fillFromRequest()
-	{
-		$this->fillFromArray($_REQUEST);
 	}
 	
 	

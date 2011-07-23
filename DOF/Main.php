@@ -23,6 +23,7 @@ class Main {
 		$USE_FROM_TEMPLATES,
 		
 		$JS_FLAVOUR = 'jQuery',
+		$JS_FLAVOUR_BASE,
 	
 		$DEV_MODE = false,
 
@@ -64,6 +65,9 @@ class Main {
 				self::fromArray(parse_ini_file($ini));
 			}
 		}
+		
+		if(!self::$JS_FLAVOUR_BASE)
+			self::$JS_FLAVOUR_BASE = self::$LOCAL_ROOT . '/JS/' . self::$JS_FLAVOUR;
 		
 		include(self::$DOF_PATH.'/Utilities/check.php');
 		

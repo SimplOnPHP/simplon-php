@@ -55,7 +55,7 @@ class BaseObject
 	 * @return boolean
 	 */
 	public function hasMethod($method) {
-		return in_array($method,$this->getMethods());
+		return in_array($method, $this->getMethods());
 	}
 
 	
@@ -89,6 +89,20 @@ class BaseObject
 		
 		throw new Exception('The method: '.$name.' is not defined in the object: ' . get_class($this));
     }
+	
+	/*
+	function __get($property) {
+		echo 'get '.$property.'; ';
+		// @todo: optimize this
+		return $this->__call($property, array());
+	}
+	
+	function __set($property, $value) {
+		echo 'set '.$property.'='.$value .'; ';
+		// @todo: optimize this
+		return $this->$property($value);
+	}
+	*/
 	
 	public function instanceId() {
 		return spl_object_hash($this);

@@ -10,17 +10,28 @@ class ElementContainer extends Data {
 		
 		$this->element($element);			
 		
-		parent::__construct($label,$field,$vcuslr,$element_id);
+		parent::__construct($label,$vcuslr,$element_id);
+	}
+	
+	
+	public function getJS($method) {
+		$method = end(explode('::',$method));
+		return array_map(
+			function($fp) {
+				return str_replace(\DOF\Main::$REMOTE_ROOT, \DOF\Main::$LOCAL_ROOT, $fp);
+			},
+			$this->element->getJS($method)
+		);
 	}
 	
 	
 	function showView($template = null)
 	{
 		//return $this->parent()->getClass();
+		$dom = \phpQuery::newDocumentHTML($this->element()->showView());
 		
-		
-		return $this->element()->showView();
-	}	
+		return $dom['.DOF.'.$this->element()->getClass()].'';
+	}
 	
 	function showInput($template = null)
 	{
@@ -29,6 +40,13 @@ class ElementContainer extends Data {
 		
 		//return $this->element()->showView();
 	}
-	
-	
+
+
+	public function val($val = null) {
+		if($val !== null) {
+			$this->element->fillFromDSById($val);
+		} else {
+			return @$this->element->id();
+		}
+	}
 }

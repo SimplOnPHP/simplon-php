@@ -1,1 +1,1 @@
-alert('Hola borola');
+alert('Home.showView');
