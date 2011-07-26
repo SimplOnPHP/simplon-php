@@ -152,6 +152,44 @@ abstract class Data extends \DOF\BaseObject {
 		/*@todo verificar que esto verdadaramente no se requeire*/
 		//if($inputName){$this->inputName($inputName);}
 	}
+
+
+
+	public function fill()
+	{}
+	
+	
+	
+	//----
+	public function preSave()
+	{}
+	
+	public function preCreate()
+	{}
+		
+	public function preUpdate()
+	{}
+
+	public function preDelete()
+	{}
+
+
+
+	//----
+	public function postSave()
+	{}
+	
+	public function postCreate()
+	{}
+		
+	public function postUpdate()
+	{}
+
+	public function postDelete()
+	{}
+
+
+
 	
 	/**
 	 * @todo handle UPPER or lower letter to ADD or remove attributes
@@ -181,7 +219,6 @@ abstract class Data extends \DOF\BaseObject {
 	
 	
 	public function getJS($method) {
-		$method = end(explode('::',$method));
 		$class = end(explode('\\',$this->getClass()));
 		$local_js = \DOF\Main::$JS_FLAVOUR_BASE . "/Inits/$class.$method.js";
 		return array($local_js);

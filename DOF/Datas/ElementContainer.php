@@ -15,7 +15,6 @@ class ElementContainer extends Data {
 	
 	
 	public function getJS($method) {
-		$method = end(explode('::',$method));
 		return array_map(
 			function($fp) {
 				return str_replace(\DOF\Main::$REMOTE_ROOT, \DOF\Main::$LOCAL_ROOT, $fp);

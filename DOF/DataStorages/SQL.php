@@ -35,7 +35,7 @@ abstract class SQL extends DataStorage
 			return $this->db->query("Select ".$whatToGet." FROM ".$fromWhere." ".(($filters)?" WHERE ".$filters:'').' '.(($range)?" LIMIT ".$range:'') )->fetchAll();
 			
 		} else if(!is_string($where)) {
-			throw new Exception(__CLASS__ . '->'. __METHOD__ .'() needs a valid DOF\Type\Element');
+			throw new Exception(__CLASS__ . '->'. __FUNCTION__ .'() needs a valid DOF\Type\Element');
 		}
 	}
 	

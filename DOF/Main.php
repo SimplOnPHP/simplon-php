@@ -153,5 +153,5 @@ class Main {
 		}
 		//throw new \Exception("Can't find the file: $classToLoad.php");
 	}
-	/**/
+	/* */
 }

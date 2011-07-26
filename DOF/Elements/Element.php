@@ -93,6 +93,16 @@ class Element extends \DOF\BaseObject {
 		}
 	}
 	
+	
+	
+	public function processData($method)
+	{
+		foreach($this->dataAttributes() as $dataName) {
+			$this->$dataName->$method();
+		}
+	}
+	
+	
 	/**
 	 *
 	 * NOTE: This method is not a simple redirection to $this->fillFromArray($_REQUEST) because the file upload requeires the $_FILES array
@@ -105,28 +115,28 @@ class Element extends \DOF\BaseObject {
 		return $this->fillFromArray($_REQUEST);
 	}
 	
-	public function saveInDS()
+	public function save()
 	{
 		/*@var $this->dataStorage DataStorage*/
-		return $this->dataStorage->saveElement($this);
+		return $this->processData('pre'.ucwords(__FUNCTION__)) && $this->dataStorage->saveElement($this) && $this->processData('post'.ucwords(__FUNCTION__));
 	}
 	
-	public function createInDS()
+	public function create()
 	{
 		/*@var $this->dataStorage DataStorage*/
-		return $this->dataStorage->createElement($this);
+		return $this->processData('pre'.ucwords(__FUNCTION__)) && $this->dataStorage->createElement($this) && $this->processData('post'.ucwords(__FUNCTION__));
 	}
 		
-	public function updateInDS()
+	public function update()
 	{
 		/*@var $this->dataStorage DataStorage*/
-		return $this->dataStorage->updateElement($this);
+		return $this->processData('pre'.ucwords(__FUNCTION__)) && $this->dataStorage->updateElement($this) && $this->processData('post'.ucwords(__FUNCTION__));
 	}
 
-	public function deleteFromDS()
+	public function delete()
 	{
 		/*@var $this->dataStorage DataStorage*/
-		return $this->dataStorage->deleteElement($this);
+		return $this->processData('pre'.ucwords(__FUNCTION__)) && $this->dataStorage->deleteElement($this) && $this->processData('post'.ucwords(__FUNCTION__));
 	}
 	
 	public function templateFilePath($show_type, $alternative = '', $template_type = 'html') {
@@ -135,24 +145,24 @@ class Element extends \DOF\BaseObject {
 	
 	public function showCreate($template_file = null, $action = null)
 	{
-		return $this->obtainHtml(__METHOD__, $template_file, $action);
+		return $this->obtainHtml(__FUNCTION__, $template_file, $action);
 	}
 	
 	/* */
 	public function showUpdate($template_file = null, $action = null)
 	{
-		return $this->obtainHtml(__METHOD__, $template_file, $action);
+		return $this->obtainHtml(__FUNCTION__, $template_file, $action);
 	}
 
 	public function showView($template_file = '')
 	{
-		return $this->obtainHtml(__METHOD__, $template_file, null);
+		return $this->obtainHtml(__FUNCTION__, $template_file, null);
 	}
 		
 	// @todo: allow to obtain only the dom part inherent to the element (and not the whole web page)
 	public function obtainHtml($caller_method, $template_file = null, $action = null)
 	{	
-		$caller_method = end(explode('::',$caller_method));
+		//$caller_method = end(// explode('::',$caller_method));
 		$VCSL = substr($caller_method, strlen('show'));
 		$vcsl = strtolower($VCSL);
 		$with_form = in_array($vcsl, array('create', 'update'));
@@ -237,7 +247,6 @@ class Element extends \DOF\BaseObject {
 	}
 
 	public function getJS($method, $returnFormat = 'array', $compress = false) {
-		$method = end(explode('::',$method));
 		$class = end(explode('\\',$this->getClass()));
 		
 		$local_js = \DOF\Main::$JS_FLAVOUR_BASE . "/Inits/$class.$method.js";
