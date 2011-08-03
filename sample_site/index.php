@@ -101,7 +101,7 @@ if(class_exists(DOF\Main::$class)) {
 	}
 } else {
 	//header('HTTP/1.1 404 File not found');
-	echo 'No esta el metodo '.DOF\Main::$method.' en el objeto '.DOF\Main::$class ;
+	echo 'Class '.DOF\Main::$class.' not found';
 	return;
 }
 

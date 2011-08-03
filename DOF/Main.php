@@ -1,6 +1,7 @@
 <?php
-namespace DOF;		
-		
+namespace DOF;
+use \DOF\Exception;
+
 spl_autoload_register( __NAMESPACE__ . '\\Main::load_obj');
 
 class Main {
@@ -88,6 +89,10 @@ class Main {
 		*/		
 		
 		// Parses the URL
+		$f_decode_param = function($p) {
+			return json_decode(urldecode($p));
+		};
+		
 		$server_request = $_SERVER['REQUEST_URI'];
 		if(strpos($server_request, '?') !== false)
 			$server_request = substr($server_request, 0, strpos($server_request, '?'));
@@ -96,18 +101,32 @@ class Main {
 			explode('/',self::$REMOTE_ROOT)
 		));
 		self::$class = @array_shift($virtual_path) ?: 'Home';
-		self::$construct_params = @array_values($virtual_path) ?: array();
+		
+		//var_dump(@array_values($virtual_path));
+		self::$construct_params = array_map($f_decode_param, @array_values($virtual_path) ?: array());
 		
 		//var_dump($_SERVER);exit();
 		
 		$GET_virtual_path = array_values(explode('/',@$_SERVER['QUERY_STRING']));
 		self::$method = @array_shift($GET_virtual_path) ?: 'index';
-		self::$method_params = @$GET_virtual_path ?: array();
+		
+		//var_dump(@$GET_virtual_path);
+		self::$method_params = array_map($f_decode_param, @$GET_virtual_path ?: array());
+		
+		//var_dump(self::$construct_params);
+		//var_dump(self::$method_params);
 	}
 	
 	static function encodeURL($class, array $construct_params, $method, array $method_params = array()) {
+		$fencoder = function ($p) {
+			return urlencode(json_encode($p));
+		};
+		
+		$construct_params = array_map($fencoder, $construct_params);
+		$method_params = array_map($fencoder, $method_params);
+		
 		return self::$REMOTE_ROOT . '/'
-			. $class . (@$construct_params ? '/' . implode('/',$construct_params) : '') 
+			. $class . (@$construct_params ? '/' . implode('/',$construct_params) : '')
 			. '?' 
 			. $method . (@$method_params ? '/' . implode('/',$method_params) : '');
 	}
@@ -117,9 +136,42 @@ class Main {
 			self::$$const = $value;
 	}
 	
-	static function createFile($file_path) {
-		// @todo: implement
+	static function createFile($file_path, $data = null, $flags = null) {
+		// @todo: implement with RecursiveDirectoryIterator
+		
+		$exploded_path = explode('/', $file_path);
+		$file = array_pop($exploded_path);
+		$current_path = '';
+		foreach ($exploded_path as $dir) {
+			$current_path.= $dir.'/';
+			if($dir && !is_dir($current_path)) {
+				if(!mkdir($current_path))
+					throw new Exception('Cannot create the following directory: '. $current_path);
+			}
+		}
+		
+		if(isset($data))
+			return file_put_contents($file_path, $data, $flags);
+		
 		return true;
+	}
+	
+	/**
+	 * Credits to Jennifer: http://www.php.net/manual/en/language.operators.type.php#103205
+	 */
+	public function instance_of($object, $class){
+	    if(is_object($object)) return $object instanceof $class;
+	    if(is_string($object)){
+	        if(is_object($class)) $class=get_class($class);
+	
+	        if(class_exists($class)) return is_subclass_of($object, $class) || $object==$class;
+	        if(interface_exists($class)) {
+	            $reflect = new ReflectionClass($object);
+	            return !$reflect->implementsInterface($class);
+	        }
+	
+	    }
+	    return false;
 	}
 	
 	/**
@@ -130,8 +182,9 @@ class Main {
 		
 		if(reset($pathExploded) == 'DOF') {
 			$file_to_load = '../' . str_replace('\\', '/', $classToLoad) . '.php';
-			include_once $file_to_load;
-			return;
+			// echo 'DOF -> '.$file_to_load.'<br>';
+			require_once $file_to_load;
+			return true;
 		} else {
 			$classToLoad = end($pathExploded);
 			
@@ -144,13 +197,16 @@ class Main {
 			foreach($test as $base) {
 				foreach(self::$AUTOLOAD_DIRS as &$type) {
 					$file_to_load = $base.DIRECTORY_SEPARATOR.$type.DIRECTORY_SEPARATOR.$classToLoad.'.php';
+					
 					if( file_exists($file_to_load) ) {
+						//echo $file_to_load.'<br>';
 						require_once $file_to_load;
-						return;
+						return true;
 					}
 				}
 			}
 		}
+		return false;
 		//throw new \Exception("Can't find the file: $classToLoad.php");
 	}
 	/* */

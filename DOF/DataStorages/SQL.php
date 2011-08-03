@@ -62,59 +62,6 @@ abstract class SQL extends DataStorage
 	}
 	
 
-	public function saveElement(&$element) {
-		if( $element->id() ) {
-			return $this->updateElement($element);
-		} else {
-			return $this->createElement($element);
-		}
-	}
-	
-	public function createElement(&$element) {
-		foreach($element->dataAttributes() as $column)
-		{
-			$colums[] = $column;
-			$values[':'.$column] = $element->$column();
-		}
-		
-		$prepared = $this->db->prepare('
-			INSERT INTO '.$element->storage().' 
-			('. implode(', ',$colums) .') 
-			VALUES ('. implode(', ',array_keys($values)) .')
-		');
-		
-		$this->db->beginTransaction();
-		$prepared->execute($values);
-		
-		// @todo: place an alternative for MSSQL
-		$id = $this->db->lastInsertId();
-			
-		if($this->db->commit()) {
-			$element->id($id);
-			return $id;
-		} else {
-			return false;
-		}
-	}
-	
-	public function updateElement(&$element) {
-		foreach($element->dataAttributes() as $column)
-		{
-			$sets[] = $column.'=:'.$column;
-			$values[':'.$column] = $element->$column();
-		}
-		$values[':'.$element->field_id()] = $element->id();
-		
-		return $this->db->prepare('
-			UPDATE '.$element->storage().' 
-			SET '. implode(', ',$sets) .'
-			WHERE '. $element->field_id().'=:'.$element->field_id() .'
-		')->execute($values);
-	}
-	
-	public function deleteElement(&$element) {
-		$this->db->query( $this->deleteQuery($element, $element->field_id()."=".$element->id() ) );
-	}
 
 	public function getElementData(&$element) {
 		$values[':'.$element->field_id()] = $element->{$element->field_id()}();
@@ -142,32 +89,6 @@ abstract class SQL extends DataStorage
 	public function processConditions($conditions)
 	{
 		return $conditions;
-	}
-
-	public function deleteQuery( &$element,$conditions=null )
-	{
-		if(!$conditions){
-			foreach($element->dataAttributes() as $dataKey)
-			{
-				$value = $element->$dataKey();
-				
-				$objectKey = 'O'.$dataKey;
-				
-				//if( !($element->$objectKey() instanceof Id) ){
-					if($this->evalQuotesUse($element->$objectKey()) && $value ){
-						$value="'$value'";
-						//@todo implement escape quotes to allow the use of single quotes in the string
-						//@todo implement anti injection code
-					}
-					if( $value===0 ){ $value='0'; }else
-					if( empty($value) ){ $value='NULL'; }
-					
-					$conditions.= ' AND '.$dataKey.'='.$value;
-				//}
-			}
-		}
-		
-		return "DELETE FROM ".$element->storage().' '.(($conditions)?" WHERE ".$conditions:'') ;
 	}
 	
 	public function isSetElementStorage(\DOF\Elements\Element &$element) {
@@ -374,9 +295,11 @@ abstract class SQL extends DataStorage
 		foreach($typesMap as $class => $type)
 		{
 			if($attr_types = $element->attributesTypes('\\DOF\\Datas\\'.$class)) {
+			//if($attr_types = $element->processData('doRead')) {
+				// @todo: continue from here! (new instance_of :)			
 				if($type == '_ForeignKey_') {
 					foreach($attr_types as $attr){
-						$encapsuledElement=$element->{'O'.$attr}()->element();
+						$encapsuledElement = $element->{'O'.$attr}()->element();
 						$encapsuledElementDatasTypes = $this->getDataTypes($encapsuledElement);
 						$result[$attr] = str_replace('auto_increment', '', $encapsuledElementDatasTypes[$encapsuledElement->field_id()]);
 					}
@@ -388,4 +311,157 @@ abstract class SQL extends DataStorage
 		
 		return $result;
 	}
+	
+	
+	
+	
+	/*
+	public function saveElement(&$element) {
+		if( $element->id() ) {
+			return $this->updateElement($element);
+		} else {
+			return $this->createElement($element);
+		}
+	}
+	
+	public function createElement(&$element) {
+		foreach($element->dataAttributes() as $column)
+		{
+			$colums[] = $column;
+			$values[':'.$column] = $element->$column();
+		}
+		
+		$prepared = $this->db->prepare('
+			INSERT INTO '.$element->storage().' 
+			('. implode(', ',$colums) .') 
+			VALUES ('. implode(', ',array_keys($values)) .')
+		');
+		
+		$this->db->beginTransaction();
+		$prepared->execute($values);
+		
+		// @todo: place an alternative for MSSQL
+		$id = $this->db->lastInsertId();
+			
+		if($this->db->commit()) {
+			$element->id($id);
+			return $id;
+		} else {
+			return false;
+		}
+	}
+	
+	public function updateElement(&$element) {
+		foreach($element->dataAttributes() as $column)
+		{
+			$sets[] = $column.'=:'.$column;
+			$values[':'.$column] = $element->$column();
+		}
+		$values[':'.$element->field_id()] = $element->{$element->field_id()}();
+		
+		return $this->db->prepare('
+			UPDATE '.$element->storage().' 
+			SET '. implode(', ',$sets) .'
+			WHERE '. $element->field_id().'=:'.$element->field_id() .'
+		')->execute($values);
+	}
+	
+	public function deleteElement(&$element) {
+		return $this->db->prepare('
+			DELETE FROM '.$element->storage().' WHERE '.$element->field_id().' = :'.$element->field_id().'
+		')->execute(array(
+			':'.$element->field_id() => $element->{$element->field_id()}()
+		));
+	}
+	*/
+	
+	
+	
+	
+	public function deleteRecord($table, $field_id, $id) {
+		return $this->db->prepare('
+			DELETE FROM '.$table.' WHERE '.$field_id.' = :'.$field_id.'
+		')->execute(array(
+			':'.$field_id => $id
+		));
+	}
+	
+	function createRecord ($table, array $datas) {
+		$new_datas = array();
+		foreach($datas as $data) {
+			$new_datas = array_merge($new_datas, $data);
+		}
+		$datas = $new_datas;
+		
+		$columns = array();
+		foreach($datas as $data)
+		{
+			list($column, $class, $value) = $data;
+			if(!in_array($column, $columns)) {
+				$columns[] = $column;
+				$values[':'.$column] = $value;
+			}
+		}
+		
+		$prepared = $this->db->prepare('
+			INSERT INTO '.$table.' 
+			('. implode(', ',$columns) .') 
+			VALUES ('. implode(', ',array_keys($values)) .')
+		');
+		
+		$this->db->beginTransaction();
+		$prepared->execute($values);
+		
+		// @todo: place an alternative for MSSQL
+		$id = $this->db->lastInsertId();
+			
+		if($this->db->commit()) {
+			return $id;
+		} else {
+			return false;
+		}
+	}
+	
+	
+	
+	function updateRecord ($table, $field_id, array $arr_datas) {
+		// @todo: evaluate if it's more convenient to merge the array
+		foreach($arr_datas as $datas)
+		{
+			foreach($datas as $data)
+			{
+				if($data[0] != $field_id) {
+					$sets[] = $data[0].'=:'.$data[0];
+				}
+				$values[':'.$data[0]] = $data[2];
+			}
+		}
+		
+		return $this->db->prepare('
+			UPDATE '.$table.' 
+			SET '. implode(', ',$sets) .'
+			WHERE '. $field_id.'=:'.$field_id .'
+		')->execute($values);
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

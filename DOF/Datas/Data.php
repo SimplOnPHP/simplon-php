@@ -122,6 +122,31 @@ abstract class Data extends \DOF\BaseObject {
 	protected $required = false;
 	
 	protected $name;
+	
+	
+	
+	/**
+	 * search operands:
+	 * >
+	 * <
+	 * >=
+	 * <=
+	 * ==
+	 * !=
+	 * ~=
+	 * ^=
+	 * $=
+	 * 
+	 * ***********
+	 * 
+	 * Complex operations are just simple operations 
+	 * jointed with ANDs and ORs, so it would be possible
+	 * to create "Operators" objects that defines those
+	 * complex operations. 
+	 * 
+	 * a <= x <= b
+	 * a > x || x < b
+	 */
 
 	
 	/**
@@ -136,7 +161,7 @@ abstract class Data extends \DOF\BaseObject {
 	 * if the letter is included (the order desn't matter) that use will be set to true if not to false.
 	 * see the help avobe to see what each of this does.
 	 */
-	public function __construct($label=null, $vcuslr=null, $val=null)
+	public function __construct($label=null, $vcuslr=null, $val=null, $searchOp=null)
 	{
 		//check($label);
 		
@@ -160,8 +185,7 @@ abstract class Data extends \DOF\BaseObject {
 	
 	
 	
-	//----
-	public function preSave()
+	public function preRead()
 	{}
 	
 	public function preCreate()
@@ -173,10 +197,46 @@ abstract class Data extends \DOF\BaseObject {
 	public function preDelete()
 	{}
 
+	public function preSearch()
+	{}
 
 
 	//----
-	public function postSave()
+
+	public function doRead()
+	{
+		return array(array($this->name(), $this->getClass()));
+	}
+	
+	public function doCreate()
+	{
+		return ($this->create())
+			? array(array($this->name(), $this->getClass(), $this->val()))
+			: null;
+	}
+		
+	public function doUpdate()
+	{
+		return ($this->update())
+			? array(array($this->name(),$this->getClass(),$this->val()))
+			: null;
+	}
+
+	public function doSearch()
+	{
+		return ($this->search())
+			? array(array($this->name(), $this->getClass(), $this->val(), $this->searchOp))
+			: null;		
+	}
+
+	public function doDelete()
+	{}
+
+
+
+	
+	
+	public function postRead()
 	{}
 	
 	public function postCreate()
@@ -188,6 +248,8 @@ abstract class Data extends \DOF\BaseObject {
 	public function postDelete()
 	{}
 
+	public function postSearch()
+	{}
 
 
 	

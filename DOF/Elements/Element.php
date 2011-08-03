@@ -1,6 +1,9 @@
 <?php
 namespace DOF\Elements;
-
+use \DOF\Datas\Data;
+use \DOF\BaseObject;
+use \DOF\Main;
+use \DOF\Exception;
 /**
  * This is the core element to build the site. DOF (Data Oriented FrameWork) is based on data representation, stoarge and manipulation.
  * Elements are the way to indicate the system all data that conforms it. Each Element represents a data set.
@@ -13,7 +16,7 @@ namespace DOF\Elements;
  *
  * @author RSL
  */
-class Element extends \DOF\BaseObject {
+class Element extends BaseObject {
 	protected $field_id = 'id';
 	protected $dir;
 	protected $storage;
@@ -46,7 +49,7 @@ class Element extends \DOF\BaseObject {
 		
 		//Asings the storage element for the DOFelement. (a global one : or a particular one)
 		if(!$specialDataStorage){
-			$this->dataStorage = \DOF\Main::$DATA_STORAGE;
+			$this->dataStorage = Main::$DATA_STORAGE;
 		}else{
 			$this->dataStorage=&$specialDataStorage;
 		}
@@ -88,20 +91,24 @@ class Element extends \DOF\BaseObject {
 	
 	public function fillFromArray(array &$array_of_data)
 	{
-		foreach($this->dataAttributes() as $dataName) {
-			$this->$dataName($array_of_data[$dataName]);
+		foreach($array_of_data as $dataName=>$value){
+			if(isset($this->$dataName) && ($this->$dataName instanceof Data)){
+				$this->$dataName($value);
+			}
 		}
 	}
-	
-	
 	
 	public function processData($method)
 	{
 		foreach($this->dataAttributes() as $dataName) {
-			$this->$dataName->$method();
+			$r = $this->$dataName->$method();
+			if($r) @$ret[]= $r;
 		}
+		
+		// @todo: verify if it can stay this way
+		return @$ret ?: true;
 	}
-	
+
 	
 	/**
 	 *
@@ -115,32 +122,38 @@ class Element extends \DOF\BaseObject {
 		return $this->fillFromArray($_REQUEST);
 	}
 	
-	public function save()
-	{
-		/*@var $this->dataStorage DataStorage*/
-		return $this->processData('pre'.ucwords(__FUNCTION__)) && $this->dataStorage->saveElement($this) && $this->processData('post'.ucwords(__FUNCTION__));
-	}
 	
-	public function create()
-	{
-		/*@var $this->dataStorage DataStorage*/
-		return $this->processData('pre'.ucwords(__FUNCTION__)) && $this->dataStorage->createElement($this) && $this->processData('post'.ucwords(__FUNCTION__));
-	}
-		
-	public function update()
-	{
-		/*@var $this->dataStorage DataStorage*/
-		return $this->processData('pre'.ucwords(__FUNCTION__)) && $this->dataStorage->updateElement($this) && $this->processData('post'.ucwords(__FUNCTION__));
-	}
-
-	public function delete()
-	{
-		/*@var $this->dataStorage DataStorage*/
-		return $this->processData('pre'.ucwords(__FUNCTION__)) && $this->dataStorage->deleteElement($this) && $this->processData('post'.ucwords(__FUNCTION__));
-	}
+	// public function save()
+	// {
+		// /*@var $this->dataStorage DataStorage*/
+		// $pre = $this->processData('pre'.ucwords(__FUNCTION__));
+		// $exec = $this->processData(__FUNCTION__);
+		// $post = $this->processData('post'.ucwords(__FUNCTION__));
+// 	
+// 		
+		// return $this->dataStorage->__FUNCTION__($pre,$this->storage()) && $this->dataStorage->__FUNCTION__($exec,$this->storage()) && $this->dataStorage->__FUNCTION__($post,$this->storage());
+	// }
+// 	
+	// public function create()
+	// {
+		// /*@var $this->dataStorage DataStorage*/
+		// return $this->processData('pre'.ucwords(__FUNCTION__)) && $this->dataStorage->createElement($this) && $this->processData('post'.ucwords(__FUNCTION__));
+	// }
+// 		
+	// public function update()
+	// {
+		// /*@var $this->dataStorage DataStorage*/
+		// return $this->processData('pre'.ucwords(__FUNCTION__)) && $this->dataStorage->updateElement($this) && $this->processData('post'.ucwords(__FUNCTION__));
+	// }
+// 
+	// public function delete()
+	// {
+		// /*@var $this->dataStorage DataStorage*/
+		// return $this->processData('pre'.ucwords(__FUNCTION__)) && $this->dataStorage->deleteElement($this) && $this->processData('post'.ucwords(__FUNCTION__));
+	// }
 	
 	public function templateFilePath($show_type, $alternative = '', $template_type = 'html') {
-		return \DOF\Main::$GENERIC_TEMPLATES_PATH . '/' . $show_type . '/' .$this->getClass() . $alternative . '.' .$template_type;
+		return Main::$GENERIC_TEMPLATES_PATH . '/' . $show_type . '/' .$this->getClass() . $alternative . '.' .$template_type;
 	}
 	
 	public function showCreate($template_file = null, $action = null)
@@ -165,15 +178,15 @@ class Element extends \DOF\BaseObject {
 		//$caller_method = end(// explode('::',$caller_method));
 		$VCSL = substr($caller_method, strlen('show'));
 		$vcsl = strtolower($VCSL);
-		$with_form = in_array($vcsl, array('create', 'update'));
+		$with_form = in_array($vcsl, array('create', 'update','search'));
 		 
 		if(!@$template_file) {
 			// get default path
 			$template_file = $this->templateFilePath($VCSL);
 		}
 		
-		if(!file_exists($template_file) || \DOF\Main::$OVERWRITE_LAYOUT_TEMPLATES) {
-			$dom = \phpQuery::newDocumentFileHTML(\DOF\Main::$MASTER_TEMPLATE);
+		if(!file_exists($template_file) || Main::$OVERWRITE_LAYOUT_TEMPLATES) {
+			$dom = \phpQuery::newDocumentFileHTML(Main::$MASTER_TEMPLATE);
 			$dom['head']->append($this->getJS($caller_method, 'html'));
 			
 			foreach($this->attributesTypes('\\DOF\\Datas\\File') as $fileData)
@@ -196,7 +209,7 @@ class Element extends \DOF\BaseObject {
 			$html.= '<div class="DOF '.$this->getClass().'">';
 			foreach($this as $keydata => $data)
 			{
-				if( $data instanceof \DOF\Datas\Data && $data->$vcsl() )
+				if( $data instanceof Data && $data->$vcsl() )
 				{					
 					$html.= '<div class="DOF '.$keydata.'">';
 					
@@ -227,7 +240,7 @@ class Element extends \DOF\BaseObject {
 			$dom['body'] = $html;
 			
 			// save file
-			file_put_contents($template_file, $dom.'');
+			Main::createFile($template_file, $dom.'');
 		} else {
 			// opens file
 			$dom = \phpQuery::newDocumentFileHTML($template_file);
@@ -235,7 +248,7 @@ class Element extends \DOF\BaseObject {
 			// fill file with data 
 			if($vcsl != 'create') {
 				foreach($this as $keydata=>$data) {
-					if($data instanceof \DOF\Datas\Data && $data->$vcsl())
+					if($data instanceof Data && $data->$vcsl())
 					{
 						$dom['.DOF.'.$this->getClass().' .DOF.'.$keydata] = $data->$caller_method($dom['.DOF.'.$this->getClass().' .DOF.'.$keydata]);
 					}
@@ -249,7 +262,7 @@ class Element extends \DOF\BaseObject {
 	public function getJS($method, $returnFormat = 'array', $compress = false) {
 		$class = end(explode('\\',$this->getClass()));
 		
-		$local_js = \DOF\Main::$JS_FLAVOUR_BASE . "/Inits/$class.$method.js";
+		$local_js = Main::$JS_FLAVOUR_BASE . "/Inits/$class.$method.js";
 		$a_js = file_exists($local_js) ? array($local_js) : array();
 		
 		foreach($this->dataAttributes() as $data) {
@@ -263,7 +276,7 @@ class Element extends \DOF\BaseObject {
 			foreach($this->{'O'.$data}()->getJS($method) as $local_js)
 				if(file_exists($local_js))
 					$a_js[] = $local_js;
-		}
+			}
 		$a_js = array_unique($a_js);
 		
 		if($compress) {
@@ -273,10 +286,10 @@ class Element extends \DOF\BaseObject {
 		// converts to remote paths
 		$a_js = array_map(
 			function($fp) {
-				return str_replace(\DOF\Main::$LOCAL_ROOT, \DOF\Main::$REMOTE_ROOT, $fp);
+				return str_replace(Main::$LOCAL_ROOT, Main::$REMOTE_ROOT, $fp);
 			},
 			array_unique(array_merge(
-				glob(\DOF\Main::$JS_FLAVOUR_BASE . '/Libs/*'),
+				glob(Main::$JS_FLAVOUR_BASE . '/Libs/*'),
 				$a_js
 			))
 		);
@@ -302,7 +315,7 @@ class Element extends \DOF\BaseObject {
 		
 		foreach($this as $data)
 		{
-			if($data instanceof \DOF\Datas\Data)
+			if($data instanceof Data)
 			{
 				if( $data->hasMethod('parent')  )
 				{
@@ -315,26 +328,70 @@ class Element extends \DOF\BaseObject {
 	public function assignDatasName()
 	{
 		foreach($this as $name => $data) {
-			if($data instanceof \DOF\Datas\Data && !$data->name()) {
+			if($data instanceof Data && !$data->name()) {
 				$data->name($name);
 			}
 		}
 	}
 	
+	
+	public function save() {
+    	return ($this->{$this->field_id()}())
+    		? $this->update() 
+			: $this->create();
+	}
+	
+	public function create() {
+		$pre = $this->processData('preCreate');
+		
+		$id = $this->dataStorage->createRecord(
+			$this->storage(),
+			$this->processData('doCreate')
+		);
+		$this->{$this->field_id()}($id);
+		
+		return $pre && ($id !== false) && $this->processData('postCreate');
+	}
+	
+	public function update() {
+		return 
+			$this->processData('preUpdate') 
+			&& 
+			$this->dataStorage->updateRecord(
+				$this->storage(), $this->field_id(), $this->processData('doUpdate')
+			)
+			&& 
+			$this->processData('postUpdate');
+	}
+	
+	public function delete() {
+		return 
+			$this->processData('preDelete') 
+			&& 
+			$this->dataStorage->deleteRecord(
+				$this->storage(),
+				$this->field_id(), 
+				$this->{$this->field_id()}()
+			)
+			&& 
+			$this->processData('postDelete');
+	}
+	
+	
     public function __call($name, $arguments)
     {
         
-    	if(@$this->$name instanceof \DOF\Datas\Data)
+    	if(@$this->$name instanceof Data)
         {
         	if($arguments){ $this->$name->val($arguments[0]); return; }
         	else{ return $this->$name->val(); }
         	
-        } else {
+        } else {	
         	
         	$letter=substr($name,0,1);
         	$Xname=substr($name,1);
         	
-			if(($letter == strtoupper($letter)) && (@$this->$Xname instanceof \DOF\Datas\Data)) {
+			if(($letter == strtoupper($letter)) && (@$this->$Xname instanceof Data)) {
 				switch($letter) {
 					case 'O': 
 		   				if($arguments){ $this->$Xname->val($arguments[0]); }
@@ -363,26 +420,35 @@ class Element extends \DOF\BaseObject {
 	*/
 	
 	function encodeURL(array $construct_params, $method, array $method_params = array()) {
-		return \DOF\Main::encodeURL($this->getClass(), $construct_params, $method, $method_params);
+		return Main::encodeURL($this->getClass(), $construct_params, $method, $method_params);
 	}
 	
 	function processCreate(){
 		$this->fillFromRequest();
-		if($this->saveInDS()) {
+		if($this->create()) {
 			header('Location: '.$this->encodeURL(array($this->id()), 'showUpdate'));
 		} else {
 			// @todo: error handling
-			user_error('Cannot save in DS!', E_USER_ERROR);
+			user_error('Cannot create in DS!', E_USER_ERROR);
 		}
 	}
 	
 	function processUpdate(){
 		$this->fillFromRequest();
-		if($this->updateInDS()) {
+		if($this->update()) {
 			header('Location: '.$this->encodeURL(array($this->id()), 'showUpdate'));
 		} else {
 			// @todo: error handling
-			user_error('Cannot save in DS!', E_USER_ERROR);
+			user_error('Cannot update in DS!', E_USER_ERROR);
+		}
+	}
+	
+	function processDelete() {
+		if($this->delete()) {
+			header('Location: '.$this->encodeURL(array(), 'showCreate'));
+		} else {
+			// @todo: error handling
+			user_error('Cannot delete in DS!', E_USER_ERROR);
 		}
 	}
 	
@@ -408,7 +474,7 @@ class Element extends \DOF\BaseObject {
 	//vcsrl
 	public function datasForView(){
 		foreach($this as $data) {
-			if($data instanceof \DOF\Datas\Data && $data->$what()) {
+			if($data instanceof Data && $data->$what()) {
 				$output.= $data->{'show'.ucfirst($what)}();
 			}
 		}		

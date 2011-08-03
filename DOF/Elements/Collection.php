@@ -1,5 +1,6 @@
 <?php
 namespace DOF\Elements;
+use \DOF\Elements\Element;
 
 /**
  *
@@ -11,6 +12,15 @@ namespace DOF\Elements;
  */
 class Collection extends Element
 {
+	protected
+		$parent, 
+		$elements = array();
+
+	
+	
+	
+	
+	
 	private $elementsType;
 	
 	static protected $db;
