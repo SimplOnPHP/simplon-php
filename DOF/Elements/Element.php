@@ -22,7 +22,7 @@ class Element extends BaseObject {
 	protected $storage;
 	protected $tempFormPrefix;
 
-	/*@var dataStorage DataStorage*/
+	/*@var dataStorage \DOF\DataStorages\DataStorage */
 	protected $dataStorage;
 	
 	protected $dataAttributes;
@@ -53,6 +53,11 @@ class Element extends BaseObject {
 		}else{
 			$this->dataStorage=&$specialDataStorage;
 		}
+
+		// Tells the DOFdata whose thier "container" in case any of it has context dependent info or functions.
+		$this->assignAsDatasParent();
+		
+		$this->assignDatasName();
 		
 		//checking if there is already a dataStorage and storage for this element
 		$this->dataStorage->ensureElementStorage($this);
@@ -61,11 +66,6 @@ class Element extends BaseObject {
 		if($id) {
 			$this->fillFromDSById($id);
 		}
-
-		// Tells the DOFdata whose thier "container" in case any of it has context dependent info or functions.
-		$this->assignAsDatasParent();
-		
-		$this->assignDatasName();
 	}
 	
 	public function index() {
@@ -75,13 +75,13 @@ class Element extends BaseObject {
 		';
 	}
 
-	public function fillFromDSById($id = null)
-	{
+	//@todo: in  arrays format
+	public function fillFromDSById($id = null){
 		if(isset($id)) $this->id($id);
 		
 		if($this->id()){
 			/*@var $this->dataStorage DataStorage*/
-			$dataArray = $this->dataStorage->getElementData( $this );
+			$dataArray = $this->dataStorage->readElement( $this );
 			
 			$this->fillFromArray($dataArray);
 		}else{
@@ -309,8 +309,7 @@ class Element extends BaseObject {
 	*
 	* @param &$dataParent Reference to the logical data parent.
 	*/
-	public function assignAsDatasParent(&$parent=null)
-	{
+	public function assignAsDatasParent(&$parent=null){
 		if(!isset($parent)) $parent = $this;
 		
 		foreach($this as $data)
@@ -325,10 +324,9 @@ class Element extends BaseObject {
 		}
 	}
 	
-	public function assignDatasName()
-	{
+	public function assignDatasName(){
 		foreach($this as $name => $data) {
-			if($data instanceof Data && !$data->name()) {
+			if(($data instanceof Data) && !$data->name()) {
 				$data->name($name);
 			}
 		}
@@ -343,11 +341,7 @@ class Element extends BaseObject {
 	
 	public function create() {
 		$pre = $this->processData('preCreate');
-		
-		$id = $this->dataStorage->createRecord(
-			$this->storage(),
-			$this->processData('doCreate')
-		);
+		$id = $this->dataStorage->createElement($this);
 		$this->{$this->field_id()}($id);
 		
 		return $pre && ($id !== false) && $this->processData('postCreate');
@@ -357,9 +351,7 @@ class Element extends BaseObject {
 		return 
 			$this->processData('preUpdate') 
 			&& 
-			$this->dataStorage->updateRecord(
-				$this->storage(), $this->field_id(), $this->processData('doUpdate')
-			)
+			$this->dataStorage->updateElement($this)
 			&& 
 			$this->processData('postUpdate');
 	}
@@ -368,11 +360,7 @@ class Element extends BaseObject {
 		return 
 			$this->processData('preDelete') 
 			&& 
-			$this->dataStorage->deleteRecord(
-				$this->storage(),
-				$this->field_id(), 
-				$this->{$this->field_id()}()
-			)
+			$this->dataStorage->deleteElement($this)
 			&& 
 			$this->processData('postDelete');
 	}

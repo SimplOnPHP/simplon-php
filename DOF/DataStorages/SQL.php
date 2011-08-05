@@ -63,11 +63,17 @@ abstract class SQL extends DataStorage
 	
 
 
-	public function getElementData(&$element) {
+	public function readElement(&$element) {
 		$values[':'.$element->field_id()] = $element->{$element->field_id()}();
 		
+		foreach($element->processData('doRead') as $dataInfo){
+			foreach($dataInfo as $fieldInfo){
+				$fields[] = $fieldInfo[0];
+			}
+		}
+		
 		$query = $this->db->prepare('
-			SELECT '.implode(', ',$element->dataAttributes()).' 
+			SELECT '.implode(', ',$fields).' 
 			FROM '.$element->storage().' 
 			WHERE '. $element->field_id().'=:'.$element->field_id() .'
 			LIMIT 1
@@ -148,6 +154,7 @@ abstract class SQL extends DataStorage
 		return $this->db->query($q);
 	}
 	
+	//@todo: in  arrays format
 	public function isValidElementStorage(\DOF\Elements\Element &$element) {
 		
 		// Verify that we have the same Datas in the element and in the DB
@@ -312,81 +319,19 @@ abstract class SQL extends DataStorage
 		return $result;
 	}
 	
-	
-	
-	
-	/*
-	public function saveElement(&$element) {
-		if( $element->id() ) {
-			return $this->updateElement($element);
-		} else {
-			return $this->createElement($element);
-		}
-	}
-	
-	public function createElement(&$element) {
-		foreach($element->dataAttributes() as $column)
-		{
-			$colums[] = $column;
-			$values[':'.$column] = $element->$column();
-		}
-		
-		$prepared = $this->db->prepare('
-			INSERT INTO '.$element->storage().' 
-			('. implode(', ',$colums) .') 
-			VALUES ('. implode(', ',array_keys($values)) .')
-		');
-		
-		$this->db->beginTransaction();
-		$prepared->execute($values);
-		
-		// @todo: place an alternative for MSSQL
-		$id = $this->db->lastInsertId();
-			
-		if($this->db->commit()) {
-			$element->id($id);
-			return $id;
-		} else {
-			return false;
-		}
-	}
-	
-	public function updateElement(&$element) {
-		foreach($element->dataAttributes() as $column)
-		{
-			$sets[] = $column.'=:'.$column;
-			$values[':'.$column] = $element->$column();
-		}
-		$values[':'.$element->field_id()] = $element->{$element->field_id()}();
-		
+	public function deleteElement(\DOF\Elements\Element &$element) {
+		$field_id = $element->field_id();
 		return $this->db->prepare('
-			UPDATE '.$element->storage().' 
-			SET '. implode(', ',$sets) .'
-			WHERE '. $element->field_id().'=:'.$element->field_id() .'
-		')->execute($values);
-	}
-	
-	public function deleteElement(&$element) {
-		return $this->db->prepare('
-			DELETE FROM '.$element->storage().' WHERE '.$element->field_id().' = :'.$element->field_id().'
+			DELETE FROM '.$element->storage().' WHERE '.$field_id.' = :'.$field_id.'
 		')->execute(array(
-			':'.$element->field_id() => $element->{$element->field_id()}()
-		));
-	}
-	*/
-	
-	
-	
-	
-	public function deleteRecord($table, $field_id, $id) {
-		return $this->db->prepare('
-			DELETE FROM '.$table.' WHERE '.$field_id.' = :'.$field_id.'
-		')->execute(array(
-			':'.$field_id => $id
+			':'.$field_id => $element->$field_id()
 		));
 	}
 	
-	function createRecord ($table, array $datas) {
+	function createElement (\DOF\Elements\Element &$element) {
+		$datas=$element->processData('doCreate');
+		
+		
 		$new_datas = array();
 		foreach($datas as $data) {
 			$new_datas = array_merge($new_datas, $data);
@@ -404,7 +349,7 @@ abstract class SQL extends DataStorage
 		}
 		
 		$prepared = $this->db->prepare('
-			INSERT INTO '.$table.' 
+			INSERT INTO '.$element->storage().' 
 			('. implode(', ',$columns) .') 
 			VALUES ('. implode(', ',array_keys($values)) .')
 		');
@@ -423,13 +368,12 @@ abstract class SQL extends DataStorage
 	}
 	
 	
-	
-	function updateRecord ($table, $field_id, array $arr_datas) {
+	function updateElement(\DOF\Elements\Element &$element) {
 		// @todo: evaluate if it's more convenient to merge the array
-		foreach($arr_datas as $datas)
-		{
-			foreach($datas as $data)
-			{
+		$field_id = $element->field_id();
+		
+		foreach($element->processData('doUpdate') as $datas){
+			foreach($datas as $data){
 				if($data[0] != $field_id) {
 					$sets[] = $data[0].'=:'.$data[0];
 				}
@@ -438,30 +382,53 @@ abstract class SQL extends DataStorage
 		}
 		
 		return $this->db->prepare('
-			UPDATE '.$table.' 
+			UPDATE '.$element->storage().' 
 			SET '. implode(', ',$sets) .'
 			WHERE '. $field_id.'=:'.$field_id .'
 		')->execute($values);
 	}
+
+	public function readElements(\DOF\Elements\Element &$element){
+		$storages = is_array($element->storage()) ? $element->storage() : array($element->storage());
+		
+		foreach($element->processData('doRead') as $dataInfo){
+			foreach($dataInfo as $fieldInfo){
+				$fields[] = $fieldInfo[0];
+			}
+		}
+		
+		foreach($storages as $storage) {
+			$storage_fields = $fields; // id as id, 'id' as field_id, 'fe' as storage
+			$storage_fields = array_unshift('"'.$storage.'" as DOF_storage', '"'.$element->field_id().'" as DOF_field_id', $element->field_id().' as DOF_id');
+			$selects[] = '(SELECT '.implode(', ', $storage_fields).' FROM '.$storage.')';
+		}
+		
+		// @todo: where and order by (and limit)
+		$query = $this->db->prepare(
+			implode(' UNION ', $selects).'
+			ORDER BY DOF_id desc
+		');
+		$query->execute($values);
+		return $query->fetch();
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
