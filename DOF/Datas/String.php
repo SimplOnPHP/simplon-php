@@ -3,9 +3,11 @@ namespace DOF\Datas;
 
 class String extends Data {
 	
-	protected $view = true;
-	protected $create = true;
-	protected $update = true;
+	protected 
+	$view = true,
+	$create = true,
+	$update = true,
+	$filterCriteria = 'name ~= :name';
 	
 	function showInput($fill)
 	{

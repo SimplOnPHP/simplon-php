@@ -17,17 +17,17 @@ use \DOF\Exception;
  * @author RSL
  */
 class Element extends BaseObject {
-	protected $field_id = 'id';
-	protected $dir;
-	protected $storage;
-	protected $tempFormPrefix;
-
-	/*@var dataStorage \DOF\DataStorages\DataStorage */
-	protected $dataStorage;
+	protected 
+		$field_id = 'id',
+		$dir,
+		$storage,
+		$tempFormPrefix,
+		/*@var dataStorage \DOF\DataStorages\DataStorage */
+		$dataStorage,
+		$dataAttributes,
+		$storageChecked,
 	
-	protected $dataAttributes;
-	
-	protected $storageChecked;
+		$filterCriteria;
 	
 	/**
 	* Costructor.
@@ -66,6 +66,7 @@ class Element extends BaseObject {
 		if($id) {
 			$this->fillFromDSById($id);
 		}
+		 
 	}
 	
 	public function index() {
@@ -171,6 +172,11 @@ class Element extends BaseObject {
 	{
 		return $this->obtainHtml(__FUNCTION__, $template_file, null);
 	}
+	
+	public function showSearch($template_file = null, $action = null)
+	{
+		return $this->obtainHtml(__FUNCTION__, $template_file, $action);
+	}
 		
 	// @todo: allow to obtain only the dom part inherent to the element (and not the whole web page)
 	public function obtainHtml($caller_method, $template_file = null, $action = null)
@@ -231,7 +237,7 @@ class Element extends BaseObject {
 				}
 			}
 			if($with_form) {
-				$html.= '<button name="commit" type="submit">Save</button>'
+				$html.= '<button name="commit" type="submit">'.($vcsl == 'search' ? 'Search' : 'Save').'</button>'
 					.'<button name="cancel" onclick="javascript:history.back()">Cancel</button>'
 					.'</div></form>';
 			} else {
@@ -428,6 +434,49 @@ class Element extends BaseObject {
 		} else {
 			// @todo: error handling
 			user_error('Cannot update in DS!', E_USER_ERROR);
+		}
+	}
+	
+	
+	function processSearch(){
+		$this->fillFromRequest();
+		var_dump($this->dataStorage->readElements($this));
+	}
+	
+	public function defaultFilterCriteria($operator = 'AND') {
+		//@todo: make a function that returns the data with a specific VCRSL flag ON or OFF
+		$searchables = array();
+		foreach ($this->dataAttributes() as $dataName){
+			if($this->{'O'.$dataName}()->search() && ($this->$dataName() !== null && $this->$dataName() !== '') ){
+				$searchables[]=' (.'.$dataName.') ';
+			}
+		}
+		return implode($operator, $searchables);
+	}
+	
+	/**
+	 * Possible labels:
+	 * 	name to refer to a data name;
+	 * 	.name to refer to a data filterCriteria;
+	 *  :name to refer to a data value;
+	 * 	"values" to specify a hard-coded value.
+	 */
+	public function filterCriteria($filterCriteria = null) {
+		if(isset($filterCriteria)) $this->filterCriteria = $filterCriteria;
+		else{
+			if(!isset($this->filterCriteria))
+				$this->filterCriteria = $this->defaultFilterCriteria();
+			
+			$filterCriteria = $this->filterCriteria;
+			$patterns = array();
+			$subs = array();
+			foreach( $this->dataAttributes() as $dataName){
+				// Regexp thanks to Jens: http://stackoverflow.com/questions/6462578/alternative-to-regex-match-all-instances-not-inside-quotes/6464500#6464500
+				$patterns[] = '/(\.'.$dataName.')(?=([^"\\\\]*(\\\\.|"([^"\\\\]*\\\\.)*[^"\\\\]*"))*[^"]*$)/';
+				$subs[] = $this->{'O'.$dataName}()->filterCriteria();
+			}
+			
+			return preg_replace($patterns, $subs, $this->filterCriteria);
 		}
 	}
 	

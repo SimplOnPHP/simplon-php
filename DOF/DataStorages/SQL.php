@@ -16,6 +16,10 @@ abstract class SQL extends DataStorage
 		'HTMLText'	=> 'text',
 		'ElementContainer' => '_ForeignKey_',
 	);
+	
+	static $operandsMap = array(
+		'==' => '=',
+	);
 
 	abstract function __construct($server,$dataBase,$user,$password);
 	
@@ -38,30 +42,6 @@ abstract class SQL extends DataStorage
 			throw new Exception(__CLASS__ . '->'. __FUNCTION__ .'() needs a valid DOF\Type\Element');
 		}
 	}
-	
-	public function formatFilters($filters)
-	{
-		if($filters instanceof DsEval) {
-			foreach( $filters->operatorsOperadsArray() as $operator=>$operand ) {
-				$ret[]= $DsEval->firstOperand().' '.$operator.' '.$operand;
-			}
-			
-			return implode($DsEval->boolOperator(),$ret);
-			
-		} else if($filters instanceof DsBoolOp) {
-			
-			foreach($filters->operands() as $BoolOp)
-			{
-				$ret[] = $this->formatFilters($BoolOp);
-			}
-			return implode($filters->boolOperator(),$ret);
-			
-		} else {
-			return $filters;
-		}
-	}
-	
-
 
 	public function readElement(&$element) {
 		$values[':'.$element->field_id()] = $element->{$element->field_id()}();
@@ -399,28 +379,64 @@ abstract class SQL extends DataStorage
 		
 		foreach($storages as $storage) {
 			$storage_fields = $fields; // id as id, 'id' as field_id, 'fe' as storage
-			$storage_fields = array_unshift('"'.$storage.'" as DOF_storage', '"'.$element->field_id().'" as DOF_field_id', $element->field_id().' as DOF_id');
-			$selects[] = '(SELECT '.implode(', ', $storage_fields).' FROM '.$storage.')';
+			array_unshift($storage_fields,
+				'"'.$storage.'" as DOF_storage', 
+				'"'.$element->field_id().'" as DOF_field_id', 
+				$element->field_id().' as DOF_id');
+			$where = $this->filterCriteria($element);
+			$selects[] = '(SELECT '.implode(', ', $storage_fields).' FROM '.$storage.' '. ($where ? 'WHERE '.$where : '') .')';
 		}
 		
+		
+		
 		// @todo: where and order by (and limit)
-		$query = $this->db->prepare(
-			implode(' UNION ', $selects).'
+		$query = implode(' UNION ', $selects).'
 			ORDER BY DOF_id desc
-		');
+		';
+		var_dump($query);
+		$query = $this->db->prepare($query);
+		
+		
+		foreach($element->processData('doSearch') as $dataInfo){
+			foreach($dataInfo as $fieldInfo){
+				$values[':'.$fieldInfo[0]] = $fieldInfo[2];
+			}
+		}
 		$query->execute($values);
+		var_dump($values);
 		return $query->fetch();
 	}
 
-
-
-
-
-
-
-
-
-
+	public function filterCriteria(\DOF\Elements\Element &$element){
+		$filterCriteria = $element->filterCriteria();
+		
+		$patterns = array();
+		$subs = array();
+		foreach(self::$operandsMap as $op => $sqlOp){
+			// Regexp thanks to Jens: http://stackoverflow.com/questions/6462578/alternative-to-regex-match-all-instances-not-inside-quotes/6464500#6464500
+			$patterns[] = '/('.$op.')(?=([^"\\\\]*(\\\\.|"([^"\\\\]*\\\\.)*[^"\\\\]*"))*[^"]*$)/';
+			$subs[] = $sqlOp;
+		}
+		
+		// Specials (for LIKE statement)
+		$patterns[] = '/~= *(:[a-zA-Z0-9]+)/';
+		$subs[] = 'LIKE "%$1%"';
+		$patterns[] = '/~= *("(([^"\\\\]*\\\\.)*[^"\\\\]*)")/';
+		$subs[] = 'LIKE "%$2%"';
+		
+		$patterns[] = '/\^= *(:[a-zA-Z0-9]+)/';
+		$subs[] = 'LIKE "$1%"';
+		$patterns[] = '/\^= *("(([^"\\\\]*\\\\.)*[^"\\\\]*)")/';
+		$subs[] = 'LIKE "$2%"';
+		
+		$patterns[] = '/\$= *(:[a-zA-Z0-9]+)/';
+		$subs[] = 'LIKE "%$1"';
+		$patterns[] = '/\$= *("(([^"\\\\]*\\\\.)*[^"\\\\]*)")/';
+		$subs[] = 'LIKE "%$2"';
+		
+		// @todo: this thing should return an array with the query and the corresponding values
+		return preg_replace($patterns, $subs, $filterCriteria);
+	}
 
 
 

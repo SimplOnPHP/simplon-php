@@ -50,13 +50,14 @@ namespace DOF\Datas;
 
 abstract class Data extends \DOF\BaseObject {
 	
+	protected
 	/**
 	 * Data value
 	 *
 	 * @access protected
 	 * @var mixed
 	 */
-	protected $val;
+	$val,
 	
 	
 	/**
@@ -65,7 +66,7 @@ abstract class Data extends \DOF\BaseObject {
 	 * @access protected
 	 * @var mixed
 	 */
-	protected $default = NULL;
+	$default = NULL,
 
 	/**
 	 * DOF type, will be translated to the data type of the used db.
@@ -73,7 +74,7 @@ abstract class Data extends \DOF\BaseObject {
 	 * @access protected
 	 * @var string
 	 */
-	protected $type;
+	$type,
 	
 	
 	/**
@@ -82,46 +83,48 @@ abstract class Data extends \DOF\BaseObject {
 	 * @access protected
 	 * @var ing
 	 */
-	protected $label;
+	$label,
 	
 	
 	/**
 	 * indicates if the DOFdata must be used when generating the default HTML template
 	 * @var boolean
 	 */
-	protected $view = true;
+	$view = true,
 	
 	/**
 	 * indicates if the DOFdata must be used in the add(capture) from
 	 * @var boolean
 	 */
-	protected $create = true;
+	$create = true,
 	
 	/**
 	 * indicates if the DOFdata must be used in the update from
 	 * @var boolean
 	 */
-	protected $update = true;
+	$update = true,
 	
 	/**
 	 * indicates if the DOFdata must be used in the search from
 	 * @var boolean
 	 */
-	protected $search = false;
+	$search = false,
 	
 	/**
 	 * indicates if the DOFdata must be used when several items are listed on a html table or list
 	 * @var boolean
 	 */
-	protected $list = false;
+	$list = false,
 	
 	/**
 	 * indicates if the DOFdata must have a value in order to allow the storage of it's dataParent DOFelement
 	 * @var boolean
 	 */
-	protected $required = false;
+	$required = false,
 	
-	protected $name;
+	$name,
+	
+	$filterCriteria = 'name == :name';
 	
 	
 	
@@ -140,9 +143,11 @@ abstract class Data extends \DOF\BaseObject {
 	 * ***********
 	 * 
 	 * Complex operations are just simple operations 
-	 * jointed with ANDs and ORs, so it would be possible
+	 * jointed with ANDs and ORs, so it'd be possible
 	 * to create "Operators" objects that defines those
-	 * complex operations. 
+	 * complex operations.
+	 * 
+	 * (name > val1) OR (name < val2)
 	 * 
 	 * a <= x <= b
 	 * a > x || x < b
@@ -225,7 +230,7 @@ abstract class Data extends \DOF\BaseObject {
 	public function doSearch()
 	{
 		return ($this->search())
-			? array(array($this->name(), $this->getClass(), $this->val(), $this->searchOp))
+			? array(array($this->name(), $this->getClass(), $this->val(), $this->filterCriteria()))
 			: null;		
 	}
 
@@ -250,6 +255,16 @@ abstract class Data extends \DOF\BaseObject {
 
 	public function postSearch()
 	{}
+	
+	
+	
+	public function filterCriteria($filterCriteria = null) {
+		if(isset($filterCriteria)) $this->filterCriteria = $filterCriteria;
+		
+		return strtr($this->filterCriteria, array(
+			'name' => $this->name(),
+		));
+	}
 
 
 	
@@ -341,38 +356,4 @@ abstract class Data extends \DOF\BaseObject {
 	{
 		return $this->label ?: $this->getClass();
 	}
-
-	
-	/** @todo Implementar.
-	 * @return unknown_type
-	 */
-	public function afterUpdateQuery()
-	{
-	}
-
-	
-	/**
-	 * @todo Implementar.
-	 * @return unknown_type
-	 */
-	public function afterInsertQuery()
-	{
-	}
-	
-	/**
-	 * @todo Implementar.
-	 * @return unknown_type
-	 */
-	public function afterSelectQuery()
-	{
-	}
-	
-	
-	/**
-	 * @todo Implemetar.
-	 * @return unknown_type
-	 */
-	public function afterDeleteQuery()
-	{
-	}	
 }

@@ -24,7 +24,6 @@ class Search extends Element
 	public function __construct($id_or_elementsTypes, &$specialDataStorage=null)
 	{
 		//On heirs put here the asignation of DOFdata and attributes
-		
 		if(is_array($id_or_elementsTypes)){
 			$this->elementsTypes = new DArray('','vclsR',$id_or_elementsTypes);
 		} else {
