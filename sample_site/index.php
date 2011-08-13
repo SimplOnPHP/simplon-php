@@ -39,6 +39,9 @@ DOF\Main::setup(array(
 	'DOF_PATH' => realpath('../DOF'),
 	'GENERIC_TEMPLATES_PATH' => realpath('Templates'),
 	'MASTER_TEMPLATE' => realpath('Templates') . '/Master.html',
+	
+	'DEFAULT_ELEMENT' => 'Fe',
+	'DEFAULT_METHOD' => 'index',
 
 	'CREATE_LAYOUT_TEMPLATES' => true,
 	'OVERWRITE_LAYOUT_TEMPLATES' => true,

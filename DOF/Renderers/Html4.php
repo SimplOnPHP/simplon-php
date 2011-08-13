@@ -16,16 +16,25 @@
 	You should have received a copy of the GNU General Public License
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
-namespace DOF\Datas;
+namespace DOF\Renderers;
 
-class Date extends Data {
-	
-	protected $view = true;
-	protected $create = true;
-	protected $update = true;
-	
-	function showInput($fill)
-	{
-		return  '<input class="DOF input '.$this->getClass().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
+class Html4 {
+	static function table(array $contents, array $headers = array(), array $footers = array(), array $ths_matrix = array(), $caption = '') {
+		
+		$html = '<table>';
+		foreach(array('headers' => 'thead', 'contents' => 'tbody', 'footers' => 'tfoot') as $dataVar => $tag) {
+			$html .= '<'.$tag.'>';
+			foreach($$dataVar as $row){
+				$html .= '<tr>';	
+				foreach($row as $cell){
+					$html .= '<td>'.$cell.'</td>';
+				}
+				$html .= '</tr>';
+			}
+			$html .= '</'.$tag.'>';
+		}
+		$html.= '</table>';
+
+		return $html;
 	}
 }

@@ -1,4 +1,21 @@
 <?php
+/*
+	Copyright © 2011 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+	
+	This file is part of “SimplOn PHP”.
+	
+	“SimplOn PHP” is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation version 3 of the License.
+	
+	“SimplOn PHP” is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
+*/
 namespace DOF\Elements;
 use \DOF\Elements\Element,
 	\DOF\Datas\DArray,
@@ -30,9 +47,6 @@ class Search extends Element
 			$id = $id_or_elementsTypes;
 		}
 		
-		
-		if(!$this->storage()) $this->storage(end(explode('::',$this->getClass())));
-		
 		//Asings the storage element for the DOFelement. (a global one : or a particular one)
 		if(!$specialDataStorage){
 			$this->dataStorage = Main::$DATA_STORAGE;
@@ -47,6 +61,16 @@ class Search extends Element
 		if( isset($id) ) {
 			$this->dataStorage->ensureElementStorage($this);
 			$this->fillFromDSById($id);
+		}
+		
+		
+		if(!$this->storage()) {
+			$storages = array();
+			foreach($this->elementsTypes() as $elementType) {
+				$dummy_class = new $elementType;
+				$storages[] = $dummy_class->storage();
+			}
+			$this->storage($storages);
 		}
 
 		$this->getFields();
@@ -100,8 +124,12 @@ class Search extends Element
 		return $this->obtainHtml(__FUNCTION__, $this->templateFilePath('Search', '_'.implode('-', $this->elementsTypes())), null);
 	}
 
-
-	public function processSearch() {
-		var_dump($_POST);
+	function processSearch(){
+		$this->fillFromRequest();
+		$elementsTypes = $this->elementsTypes;
+		$this->elementsTypes = null;
+		$return = \DOF\Renderers\Html4::table($this->dataStorage->readElements($this));
+		$this->elementsTypes = $elementsTypes;
+		return $return;
 	}
 }

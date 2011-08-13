@@ -1,9 +1,24 @@
 <?php
+/*
+	Copyright © 2011 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+	
+	This file is part of “SimplOn PHP”.
+	
+	“SimplOn PHP” is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation version 3 of the License.
+	
+	“SimplOn PHP” is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
+*/
 namespace DOF\Elements;
-use \DOF\Datas\Data;
-use \DOF\BaseObject;
-use \DOF\Main;
-use \DOF\Exception;
+use \DOF\Datas\Data, \DOF\BaseObject, \DOF\Main, \DOF\Exception;
+
 /**
  * This is the core element to build the site. DOF (Data Oriented FrameWork) is based on data representation, stoarge and manipulation.
  * Elements are the way to indicate the system all data that conforms it. Each Element represents a data set.
@@ -207,7 +222,7 @@ class Element extends BaseObject {
 			$html = '';
 			if($with_form) {
 				$html.= '<form class="DOF '.$this->getClass().'" '
-					. ' action="'. (@$action ?: $this->encodeURL(array(), 'process'.$VCSL) ) .'" ' 
+					. ' action="'. (@$action ?: $this->encodeURL(Main::$construct_params, 'process'.$VCSL) ) .'" ' 
 					. ' method="post" ' 
 					. @$enctype 
 					.'>';
@@ -440,7 +455,7 @@ class Element extends BaseObject {
 	
 	function processSearch(){
 		$this->fillFromRequest();
-		var_dump($this->dataStorage->readElements($this));
+		return \DOF\Renderers\Html4::table($this->dataStorage->readElements($this));
 	}
 	
 	public function defaultFilterCriteria($operator = 'AND') {

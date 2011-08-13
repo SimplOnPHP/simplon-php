@@ -1,5 +1,24 @@
 <?php
+/*
+	Copyright © 2011 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+	
+	This file is part of “SimplOn PHP”.
+	
+	“SimplOn PHP” is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation version 3 of the License.
+	
+	“SimplOn PHP” is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
+*/
 namespace DOF\Datas;
+use \DOF\Main, \DOF\BaseObject;
+
 /**
  * @todo Agregar posibilidad de especificar indices de b�squeda:
  * una posible soluci�n es la de usar el parametro $vcuslr usando el metodo search()
@@ -48,7 +67,7 @@ namespace DOF\Datas;
 
 
 
-abstract class Data extends \DOF\BaseObject {
+abstract class Data extends BaseObject {
 	
 	protected
 	/**
@@ -67,14 +86,6 @@ abstract class Data extends \DOF\BaseObject {
 	 * @var mixed
 	 */
 	$default = NULL,
-
-	/**
-	 * DOF type, will be translated to the data type of the used db.
-	 *
-	 * @access protected
-	 * @var string
-	 */
-	$type,
 	
 	
 	/**
@@ -278,9 +289,9 @@ abstract class Data extends \DOF\BaseObject {
 	 * if the letter is included (the order desn't matter) that use will be set to true if not to false.
 	 * see the help avobe to see what each of this does.
 	 */
-	function setVCUSLR($vcuslr)
-	{
+	function setVCUSLR($vcuslr) {
 		// @todo: Optimizar esta parte
+		// @todo: check conflict with required and create/update
 		// Ej: $this->view( strpos($vcuslr,'v')!==false );
 		$a_vcuslr = array(
 			'v' => 'view',
@@ -297,7 +308,7 @@ abstract class Data extends \DOF\BaseObject {
 	
 	public function getJS($method) {
 		$class = end(explode('\\',$this->getClass()));
-		$local_js = \DOF\Main::$JS_FLAVOUR_BASE . "/Inits/$class.$method.js";
+		$local_js = Main::$JS_FLAVOUR_BASE . "/Inits/$class.$method.js";
 		return array($local_js);
 	}
 	
@@ -308,8 +319,7 @@ abstract class Data extends \DOF\BaseObject {
 	 *
 	 * @return ing
 	 */
-	public function __toString()
-	{
+	public function __toString() {
 		return $this->showView();
 	}
 
@@ -319,31 +329,25 @@ abstract class Data extends \DOF\BaseObject {
 	 * @param $prefijoNombre =null valor que se puede usar para distinguir los diversos de dos elementos
 	 * @return ing
 	 */
-	public function inputName()
-	{
+	public function inputName(){
 		return @$this->inputName ?: $this->name();
 	}
 	
-	
-	function showView($template = null)
-	{
+	function showView($template = null){
 		return $this->val();
 	}
 	
 	abstract function showInput($fill);
 	
-	function showCreate()
-	{
+	function showCreate(){
 		return $this->showInput(false);
 	}
 	
-	function showUpdate()
-	{
+	function showUpdate(){
 		return $this->showInput(true);
 	}
 	
-	function showSearch()
-	{
+	function showSearch(){
 		return $this->showInput(true);
 	}
 	
@@ -352,8 +356,7 @@ abstract class Data extends \DOF\BaseObject {
 	 *
 	 * @return ing
 	 */
-	public function label()
-	{
+	public function label(){
 		return $this->label ?: $this->getClass();
 	}
 }

@@ -1,4 +1,21 @@
 <?php
+/*
+	Copyright © 2011 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+	
+	This file is part of “SimplOn PHP”.
+	
+	“SimplOn PHP” is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation version 3 of the License.
+	
+	“SimplOn PHP” is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
+*/
 namespace DOF;
 use \DOF\Exception;
 
@@ -18,6 +35,9 @@ class Main {
 		$CREATE_LAYOUT_TEMPLATES,
 		$OVERWRITE_LAYOUT_TEMPLATES,
 		$USE_LAYOUT_TEMPLATES,
+		
+		$DEFAULT_ELEMENT,
+		$DEFAULT_METHOD = 'index',
 
 		$CREATE_FROM_TEMPLATES,
 		$OVERWRITE_FROM_TEMPLATES,
@@ -100,7 +120,8 @@ class Main {
 			explode('/',$server_request), 
 			explode('/',self::$REMOTE_ROOT)
 		));
-		self::$class = @array_shift($virtual_path) ?: 'Home';
+		
+		self::$class = @array_shift($virtual_path) ?: self::$DEFAULT_ELEMENT;
 		
 		//var_dump(@array_values($virtual_path));
 		self::$construct_params = array_map($f_decode_param, @array_values($virtual_path) ?: array());
@@ -108,7 +129,7 @@ class Main {
 		//var_dump($_SERVER);exit();
 		
 		$GET_virtual_path = array_values(explode('/',@$_SERVER['QUERY_STRING']));
-		self::$method = @array_shift($GET_virtual_path) ?: 'index';
+		self::$method = @array_shift($GET_virtual_path) ?: self::$DEFAULT_METHOD;
 		
 		//var_dump(@$GET_virtual_path);
 		self::$method_params = array_map($f_decode_param, @$GET_virtual_path ?: array());

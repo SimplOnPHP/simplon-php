@@ -1,4 +1,21 @@
 <?php
+/*
+	Copyright © 2011 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+	
+	This file is part of “SimplOn PHP”.
+	
+	“SimplOn PHP” is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation version 3 of the License.
+	
+	“SimplOn PHP” is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
+*/
 namespace DOF\DataStorages;
 
 abstract class SQL extends DataStorage
@@ -12,6 +29,8 @@ abstract class SQL extends DataStorage
 		'Float'  	=> 'float',
 		
 		'String'	=> 'varchar(240)',
+		
+		'Date'		=> 'date',
 				
 		'HTMLText'	=> 'text',
 		'ElementContainer' => '_ForeignKey_',
@@ -203,6 +222,7 @@ abstract class SQL extends DataStorage
 
 			}
 			
+			//@todo: validate with Data\Date
 			//user_error($return ? 'Valid Storage' : 'Invalid Storage');
 			return $return;
 		}
@@ -390,21 +410,33 @@ abstract class SQL extends DataStorage
 		
 		
 		// @todo: where and order by (and limit)
-		$query = implode(' UNION ', $selects).'
+		$query_string = implode("\n".' UNION ', $selects).'
 			ORDER BY DOF_id desc
 		';
-		var_dump($query);
-		$query = $this->db->prepare($query);
+		// var_dump($query_string); exit;
+		$query = $this->db->prepare($query_string);
 		
-		
+		// Obtains values
+		$values = array();
 		foreach($element->processData('doSearch') as $dataInfo){
 			foreach($dataInfo as $fieldInfo){
-				$values[':'.$fieldInfo[0]] = $fieldInfo[2];
+				$bindable_values = array(
+					':'.$fieldInfo[0]				 => $fieldInfo[2],
+					':RLLIKE__'.$fieldInfo[0]	 => '%'.$fieldInfo[2].'%',
+					':LLIKE__'.$fieldInfo[0]			 => '%'.$fieldInfo[2],
+					':RLIKE__'.$fieldInfo[0]		 => $fieldInfo[2].'%',
+				);
+				foreach($bindable_values as $label => $value) {
+					if(strpos($query_string, $label) !== false)
+						$values[$label] = $value;
+				}
 			}
 		}
+		
+		// Executes the query and returns the results
 		$query->execute($values);
-		var_dump($values);
-		return $query->fetch();
+		//var_dump($values);
+		return $query->fetchAll();
 	}
 
 	public function filterCriteria(\DOF\Elements\Element &$element){
@@ -419,22 +451,21 @@ abstract class SQL extends DataStorage
 		}
 		
 		// Specials (for LIKE statement)
-		$patterns[] = '/~= *(:[a-zA-Z0-9]+)/';
-		$subs[] = 'LIKE "%$1%"';
+		$patterns[] = '/~= *:([a-zA-Z0-9]+)/';
+		$subs[] = 'LIKE :RLLIKE__$1';
 		$patterns[] = '/~= *("(([^"\\\\]*\\\\.)*[^"\\\\]*)")/';
 		$subs[] = 'LIKE "%$2%"';
 		
-		$patterns[] = '/\^= *(:[a-zA-Z0-9]+)/';
-		$subs[] = 'LIKE "$1%"';
+		$patterns[] = '/\^= *:([a-zA-Z0-9]+)/';
+		$subs[] = 'LIKE :RLIKE__$1';
 		$patterns[] = '/\^= *("(([^"\\\\]*\\\\.)*[^"\\\\]*)")/';
 		$subs[] = 'LIKE "$2%"';
 		
 		$patterns[] = '/\$= *(:[a-zA-Z0-9]+)/';
-		$subs[] = 'LIKE "%$1"';
+		$subs[] = 'LIKE :LLIKE__$1';
 		$patterns[] = '/\$= *("(([^"\\\\]*\\\\.)*[^"\\\\]*)")/';
 		$subs[] = 'LIKE "%$2"';
 		
-		// @todo: this thing should return an array with the query and the corresponding values
 		return preg_replace($patterns, $subs, $filterCriteria);
 	}
 
