@@ -21,7 +21,7 @@ use \DOF\Main, \DOF\BaseObject;
 
 /**
  * @todo Agregar posibilidad de especificar indices de b�squeda:
- * una posible soluci�n es la de usar el parametro $vcuslr usando el metodo search()
+ * una posible soluci�n es la de usar el parametro $flags usando el metodo search()
  * de ahi entender si un dato se va a usar para la b�squeda
  * y tambi�n dar la posibilidad de un "override" para especificar
  * de modo explicito, si se quiere o no un indice en dicho dato.
@@ -133,6 +133,13 @@ abstract class Data extends BaseObject {
 	 */
 	$required = false,
 	
+	
+	/**
+	 * indicates if the DOFdata must have a value in order to allow the storage of it's dataParent DOFelement
+	 * @var boolean
+	 */
+	$fetch = true,
+	
 	$name,
 	
 	$filterCriteria = 'name == :name';
@@ -177,16 +184,17 @@ abstract class Data extends BaseObject {
 	 * if the letter is included (the order desn't matter) that use will be set to true if not to false.
 	 * see the help avobe to see what each of this does.
 	 */
-	public function __construct($label=null, $vcuslr=null, $val=null, $searchOp=null)
+	public function __construct($label=null, $flags=null, $val=null, $searchOp=null)
 	{
 		//check($label);
+		$this->construct($label, $flags, $val, $searchOp);
 		
 		$this->val = $val;
 		$this->label=$label;
 		
-		if($vcuslr)
+		if($flags)
 		{
-			$this->setVCUSLR($vcuslr);
+			$this->dataFlags($flags);
 		}
 		
 		
@@ -194,34 +202,30 @@ abstract class Data extends BaseObject {
 		//if($inputName){$this->inputName($inputName);}
 	}
 
+	public function construct($label=null, $flags=null, $val=null, $searchOp=null) {}
 
-
-	public function fill()
-	{}
+	public function fill() {}
 	
 	
 	
-	public function preRead()
-	{}
+	public function preRead() {}
 	
-	public function preCreate()
-	{}
+	public function preCreate() {}
 		
-	public function preUpdate()
-	{}
+	public function preUpdate() {}
 
-	public function preDelete()
-	{}
+	public function preDelete() {}
 
-	public function preSearch()
-	{}
+	public function preSearch() {}
 
 
 	//----
 
 	public function doRead()
 	{
-		return array(array($this->name(), $this->getClass()));
+		return ($this->fetch())
+			? array(array($this->name(), $this->getClass()))
+			: null;
 	}
 	
 	public function doCreate()
@@ -280,29 +284,36 @@ abstract class Data extends BaseObject {
 
 	
 	/**
-	 * @todo handle UPPER or lower letter to ADD or remove attributes
+	 * Sets create, update, search, list, required and fetch flags according to the letters in $flags
 	 *
-	 * Sets create, update, search, list, required acording to the letters in $acslr
-	 *
-	 *  @param ing $acslr This ing indicates the DOFdata where it must be used by the DOFelement's to do so if sended the
+	 *  @param ing $flags This ing indicates the DOFdata where it must be used by the DOFelement's to do so if sended the
 	 * sting must contain the first letter of any the following "uses": view, create, update, search, list, required.
 	 * if the letter is included (the order desn't matter) that use will be set to true if not to false.
 	 * see the help avobe to see what each of this does.
 	 */
-	function setVCUSLR($vcuslr) {
+	function dataFlags($flags = null) {
 		// @todo: Optimizar esta parte
 		// @todo: check conflict with required and create/update
-		// Ej: $this->view( strpos($vcuslr,'v')!==false );
-		$a_vcuslr = array(
+		// Ej: $this->view( strpos($flags,'v')!==false );
+		$a_flags = array(
 			'v' => 'view',
 			'c' => 'create',
 			'u' => 'update',
 			's' => 'search',
 			'l' => 'list',
 			'r' => 'required',
+			'f' => 'fetch',
 		);
-		foreach(str_split($vcuslr) as $flag)
-			$this->{$a_vcuslr[strtolower($flag)]} = ($flag != strtolower($flag));
+		
+		if(isset($flags)) {
+			foreach(str_split($flags) as $flag)
+				$this->{$a_flags[strtolower($flag)]} = ($flag != strtolower($flag));
+		} else {
+			$return = '';
+			foreach($a_flags as $letter => $flag)
+				$return.= $this->$flag ? strtoupper($letter) : strtolower($letter);
+			return $return;
+		}
 	}
 	
 	

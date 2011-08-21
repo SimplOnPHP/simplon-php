@@ -37,4 +37,13 @@ class Html4 {
 
 		return $html;
 	}
+	
+	static function button($content, $action, $name = null) {
+		return '<button '.($name?'name="'.$name.'"':'').' onclick="'.$action.'">'.$content.'</button>';
+	}
+	
+	static function link($content, $href, $action = null) {
+		return '<a '.($action?'onclick="'.$action.'"':'').' href="'.$href.'">'.$content.'</a>';
+	}
+	
 }

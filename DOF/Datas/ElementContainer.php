@@ -22,11 +22,11 @@ class ElementContainer extends Data {
 		
 	protected $parent, $element;
 	
-	public function __construct( \DOF\Elements\Element $element, $label=null, $vcuslr=null, $element_id=null) {
+	public function __construct( \DOF\Elements\Element $element, $label=null, $flags=null, $element_id=null) {
 		
 		$this->element($element);			
 		
-		parent::__construct($label,$vcuslr,$element_id);
+		parent::__construct($label,$flags,$element_id);
 	}
 	
 	
@@ -63,12 +63,10 @@ class ElementContainer extends Data {
 	public function padre(&$parent=null)
 	{
 		//check('Hola tu'.$padre->id() );
-		if($this->element()->hasMethod('parent') )
-		{
-			if($parent)
-			{
+		if($this->element()->hasMethod('parent') ) {
+			if($parent) {
 				$this->element()->parent($parent);
-			}else{
+			} else {
 				return $this->element()->parent();
 			}
 		}		
@@ -76,7 +74,12 @@ class ElementContainer extends Data {
 	
 	function showInput($fill)
 	{
-		return  $this->parent()->getClass().'<input class="input '.str_replace('\\', ' ', $this->getClass()).'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
+		return  '
+			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showSearch').'">List</a>
+			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showCreate').'">Add</a>
+			<div class="preview"></div>
+			<input class="input" name="'.$this->name().'" type="hidden" />
+		';
 	}	
 	
 }

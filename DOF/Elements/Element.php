@@ -56,8 +56,10 @@ class Element extends BaseObject {
 	*
 	* @param int $id
 	*/
-	public function __construct($id=null,&$specialDataStorage=null)
+	public function __construct($id=null,&$specialDataStorage=null, array $dataConstructParams = array())
 	{
+		$this->construct($id, $specialDataStorage);
+		
 		//On heirs put here the asignation of DOFdata and attributes
 		
 		if(!$this->storage()) $this->storage(end(explode('::',$this->getClass())));
@@ -83,6 +85,8 @@ class Element extends BaseObject {
 		}
 		 
 	}
+	
+	public function construct($id=null, &$specialDataStorage=null) {}
 	
 	public function index() {
 		return '
@@ -183,14 +187,14 @@ class Element extends BaseObject {
 		return $this->obtainHtml(__FUNCTION__, $template_file, $action);
 	}
 
-	public function showView($template_file = '')
+	public function showView($template_file = null)
 	{
 		return $this->obtainHtml(__FUNCTION__, $template_file, null);
 	}
 	
 	public function showSearch($template_file = null, $action = null)
 	{
-		return $this->obtainHtml(__FUNCTION__, $template_file, $action);
+		return $this->obtainHtml(__FUNCTION__, $template_file, $action).$this->processSearch();
 	}
 		
 	// @todo: allow to obtain only the dom part inherent to the element (and not the whole web page)
@@ -199,14 +203,14 @@ class Element extends BaseObject {
 		//$caller_method = end(// explode('::',$caller_method));
 		$VCSL = substr($caller_method, strlen('show'));
 		$vcsl = strtolower($VCSL);
-		$with_form = in_array($vcsl, array('create', 'update','search'));
+		$with_form = in_array($vcsl, array('create', 'update', 'search'));
 		 
-		if(!@$template_file) {
+		if(!isset($template_file)) {
 			// get default path
 			$template_file = $this->templateFilePath($VCSL);
 		}
 		
-		if(!file_exists($template_file) || Main::$OVERWRITE_LAYOUT_TEMPLATES) {
+		if($template_file === false || !file_exists($template_file) || Main::$OVERWRITE_LAYOUT_TEMPLATES) {
 			$dom = \phpQuery::newDocumentFileHTML(Main::$MASTER_TEMPLATE);
 			$dom['head']->append($this->getJS($caller_method, 'html'));
 			
@@ -238,12 +242,13 @@ class Element extends BaseObject {
 						$data_id = 'DOF_'.$data->instanceId();
 						$dompart = \phpQuery::newDocumentHTML($data->$caller_method());
 						// @todo: Document that class input is MANDATORY
+						$dompart['.reference']->attr('ref', $data_id);
 						$dompart['.input']->attr('id', $data_id);
 						
 						if($data->label())
 							$html.='<label for="'.$data_id.'">'.$data->label().': </label>';
 						
-						$html.= $dompart['.input'];
+						$html.= $dompart;
 					} else {
 						$html.= $data->$caller_method();
 					}
@@ -261,7 +266,8 @@ class Element extends BaseObject {
 			$dom['body'] = $html;
 			
 			// save file
-			Main::createFile($template_file, $dom.'');
+			if($template_file !== false)
+				Main::createFile($template_file, $dom.'');
 		} else {
 			// opens file
 			$dom = \phpQuery::newDocumentFileHTML($template_file);
@@ -299,6 +305,9 @@ class Element extends BaseObject {
 					$a_js[] = $local_js;
 			}
 		$a_js = array_unique($a_js);
+		$libs = glob(Main::$JS_FLAVOUR_BASE . '/Libs/*');
+		sort($a_js);
+		sort($libs);
 		
 		if($compress) {
 			// @todo: compress in one file and return the file path
@@ -310,7 +319,7 @@ class Element extends BaseObject {
 				return str_replace(Main::$LOCAL_ROOT, Main::$REMOTE_ROOT, $fp);
 			},
 			array_unique(array_merge(
-				glob(Main::$JS_FLAVOUR_BASE . '/Libs/*'),
+				$libs,
 				$a_js
 			))
 		);
@@ -432,10 +441,16 @@ class Element extends BaseObject {
 		return Main::encodeURL($this->getClass(), $construct_params, $method, $method_params);
 	}
 	
-	function processCreate(){
+	function processCreate($result = null){
 		$this->fillFromRequest();
+		//var_dump($result); exit();
+		//var_dump($this); exit;
 		if($this->create()) {
-			header('Location: '.$this->encodeURL(array($this->id()), 'showUpdate'));
+			if(@$result == 'json') {
+				return json_encode(array('id' => $this->id(), 'preview' => $this->showView()->find('body')->html()));
+			} else {
+				header('Location: '.$this->encodeURL(array($this->id()), 'showUpdate'));
+			}
 		} else {
 			// @todo: error handling
 			user_error('Cannot create in DS!', E_USER_ERROR);

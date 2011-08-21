@@ -44,9 +44,9 @@ class Id extends Integer
 		}
 	}
 	
-	function setVCUSLR($vcuslr)
+	function dataFlags($flags)
 	{
-		parent::setVCUSLR($vcuslr);
+		parent::dataFlags($flags);
 		$this->required = true;
 	}
 	
