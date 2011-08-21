@@ -77,7 +77,7 @@ class ElementContainer extends Data {
 		return  '
 			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showSearch').'">List</a>
 			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showCreate').'">Add</a>
-			<div class="preview"></div>
+			<div class="preview">'.$this->showView().'</div>
 			<input class="input" name="'.$this->name().'" type="hidden" />
 		';
 	}	
