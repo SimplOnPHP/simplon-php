@@ -18,9 +18,25 @@
 */
 namespace DOF\Datas;
 
+
+/**
+ * 
+ * Encapsulates an Element so it acts as a Data. 
+ * 
+ * @author RSL
+ */
 class ElementContainer extends Data {
-		
-	protected $parent, $element;
+	protected 
+		/**
+		 * Logic parent
+		 * @var DOF\Elements\Element
+		 */
+		$parent, 
+		/**
+		 * Encapsulated element
+		 * @var DOF\Elements\Element
+		 */
+		$element;
 	
 	public function __construct( \DOF\Elements\Element $element, $label=null, $flags=null, $element_id=null) {
 		
@@ -28,7 +44,6 @@ class ElementContainer extends Data {
 		
 		parent::__construct($label,$flags,$element_id);
 	}
-	
 	
 	public function getJS($method) {
 		return array_map(
@@ -43,9 +58,13 @@ class ElementContainer extends Data {
 	function showView($template = null)
 	{
 		//return $this->parent()->getClass();
-		$dom = \phpQuery::newDocumentHTML($this->element()->showView());
-		
-		return $dom['.DOF.'.$this->element()->getClass()].'';
+		$id = $this->element()->{$this->element()->field_id()}();
+		if($id !== null) {
+			$dom = \phpQuery::newDocumentHTML($this->element()->showView());
+			return $dom['.DOF.'.$this->element()->getClass()].'';
+		} else {
+			return '';
+		}
 	}
 	
 	public function val($val = null) {

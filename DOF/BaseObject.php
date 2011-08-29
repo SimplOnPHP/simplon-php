@@ -36,6 +36,16 @@ class BaseObject
 	}
 	
 	/**
+	 * Returns the object class
+	 *
+	 * @return string Class of the object
+	 */
+	public function getClassName()
+	{
+		return end(explode('\\',get_class($this)));
+	}
+	
+	/**
 	 * Returns the Methods of the Object
 	 *
 	 * @return array[int]string

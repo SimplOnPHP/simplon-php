@@ -36,6 +36,8 @@ class Main {
 		$OVERWRITE_LAYOUT_TEMPLATES,
 		$USE_LAYOUT_TEMPLATES,
 		
+		$DEFAULT_RENDERER,
+		
 		$DEFAULT_ELEMENT,
 		$DEFAULT_METHOD = 'index',
 
@@ -113,9 +115,12 @@ class Main {
 			return json_decode(urldecode($p));
 		};
 		
-		$server_request = $_SERVER['REQUEST_URI'];
-		if(strpos($server_request, '?') !== false)
-			$server_request = substr($server_request, 0, strpos($server_request, '?'));
+		$server_request = $_SERVER['REDIRECT_URL'];
+		$query_string = '';
+		if(strpos($server_request, '|') !== false) {
+			$query_string = substr($server_request, strpos($server_request, '|')+1);
+			$server_request = substr($server_request, 0, strpos($server_request, '|'));
+		}
 		$virtual_path = array_values(array_diff(
 			explode('/',$server_request), 
 			explode('/',self::$REMOTE_ROOT)
@@ -128,7 +133,7 @@ class Main {
 		
 		//var_dump($_SERVER);exit();
 		
-		$GET_virtual_path = array_values(explode('/',@$_SERVER['QUERY_STRING']));
+		$GET_virtual_path = array_values(explode('/',$query_string));
 		self::$method = @array_shift($GET_virtual_path) ?: self::$DEFAULT_METHOD;
 		
 		//var_dump(@$GET_virtual_path);
@@ -148,7 +153,7 @@ class Main {
 		
 		return self::$REMOTE_ROOT . '/'
 			. $class . (@$construct_params ? '/' . implode('/',$construct_params) : '')
-			. '?' 
+			. '|' 
 			. $method . (@$method_params ? '/' . implode('/',$method_params) : '');
 	}
 	

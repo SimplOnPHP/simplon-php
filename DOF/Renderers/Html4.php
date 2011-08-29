@@ -42,8 +42,18 @@ class Html4 {
 		return '<button '.($name?'name="'.$name.'"':'').' onclick="'.$action.'">'.$content.'</button>';
 	}
 	
-	static function link($content, $href, $action = null) {
-		return '<a '.($action?'onclick="'.$action.'"':'').' href="'.$href.'">'.$content.'</a>';
+	static function link($content, $href, array $extra_attrs = array(), $auto_encode = true) {
+		$extra = array();
+		foreach($extra_attrs as $attr => $value) {
+			if($auto_encode) $value = htmlentities($value, ENT_COMPAT, 'UTF-8');
+			$extra[] = $attr.'="'.$value.'"';
+		}
+		if($auto_encode) {
+			$href = htmlentities($href, ENT_COMPAT, 'UTF-8');
+			//$content = htmlentities($content, ENT_COMPAT, 'UTF-8');
+		}
+		return '<a '.implode(' ',$extra).' href="'.$href.'">'.$content.'</a>';
 	}
+
 	
 }

@@ -5,7 +5,7 @@ class Home extends \DOF\Elements\Element
 	{
 	    $this->id = new \DOF\Datas\Id('Id');
 		$this->cabeza = new \DOF\Datas\String('Cabeza','VCUSL');
-		$this->contenido = new \DOF\Datas\String('Contenido', 's');
+		$this->contenido = new \DOF\Datas\String('Contenido', 'sL');
 		
 		$this->storage('home');
 		

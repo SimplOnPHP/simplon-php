@@ -17,7 +17,7 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace DOF\Elements;
-use \DOF\Datas\Data, \DOF\BaseObject, \DOF\Main, \DOF\Exception;
+use \DOF\Datas, \DOF\Datas\Data, \DOF\BaseObject, \DOF\Main, \DOF\Exception;
 
 /**
  * This is the core element to build the site. DOF (Data Oriented FrameWork) is based on data representation, stoarge and manipulation.
@@ -70,6 +70,11 @@ class Element extends BaseObject {
 		}else{
 			$this->dataStorage=&$specialDataStorage;
 		}
+		
+		$this->viewAction = new Datas\ViewAction('', array('View'));
+		$this->createAction = new Datas\CreateAction('', array('Create'));
+		$this->updateAction = new Datas\UpdateAction('', array('Update'));
+		$this->deleteAction = new Datas\DeleteAction('', array('Delete'));
 
 		// Tells the DOFdata whose thier "container" in case any of it has context dependent info or functions.
 		$this->assignAsDatasParent();
@@ -89,10 +94,11 @@ class Element extends BaseObject {
 	public function construct($id=null, &$specialDataStorage=null) {}
 	
 	public function index() {
-		return '
-			<h1>'.$this->getClass().' works!</h1>
-			<p><a href="'.$this->encodeURL(array(), 'showCreate').'">Create a new '.$this->getClass().'</a></p>
-		';
+		user_error($this->createAction(array('Create new %s', 'getClassName')));
+		return '<h1>'.$this->getClass().'</h1><div>'
+			.$this->createAction(array('Create new %s', 'getClassName'))
+			.'</div>'
+		;
 	}
 
 	//@todo: in  arrays format
@@ -107,6 +113,13 @@ class Element extends BaseObject {
 		}else{
 			throw new Exception('The object of class: '.$this->getClass()." has no id so it can't be filled using method fillElementById" );
 		}
+	}
+	
+	public function toArray() {
+		foreach($this->dataAttributes() as $dataName ) {
+			$ret[$dataName] = $this->$dataName();
+		}
+		return $ret;
 	}
 	
 	public function fillFromArray(array &$array_of_data)
@@ -470,7 +483,8 @@ class Element extends BaseObject {
 	
 	function processSearch(){
 		$this->fillFromRequest();
-		return \DOF\Renderers\Html4::table($this->dataStorage->readElements($this));
+		$search = new Search(array($this->getClass()));
+		return $search->processSearch($this->toArray());
 	}
 	
 	public function defaultFilterCriteria($operator = 'AND') {

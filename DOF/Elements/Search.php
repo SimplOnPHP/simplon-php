@@ -17,23 +17,30 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace DOF\Elements;
-use \DOF\Elements\Element,
-	\DOF\Datas\DArray,
+use \DOF\Datas\DArray,
+	\DOF\Datas\Link,
 	\DOF\Main;
 
 /**
- *
- * @var array $columns	Collection of objects of type Data that represents the columns to print out.
- * @var DataBase $db	Database handler.
- *
- * @author Luca
- *
+ * Allows searches over multiple Elements.
+ * 
+ * @todo: allow to specify what fields to display; 
+ * in case of auto obtaining the list of fields, then specify
+ * if it should be an intersect or union of the Element's Datas.
+ * Solve brain-blowing problem of fields with same name and different
+ * Search flag :S 
  */
 class Search extends Element
 {
 	protected
 		$parent, 
-		$elementsTypes,
+		/**
+		 * @var array
+		 */
+		$elementsTypes, 
+		/**
+		 * @var array
+		 */
 		$fields;
 
 
@@ -75,7 +82,13 @@ class Search extends Element
 
 		$this->getFields();
 
+		//------------------------
+		
+		$this->selectLink = new Link('$link' , '$label', '$flags' );
+		
 
+		
+		//-------------------------
 
 		// Tells the DOFdata whose thier "container" in case any of it has context dependent info or functions.
 		$this->assignAsDatasParent();
@@ -111,24 +124,35 @@ class Search extends Element
 			//$fields[$dataName] = $dataObjects[$dataName];
 			$this->$dataName = $dataObjects[$dataName];
 		}
+	
 	}
 
 
-	public function showView($template_file = '') {
+	public function showView($template_file = '') {	
+		return $this->showSearch($template_file);
+	}
+
+
+	public function select($template_file = '') {
 		return $this->showSearch($template_file);
 	}
 
 
 	public function showSearch($template_file = '')
 	{
-		return $this->obtainHtml(__FUNCTION__, $this->templateFilePath('Search', '_'.implode('-', $this->elementsTypes())), null);
+		var_dump($this);	
+		return $this->obtainHtml(__FUNCTION__, $this->templateFilePath('Search', '_'.implode('-', $this->elementsTypes())), null);;
 	}
 
-	function processSearch(){
-		$this->fillFromRequest();
+	function processSearch($params = null){
+		if(isset($params))
+			$this->fillFromArray($params);
+		else
+			$this->fillFromRequest();
+		
 		$elementsTypes = $this->elementsTypes;
 		$this->elementsTypes = null;
-		$return = \DOF\Renderers\Html4::table($this->dataStorage->readElements($this));
+		$return = Main::$DEFAULT_RENDERER->table($this->dataStorage->readElements($this));
 		$this->elementsTypes = $elementsTypes;
 		return $return;
 	}

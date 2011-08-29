@@ -217,8 +217,7 @@ abstract class Data extends BaseObject {
 	public function preDelete() {}
 
 	public function preSearch() {}
-
-
+	
 	//----
 
 	public function doRead()
@@ -368,6 +367,6 @@ abstract class Data extends BaseObject {
 	 * @return ing
 	 */
 	public function label(){
-		return $this->label ?: $this->getClass();
+		return isset($this->label) ? $this->label : $this->getClassName();
 	}
 }
