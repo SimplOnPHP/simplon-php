@@ -94,7 +94,6 @@ class Element extends BaseObject {
 	public function construct($id=null, &$specialDataStorage=null) {}
 	
 	public function index() {
-		user_error($this->createAction(array('Create new %s', 'getClassName')));
 		return '<h1>'.$this->getClass().'</h1><div>'
 			.$this->createAction(array('Create new %s', 'getClassName'))
 			.'</div>'
@@ -414,7 +413,7 @@ class Element extends BaseObject {
         
     	if(@$this->$name instanceof Data)
         {
-        	if($arguments){ $this->$name->val($arguments[0]); return; }
+        	if($arguments){ return $this->$name->val($arguments[0]); }
         	else{ return $this->$name->val(); }
         	
         } else {	
@@ -450,7 +449,7 @@ class Element extends BaseObject {
 	 updateInDS // este debe ser automatico desde el save si se tiene id se genera
 	*/
 	
-	function encodeURL(array $construct_params, $method, array $method_params = array()) {
+	function encodeURL(array $construct_params = array(), $method, array $method_params = array()) {
 		return Main::encodeURL($this->getClass(), $construct_params, $method, $method_params);
 	}
 	

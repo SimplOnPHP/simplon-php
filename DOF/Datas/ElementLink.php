@@ -25,6 +25,7 @@ class ElementLink extends ComplexData {
 	
 	public function __construct($label, array $sources, $method, array $method_params = array(), $flags=null, $searchOp=null){
 		$this->method = $method;
+		$this->method_params = $method_params;
 		
 		parent::__construct($label,$sources,$flags,null,$searchOp);
 	}
@@ -33,7 +34,7 @@ class ElementLink extends ComplexData {
 		if(!isset($sources)) $sources = $this->sources;
 		
 		$id = $this->parent->{$this->parent->field_id()}();
-		$href = $this->parent->encodeURL(array($id), $this->method);
+		$href = $this->parent->encodeURL($id ? array($id) : array(), $this->method, $this->method_params);
 		$content = vsprintf(array_shift($sources), $this->sourcesToValues($sources));
 		
 		return Main::$DEFAULT_RENDERER->link($content, $href);

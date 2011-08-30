@@ -7,12 +7,12 @@ error_reporting(0); ini_set('display_errors',false);
 date_default_timezone_set('America/Mexico_City');
 setlocale(LC_ALL, 'es_MX.UTF-8', 'es_ES.UTF-8');
 
-/*
+/* *
 echo '$_SERVER';var_dump($_SERVER);
 echo '$_GET';var_dump($_GET);
 phpinfo();
 exit();
-*/
+/* */
 
 /*
 $basePath = substr($_SERVER['PHP_SELF'], 0, -9);

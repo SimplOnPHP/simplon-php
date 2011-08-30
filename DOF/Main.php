@@ -152,7 +152,7 @@ class Main {
 		$method_params = array_map($fencoder, $method_params);
 		
 		return self::$REMOTE_ROOT . '/'
-			. $class . (@$construct_params ? '/' . implode('/',$construct_params) : '')
+			. $class . (@$construct_params ? '/' . implode('/',$construct_params) : '/')
 			. '|' 
 			. $method . (@$method_params ? '/' . implode('/',$method_params) : '');
 	}
