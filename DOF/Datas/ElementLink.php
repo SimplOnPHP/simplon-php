@@ -33,7 +33,11 @@ class ElementLink extends ComplexData {
 	public function val($sources = null){
 		if(!isset($sources)) $sources = $this->sources;
 		
-		$id = $this->parent->{$this->parent->field_id()}();
+		//esto deb ser condicional haslo tu que sabes eso compacto
+		$id = $this->parent->hasMethod($this->parent->field_id())
+			? $this->parent->{$this->parent->field_id()}()
+			: null;
+		
 		$href = $this->parent->encodeURL($id ? array($id) : array(), $this->method, $this->method_params);
 		$content = vsprintf(array_shift($sources), $this->sourcesToValues($sources));
 		
