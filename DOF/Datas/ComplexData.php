@@ -27,10 +27,13 @@ class ComplexData extends Data {
 		$list = true,
 		$fetch = false,
 		$required = false,
+		$search = false,
 		/**
 		 * @var \DOF\Elements\Element
 		 */
 		$parent = null;
+	
+		
 	
 	public function __construct($label,$sources,$flags=null,$searchOp=null){
 		
@@ -51,8 +54,8 @@ class ComplexData extends Data {
 	}
 
 	
-	public function showView($sources = null) {return $this->val($sources);}
-	public function showInput($sources = null) {return $this->val($sources);}
+	public function showView($template = null, $sources = null) {return $this->val($sources);}
+	public function showInput($fill = false, $sources = null) {return $this->val($sources);}
 	
 
 	

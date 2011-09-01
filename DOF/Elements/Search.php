@@ -17,7 +17,9 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace DOF\Elements;
-use \DOF\Datas\DArray,
+use 
+	\DOF\Datas,
+	\DOF\Datas\DArray,
 	\DOF\Datas\Link,
 	\DOF\Main;
 
@@ -45,14 +47,9 @@ class Search extends Element
 
 
 
-	public function __construct($id_or_elementsTypes, &$specialDataStorage=null)
+	public function __construct($id_or_elementsTypes = null, &$specialDataStorage=null)
 	{
-		//On heirs put here the asignation of DOFdata and attributes
-		if(is_array($id_or_elementsTypes)){
-			$this->elementsTypes = new DArray('','vclsR',$id_or_elementsTypes);
-		} else {
-			$id = $id_or_elementsTypes;
-		}
+		$this->construct($id_or_elementsTypes, $specialDataStorage);
 		
 		//Asings the storage element for the DOFelement. (a global one : or a particular one)
 		if(!$specialDataStorage){
@@ -61,34 +58,41 @@ class Search extends Element
 			$this->dataStorage=&$specialDataStorage;
 		}
 		
-		//checking if there is already a dataStorage and storage for this element
-		
-		//if there is a storage and an ID it fills the element with the proper info.
-
-		if( isset($id) ) {
+		//On heirs put here the asignation of DOFdata and attributes
+		if(is_array($id_or_elementsTypes)){
+			if(array_values($id_or_elementsTypes) === $id_or_elementsTypes) {
+				$this->elementsTypes = new DArray('', 'vclsR', $id_or_elementsTypes);
+			} else {
+				$this->fillFromArray($id_or_array);
+			}
+		} else if(isset($id_or_elementsTypes)) {
+			$id = $id_or_elementsTypes;
 			$this->dataStorage->ensureElementStorage($this);
 			$this->fillFromDSById($id);
 		}
+		
+		//checking if there is already a dataStorage and storage for this element
+		
+		//if there is a storage and an ID it fills the element with the proper info.
 		
 		
 		if(!$this->storage()) {
 			$storages = array();
 			foreach($this->elementsTypes() as $elementType) {
 				$dummy_class = new $elementType;
-				$storages[] = $dummy_class->storage();
+				$storages[$elementType] = $dummy_class->storage();
 			}
 			$this->storage($storages);
 		}
 
 		$this->getFields();
-
-		//------------------------
 		
-		//$this->selectLink = new Link('$link' , '$label', '$flags' );
 		
-
-		
-		//-------------------------
+		$this->viewAction = new Datas\ViewAction('', array('View'));
+		// @todo: make it possible to create a new Search using an HTML form
+		$this->createAction = new Datas\CreateAction('', array('Create'));
+		$this->updateAction = new Datas\UpdateAction('', array('Update'));
+		$this->deleteAction = new Datas\DeleteAction('', array('Delete'));
 
 		// Tells the DOFdata whose thier "container" in case any of it has context dependent info or functions.
 		$this->assignAsDatasParent();
@@ -156,7 +160,7 @@ class Search extends Element
 	public function showSearch($template_file = '')
 	{
 		//var_dump($this);	
-		return $this->obtainHtml(__FUNCTION__, $this->templateFilePath('Search', '_'.implode('-', $this->elementsTypes())), null);;
+		return $this->obtainHtml(__FUNCTION__, $this->templateFilePath('Search', '_'.implode('-', $this->elementsTypes())), null);
 	}
 
 	function processSearch($params = null){
@@ -167,9 +171,13 @@ class Search extends Element
 		
 		$elementsTypes = $this->elementsTypes;
 		$this->elementsTypes = null;
-		var_dump( $this->dataStorage->readElements($this) );
+		//var_dump( $this->dataStorage->readElements($this) );
 		$return = Main::$DEFAULT_RENDERER->table($this->dataStorage->readElements($this));
 		$this->elementsTypes = $elementsTypes;
 		return $return;
+	}
+	
+	public function index() {
+		return $this->showSearch();
 	}
 }

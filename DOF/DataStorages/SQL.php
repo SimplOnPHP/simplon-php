@@ -389,7 +389,7 @@ abstract class SQL extends DataStorage
 	}
 
 	public function readElements(\DOF\Elements\Element &$element){
-		$storages = is_array($element->storage()) ? $element->storage() : array($element->storage());
+		$storages = is_array($element->storage()) ? $element->storage() : array($element->getClass() => $element->storage());
 		
 		foreach($element->processData('doRead') as $dataInfo){
 			foreach($dataInfo as $fieldInfo){
@@ -397,12 +397,15 @@ abstract class SQL extends DataStorage
 			}
 		}
 		
-		foreach($storages as $storage) {
+		foreach($storages as $class => $storage) {
 			$storage_fields = $fields; // id as id, 'id' as field_id, 'fe' as storage
 			array_unshift($storage_fields,
-				'"'.$storage.'" as DOF_storage', 
+				//'"'.$storage.'" as DOF_storage', 
+				'"'.$class.'" as DOF_class', 
 				'"'.$element->field_id().'" as DOF_field_id', 
-				$element->field_id().' as DOF_id');
+				$element->field_id().' as DOF_id', // mandatory (ej. to make it possible to order on a UNION)
+				$element->field_id()
+			);
 			$where = $this->filterCriteria($element);
 			$selects[] = '(SELECT '.implode(', ', $storage_fields).' FROM '.$storage.' '. ($where ? 'WHERE '.$where : '') .')';
 		}
@@ -421,10 +424,10 @@ abstract class SQL extends DataStorage
 		foreach($element->processData('doSearch') as $dataInfo){
 			foreach($dataInfo as $fieldInfo){
 				$bindable_values = array(
-					':'.$fieldInfo[0]				 => $fieldInfo[2],
+					':'.$fieldInfo[0]			 => $fieldInfo[2],
 					':RLLIKE__'.$fieldInfo[0]	 => '%'.$fieldInfo[2].'%',
-					':LLIKE__'.$fieldInfo[0]			 => '%'.$fieldInfo[2],
-					':RLIKE__'.$fieldInfo[0]		 => $fieldInfo[2].'%',
+					':LLIKE__'.$fieldInfo[0]	 => '%'.$fieldInfo[2],
+					':RLIKE__'.$fieldInfo[0]	 => $fieldInfo[2].'%',
 				);
 				foreach($bindable_values as $label => $value) {
 					if(strpos($query_string, $label) !== false)

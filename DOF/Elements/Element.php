@@ -56,9 +56,9 @@ class Element extends BaseObject {
 	*
 	* @param int $id
 	*/
-	public function __construct($id=null,&$specialDataStorage=null, array $dataConstructParams = array())
+	public function __construct($id_or_array = null, &$specialDataStorage=null)
 	{
-		$this->construct($id, $specialDataStorage);
+		$this->construct($id_or_array, $specialDataStorage);
 		
 		//On heirs put here the asignation of DOFdata and attributes
 		
@@ -84,14 +84,16 @@ class Element extends BaseObject {
 		//checking if there is already a dataStorage and storage for this element
 		$this->dataStorage->ensureElementStorage($this);
 		
-		//if there is a storage and an ID it fills the element with the proper info.
-		if($id) {
-			$this->fillFromDSById($id);
+		if(is_array($id_or_array)) {
+			$this->fillFromArray($id_or_array);
+		} else if($id_or_array) {
+			//if there is a storage and an ID it fills the element with the proper info.
+			$this->fillFromDSById($id_or_array);
 		}
 		 
 	}
 	
-	public function construct($id=null, &$specialDataStorage=null) {}
+	public function construct($id_or_array = null, &$specialDataStorage=null) {}
 	
 	public function index() {
 		return '<h1>'.$this->getClass().'</h1><div>'

@@ -54,7 +54,7 @@ class ElementsContainer extends Data {
 		);
 	}
 	
-	
+	//CONTINUAR AQUI
 	function showView($template = null)
 	{
 		//return $this->parent()->getClass();
@@ -71,8 +71,21 @@ class ElementsContainer extends Data {
 		if($val === '') {
 			$class = $this->element->getClass();
 			$this->element = new $class;
-		} else	if($val !== null) {
-			$this->element->fillFromDSById($val);
+		} else	if(is_array($val)) {
+
+			foreach($val as $elementdata)
+			{
+				if(isset($elementdata['DOF_class'])){
+					//array 1
+					$this->elements[] = new $elementdata['DOF_class']($elem);
+				} else if(isset($elementdata['class'])){
+					//array 2 array(class  => '', id=>'' )
+					$this->elements[] = new $elementdata['class']($elem['id']);
+				}
+			
+			}
+			
+			
 		} else {
 			return @$this->element->{$this->element->field_id()}();
 		}

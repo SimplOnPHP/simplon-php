@@ -23,7 +23,6 @@ class CreateAction extends ElementLink {
 		$view = false,
 		$create = false,
 		$update = false,
-		$search = true,
 		$list = true
 	;
 	
