@@ -173,16 +173,10 @@ abstract class Data extends BaseObject {
 
 	
 	/**
-	 *
-	 *
-	 *
-	 * @param ing $label
-	 * @param ing $field
-	 * @param unknown_type $val
-	 * @param ing $acslr This ing indicates the DOFdata where it must be used by the DOFelement's to do so if sended the
-	 * sting must contain the first letter of any the following "uses": create, update, search, list, required.
-	 * if the letter is included (the order desn't matter) that use will be set to true if not to false.
-	 * see the help avobe to see what each of this does.
+	 * @param string $label
+	 * @param string $flags
+	 * @param mixed $val
+	 * @param string $searchOp
 	 */
 	public function __construct($label=null, $flags=null, $val=null, $searchOp=null)
 	{
@@ -203,8 +197,6 @@ abstract class Data extends BaseObject {
 	}
 
 	public function construct($label=null, $flags=null, $val=null, $searchOp=null) {}
-
-	public function fill() {}
 	
 	
 	
@@ -315,6 +307,12 @@ abstract class Data extends BaseObject {
 		}
 	}
 	
+	
+	public function getCSS($method) {
+		$class = end(explode('\\',$this->getClass()));
+		$local_css = Main::$CSS_FLAVOUR_BASE . "/ClassSpecific/$class.$method.css";
+		return array($local_css);
+	}
 	
 	public function getJS($method) {
 		$class = end(explode('\\',$this->getClass()));

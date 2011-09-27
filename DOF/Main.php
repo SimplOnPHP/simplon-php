@@ -48,6 +48,9 @@ class Main {
 		$JS_FLAVOUR = 'jQuery',
 		$JS_FLAVOUR_BASE,
 	
+		$CSS_FLAVOUR = 'jQuery',
+		$CSS_FLAVOUR_BASE,
+	
 		$DEV_MODE = false,
 
 		$DATA_STORAGE;
@@ -91,6 +94,8 @@ class Main {
 		
 		if(!self::$JS_FLAVOUR_BASE)
 			self::$JS_FLAVOUR_BASE = self::$LOCAL_ROOT . '/JS/' . self::$JS_FLAVOUR;
+		if(!self::$CSS_FLAVOUR_BASE)
+			self::$CSS_FLAVOUR_BASE = self::$LOCAL_ROOT . '/CSS/' . self::$CSS_FLAVOUR;
 		
 		include(self::$DOF_PATH.'/Utilities/check.php');
 		

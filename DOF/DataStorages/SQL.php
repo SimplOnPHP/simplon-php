@@ -65,6 +65,8 @@ abstract class SQL extends DataStorage
 	public function readElement(&$element) {
 		$values[':'.$element->field_id()] = $element->{$element->field_id()}();
 		
+		$element->processData('preRead');
+		
 		foreach($element->processData('doRead') as $dataInfo){
 			foreach($dataInfo as $fieldInfo){
 				$fields[] = $fieldInfo[0];
@@ -78,7 +80,11 @@ abstract class SQL extends DataStorage
 			LIMIT 1
 		');
 		$query->execute($values);
-		return $query->fetch();
+		$return = $query->fetch();
+		
+		$element->processData('postRead');
+		
+		return $return;
 	}
 	
 	

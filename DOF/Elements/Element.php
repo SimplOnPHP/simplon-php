@@ -17,45 +17,75 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace DOF\Elements;
+use DOF\DataStorages\DataStorage;
+
 use \DOF\Datas, \DOF\Datas\Data, \DOF\BaseObject, \DOF\Main, \DOF\Exception;
 
 /**
- * This is the core element to build the site. DOF (Data Oriented FrameWork) is based on data representation, stoarge and manipulation.
- * Elements are the way to indicate the system all data that conforms it. Each Element represents a data set.
+ * This is the core element to build the site. Elements are the way to indicate the system all data that conforms it. 
+ * Each Element represents a data set.
  *
- * In practical terms Elements are just Objets with extended capabilities to handdle some comon tasks like:
- * Print their contets, Store their contents, find and retrive the proper data froma a dataStorage, etc.
+ * In practical terms Elements are just Objets with extended capabilities to handle some common tasks like:
+ * Print their contents, Store their contents, find and retrieve the proper data from a dataStorage, etc.
  *
- * Elemnts are programed and used like any other regular object except
- * that in orther to make their special features work some of their attributes must be DOF data objects.
+ * Elements are programmed and used like any other regular object except that, 
+ * in order to make their special features work, some of their attributes must be SimplON Data objects.
  *
  * @author RSL
  */
 class Element extends BaseObject {
-	protected 
-		$field_id = 'id',
-		$dir,
-		$storage,
-		$tempFormPrefix,
-		/*@var dataStorage \DOF\DataStorages\DataStorage */
-		$dataStorage,
-		$dataAttributes,
-		$storageChecked,
-	
-		$filterCriteria;
 	
 	/**
-	* Costructor.
-	*
-	* Meant to be added at the end of all heir's constructors width:
-	*
-	* parent::__construct($id=null);
-	*
-	*
-	* beacuse it perfroms DOFdata dependant methods but that are common to all DOFelements
-	*
-	* @param int $id
-	*/
+	 * Name of the Data attribute that represents 
+	 * the ID field of the Element
+	 * (ie. SQL primary key's column name). 
+	 * @var string
+	 */
+	protected $field_id = 'id';
+	
+	/**
+	 * Name of the storage associated to this Element
+	 * (ie. SQL table name, MongoDB collection name).
+	 * @var string
+	 */
+	protected $storage;
+	
+	/**
+	 * Stores a list of Element's attributes
+	 * of type Data for better performance.
+	 * @var array containing objects of type DOF\Datas\Data
+	 */
+	protected $dataAttributes;
+	
+	/**
+	 * Flag to avoid the system to validate 
+	 * DataStorage more than once. 
+	 * @var boolean
+	 */
+	protected $storageChecked;
+	
+	/**
+	 * Criteria to use for searching.
+	 * @example (.Data1) AND (Data2 == "Hello")
+	 * @var string
+	 */
+	protected $filterCriteria;
+	
+	/**
+	 * What DataStorage to use.
+	 * @var DOF\DataStorages\DataStorage
+	 */
+	protected $dataStorage;
+	
+	/**
+	 * - Calls user defined constructor.
+	 * - Adds default Element's actions.
+	 * - Validates DataStorages.
+	 * - Fills its Datas' values if possible (requires a valid ID or array of values).
+	 * - Fills some of its Datas' meta-datas (parent, names).
+	 * @param mixed $id_or_array ID of the Element or array of Element's Datas values.  
+	 * @param DOF\DataStorages\DataStorage $specialDataStorage DataStorage to use in uncommon cases.
+	 */
 	public function __construct($id_or_array = null, &$specialDataStorage=null)
 	{
 		$this->construct($id_or_array, $specialDataStorage);
@@ -93,8 +123,17 @@ class Element extends BaseObject {
 		 
 	}
 	
+	/**
+	 * User defined constructor, called within {@link __constructor()},
+	 * useful to declare specific Data attributes.
+	 * @param mixed $id_or_array ID of the Element or array of Element's Datas values.  
+	 * @param DOF\DataStorages\DataStorage $specialDataStorage DataStorage to use in uncommon cases.
+	 */
 	public function construct($id_or_array = null, &$specialDataStorage=null) {}
 	
+	/**
+	 * Default method that will be shown in case no methods have been specified.
+	 */
 	public function index() {
 		return '<h1>'.$this->getClass().'</h1><div>'
 			.$this->createAction(array('Create new %s', 'getClassName'))
@@ -102,12 +141,13 @@ class Element extends BaseObject {
 		;
 	}
 
+	
 	//@todo: in  arrays format
 	public function fillFromDSById($id = null){
 		if(isset($id)) $this->id($id);
 		
 		if($this->id()){
-			/*@var $this->dataStorage DataStorage*/
+			
 			$dataArray = $this->dataStorage->readElement( $this );
 			
 			$this->fillFromArray($dataArray);
@@ -134,13 +174,14 @@ class Element extends BaseObject {
 	
 	public function processData($method)
 	{
+		$return = array();
 		foreach($this->dataAttributes() as $dataName) {
 			$r = $this->$dataName->$method();
-			if($r) @$ret[]= $r;
+			if(isset($r)) $return[]= $r;
 		}
 		
 		// @todo: verify if it can stay this way
-		return @$ret ?: true;
+		return $return;
 	}
 
 	
@@ -208,7 +249,7 @@ class Element extends BaseObject {
 	
 	public function showSearch($template_file = null, $action = null)
 	{
-		return $this->obtainHtml(__FUNCTION__, $template_file, $action).$this->processSearch();
+		return $this->obtainHtml(__FUNCTION__, $template_file, $action).$this->processSearch(null, 'multi');
 	}
 		
 	// @todo: allow to obtain only the dom part inherent to the element (and not the whole web page)
@@ -227,6 +268,7 @@ class Element extends BaseObject {
 		if($template_file === false || !file_exists($template_file) || Main::$OVERWRITE_LAYOUT_TEMPLATES) {
 			$dom = \phpQuery::newDocumentFileHTML(Main::$MASTER_TEMPLATE);
 			$dom['head']->append($this->getJS($caller_method, 'html'));
+			$dom['head']->append($this->getCSS($caller_method, 'html'));
 			
 			foreach($this->attributesTypes('\\DOF\\Datas\\File') as $fileData)
 			{
@@ -319,7 +361,7 @@ class Element extends BaseObject {
 					$a_js[] = $local_js;
 			}
 		$a_js = array_unique($a_js);
-		$libs = glob(Main::$JS_FLAVOUR_BASE . '/Libs/*');
+		$libs = glob(Main::$JS_FLAVOUR_BASE . '/Libs/*.js');
 		sort($a_js);
 		sort($libs);
 		
@@ -340,11 +382,56 @@ class Element extends BaseObject {
 		
 		switch($returnFormat) {
 			case 'html':
-				return ($a_js)
-					? '<script type="text/javascript" src="'. implode('"></script>'."\n".'<script type="text/javascript" src="', $a_js) . '"></script>'
-					: '';
+				$html_js = '';
+				foreach($a_js as $js) {
+					$html_js.= '<script type="text/javascript" src="'.$js.'"></script>'."\n";
+				}
+				return $html_js;
 			case 'array':
 				return $a_js;
+		}
+	}
+
+	public function getCSS($method, $returnFormat = 'array', $compress = false) {
+		$class = end(explode('\\',$this->getClass()));
+		
+		$local_css = Main::$CSS_FLAVOUR_BASE . "/ClassSpecific/$class.$method.css";
+		$a_css = file_exists($local_css) ? array($local_css) : array();
+		
+		foreach($this->dataAttributes() as $data) {
+			foreach($this->{'O'.$data}()->getCSS($method) as $local_css)
+				if(file_exists($local_css))
+					$a_css[] = $local_css;
+			}
+		$a_css = array_unique($a_css);
+		$libs = glob(Main::$CSS_FLAVOUR_BASE . '/Libs/*.css');
+		sort($a_css);
+		sort($libs);
+		
+		if($compress) {
+			// @todo: compress in one file and return the file path
+		}
+		
+		// converts to remote paths
+		$a_css = array_map(
+			function($fp) {
+				return str_replace(Main::$LOCAL_ROOT, Main::$REMOTE_ROOT, $fp);
+			},
+			array_unique(array_merge(
+				$libs,
+				$a_css
+			))
+		);
+		
+		switch($returnFormat) {
+			case 'html':
+				$html_css = '';
+				foreach($a_css as $css) {
+					$html_css.= '<link type="text/css" rel="stylesheet" href="'.$css.'" />'."\n";
+				}
+				return $html_css;
+			case 'array':
+				return $a_css;
 		}
 	}
 	
@@ -580,5 +667,11 @@ class Element extends BaseObject {
 		
 	public function datasRequired(){
 		
+	}
+	
+	
+	
+	function showMultiPicker(){
+		return Main::$DEFAULT_RENDERER->table(array($this->toArray()));
 	}
 }

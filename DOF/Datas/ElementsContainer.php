@@ -17,6 +17,7 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace DOF\Datas;
+use DOF\Main;
 
 
 /**
@@ -33,62 +34,34 @@ class ElementsContainer extends Data {
 		 */
 		$parent, 
 		/**
-		 * Encapsulated element
+		 * Encapsulated elements
 		 * @var DOF\Elements\Element
 		 */
-		$element;
+		$elements;
 	
-	public function __construct( \DOF\Elements\Element $element, $label=null, $flags=null, $element_id=null) {
+	public function __construct($elements_or_searchId, $label=null, $flags=null, $element_id=null) {
 		
-		$this->element($element);			
+		if(is_array($elements_or_searchId)) {
+			$this->elements($elements_or_searchId);
+		} else {
+			
+		}
 		
 		parent::__construct($label,$flags,$element_id);
 	}
 	
 	public function getJS($method) {
-		return array_map(
-			function($fp) {
-				return str_replace(\DOF\Main::$REMOTE_ROOT, \DOF\Main::$LOCAL_ROOT, $fp);
-			},
-			$this->element->getJS($method)
-		);
+		return array();
 	}
 	
 	//CONTINUAR AQUI
 	function showView($template = null)
 	{
-		//return $this->parent()->getClass();
-		$id = $this->element()->{$this->element()->field_id()}();
-		if($id !== null) {
-			$dom = \phpQuery::newDocumentHTML($this->element()->showView());
-			return $dom['.DOF.'.$this->element()->getClass()].'';
-		} else {
-			return '';
-		}
+		return '';
 	}
 	
 	public function val($val = null) {
-		if($val === '') {
-			$class = $this->element->getClass();
-			$this->element = new $class;
-		} else	if(is_array($val)) {
 
-			foreach($val as $elementdata)
-			{
-				if(isset($elementdata['DOF_class'])){
-					//array 1
-					$this->elements[] = new $elementdata['DOF_class']($elem);
-				} else if(isset($elementdata['class'])){
-					//array 2 array(class  => '', id=>'' )
-					$this->elements[] = new $elementdata['class']($elem['id']);
-				}
-			
-			}
-			
-			
-		} else {
-			return @$this->element->{$this->element->field_id()}();
-		}
 	}
 	
 	
@@ -106,12 +79,22 @@ class ElementsContainer extends Data {
 	
 	function showInput($fill)
 	{
-		return  '
-			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showSearch').'">List</a>
-			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showCreate').'">Add</a>
-			<div class="preview">'.$this->showView().'</div>
+		$elementsTypes = array();
+		$elementsShow = array();
+		$elementsAdd = array();
+		foreach($this->elements as $element) {
+			$elementsTypes[]= $element->getClass();
+			//$elementsShow[]= $element->showView();
+			$elementsAdd[]= '<a class="lightbox" href="'.$element->encodeURL(array(),'showCreate').'">Add '.$element->getClass().'</a>';
+		}
+		$return = '
+			<a class="lightbox" href="'.Main::encodeURL('Search',array($elementsTypes),'showSearch', array(null, 'multi')).'">List</a>
+			'. implode(' ', $elementsAdd).'
+			<div class="preview">'.implode(' ', array_unique($elementsShow)).'</div>
 			<input class="input" name="'.$this->name().'" type="hidden" />
 		';
-	}	
+		
+		return $return;
+	}
 	
 }

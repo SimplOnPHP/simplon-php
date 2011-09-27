@@ -3,17 +3,28 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 <title></title>
-<script type="text/javascript" src="/multisite/sample_site/JS/jQuery/Libs/jquery-1.6.2.min.js"></script>
+<script type="text/javascript" src="/SimplON/sample_site/JS/jQuery/Libs/00_jquery-1.6.2.min.js"></script><script type="text/javascript" src="/SimplON/sample_site/JS/jQuery/Libs/05_jquery.colorbox-min.js"></script><script type="text/javascript" src="/SimplON/sample_site/JS/jQuery/Libs/05_jquery.form.js"></script><script type="text/javascript" src="/SimplON/sample_site/JS/jQuery/Libs/10_SimplON.js"></script><link type="text/css" rel="stylesheet" href="/SimplON/sample_site/CSS/jQuery/Libs/colorbox.css">
 </head>
-<body><form class="DOF Fe" action="/multisite/sample_site/Fe?processCreate" method="post"><div class="DOF Fe">
+<body><form class="DOF Fe" action="/SimplON/sample_site/Fe/%7CprocessCreate" method="post"><div class="DOF Fe">
 <div class="DOF cabeza">
-<label for="DOF_0000000062b90aca000000007fa859b7">¿Cuando tendrás Fe?: </label><input class="input DOF Datas String" name="cabeza" type="text" id="DOF_0000000062b90aca000000007fa859b7">
-</div>
-<div class="DOF ap_pater">
-<label for="DOF_0000000062b90ac4000000007fa859b7">Mi nombre en formato fecha: </label><input class="DOF input DOF\Datas\Date" name="ap_pater" type="text" id="DOF_0000000062b90ac4000000007fa859b7">
+<label for="DOF_0000000074fc4e2e0000000034b6f67c">¿Cuando tendrás Fe?: </label><input class="input DOF Datas String" name="cabeza" type="text" id="DOF_0000000074fc4e2e0000000034b6f67c">
 </div>
 <div class="DOF contenido">
-<label for="DOF_0000000062b90ac5000000007fa859b7">Contenido: </label><input class="input DOF Datas String" name="contenido" type="text" id="DOF_0000000062b90ac5000000007fa859b7">
+<label for="DOF_0000000074fc4e2f0000000034b6f67c">Contenido: </label><input class="input DOF Datas String" name="contenido" type="text" id="DOF_0000000074fc4e2f0000000034b6f67c">
+</div>
+<div class="DOF home">
+<label for="DOF_0000000074fc4e2c0000000034b6f67c">Home: </label>
+			<a class="lightbox" href="/SimplON/sample_site/Home/%7CshowSearch">List</a>
+			<a class="lightbox" href="/SimplON/sample_site/Home/%7CshowCreate">Add</a>
+			<div class="preview"></div>
+			<input class="input" name="home" type="hidden" id="DOF_0000000074fc4e2c0000000034b6f67c">
+</div>
+<div class="DOF homes">
+<label for="DOF_0000000074fc4e350000000034b6f67c">Homes: </label>
+			<a class="lightbox" href="/SimplON/sample_site/Search/%5B%22Home%22%5D%7CshowSearch/null/%22multi%22">List</a>
+			<a class="lightbox" href="/SimplON/sample_site/Home/%7CshowCreate">Add Home</a>
+			<div class="preview"></div>
+			<input class="input" name="homes" type="hidden" id="DOF_0000000074fc4e350000000034b6f67c">
 </div>
 <button name="commit" type="submit">Save</button><button name="cancel" onclick="javascript:history.back()">Cancel</button>
 </div></form>

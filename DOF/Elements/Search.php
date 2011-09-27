@@ -130,22 +130,6 @@ class Search extends Element
 		}
 	
 	}
-	/* ejemplo de comentario */
-	/* yo lo veo bastante fluido, se tarda como medio segundo en mostrar la palabra que escribí,
-	 * lo cual se me hace aceptable ok pues podemos probar sin audio y por telefono solo tengo que comprar un buen telefono
-	 * que igual me hace falta
-	 * como ve slo que yo pongo?
-	 *  como? oooo si ya veo jaja solo que escribo muy mal
-	 *  sas
-	 *  pues con el audio aprte si puede jalar
-	 *  sale podemos tratar de trabajar asi a ver que pasa
-	 *  
-	 *  
-	 *  solo que sigo ocn la duda de si la coleccion es dato o elemento
-	 *  creo que habra uan y una
-	 *  mmm no se a mi me desqueicia mucho
-	 *  
-	 */
 
 	public function showView($template_file = '') {	
 		return $this->showSearch($template_file);
@@ -159,21 +143,30 @@ class Search extends Element
 
 	public function showSearch($template_file = '')
 	{
-		//var_dump($this);	
-		return $this->obtainHtml(__FUNCTION__, $this->templateFilePath('Search', '_'.implode('-', $this->elementsTypes())), null);
+		//var_dump($this);
+		var_dump($this->elementsTypes);
+		return 
+			$this->processSearch()
+			.
+			$this->obtainHtml(__FUNCTION__, $this->templateFilePath('Search', '_'.implode('-', $this->elementsTypes())), null)
+			. 
+			$this->processSearch()
+		;
 	}
 
-	function processSearch($params = null){
-		if(isset($params))
+	function processSearch($params = null, $showMode = null){
+		if(is_array($params))
 			$this->fillFromArray($params);
 		else
 			$this->fillFromRequest();
 		
-		$elementsTypes = $this->elementsTypes;
+		var_dump($this->elementsTypes);
+		$elementsTypes = $this->elementsTypes();
 		$this->elementsTypes = null;
 		//var_dump( $this->dataStorage->readElements($this) );
+		
 		$return = Main::$DEFAULT_RENDERER->table($this->dataStorage->readElements($this));
-		$this->elementsTypes = $elementsTypes;
+		$this->elementsTypes($elementsTypes);
 		return $return;
 	}
 	
