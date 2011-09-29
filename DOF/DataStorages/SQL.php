@@ -335,7 +335,7 @@ abstract class SQL extends DataStorage
 	}
 	
 	function createElement (\DOF\Elements\Element &$element) {
-		$datas=$element->processData('doCreate');
+		$datas = $element->processData('doCreate');
 		
 		
 		$new_datas = array();

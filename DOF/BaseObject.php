@@ -53,7 +53,7 @@ class BaseObject
 	public function getMethods()
 	{
 		$class = get_class($this);
-		return array_merge(get_class_methods($class) , array_keys(get_class_vars($class)));
+		return array_merge(get_class_methods($class) , $this->getAttributeKeys());
 	}
 
 	

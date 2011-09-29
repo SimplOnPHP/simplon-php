@@ -18,6 +18,11 @@
 */
 namespace DOF\Datas;
 
+/**
+ * ComplexData is a Data made by combining other Datas 
+ * belonging to the same "logic parent" (the same Element).
+ * @example /sample_site/Elements/Example_ComplexData.php 
+ */
 class ComplexData extends Data {
 		
 	protected

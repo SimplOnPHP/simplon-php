@@ -17,6 +17,8 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace DOF\Elements;
+use DOF\Datas\ComplexData;
+
 use DOF\DataStorages\DataStorage;
 
 use \DOF\Datas, \DOF\Datas\Data, \DOF\BaseObject, \DOF\Main, \DOF\Exception;
@@ -34,7 +36,7 @@ use \DOF\Datas, \DOF\Datas\Data, \DOF\BaseObject, \DOF\Main, \DOF\Exception;
  * @author RSL
  */
 class Element extends BaseObject {
-	
+
 	/**
 	 * Name of the Data attribute that represents 
 	 * the ID field of the Element
@@ -42,40 +44,54 @@ class Element extends BaseObject {
 	 * @var string
 	 */
 	protected $field_id = 'id';
-	
-	/**
-	 * Name of the storage associated to this Element
-	 * (ie. SQL table name, MongoDB collection name).
-	 * @var string
-	 */
-	protected $storage;
-	
-	/**
-	 * Stores a list of Element's attributes
-	 * of type Data for better performance.
-	 * @var array containing objects of type DOF\Datas\Data
-	 */
-	protected $dataAttributes;
-	
-	/**
-	 * Flag to avoid the system to validate 
-	 * DataStorage more than once. 
-	 * @var boolean
-	 */
-	protected $storageChecked;
-	
-	/**
-	 * Criteria to use for searching.
-	 * @example (.Data1) AND (Data2 == "Hello")
-	 * @var string
-	 */
-	protected $filterCriteria;
-	
+
 	/**
 	 * What DataStorage to use.
 	 * @var DOF\DataStorages\DataStorage
 	 */
 	protected $dataStorage;
+	
+	/**
+	* Name of the storage associated to this Element
+	* (ie. SQL table name, MongoDB collection name).
+	* @var string
+	*/
+	protected $storage;	
+	
+	/**
+	* Criteria to use for searching.
+	* @example (.Data1) AND (Data2 == "Hello")
+	* @var string
+	*/
+	protected $filterCriteria;	
+
+	
+	
+//-------------------------------------------Internal	
+	/**
+	* Flag to avoid the system to validate
+	* DataStorage more than once.
+	* @var boolean
+	*/
+	protected $storageChecked;	
+	
+	
+//------------------------------------------Performance	
+	/**
+	* Stores a list of Element's attributes
+	* of type Data for better performance.
+	* @var array containing objects of type DOF\Datas\Data
+	*/
+	protected $dataAttributes;
+	
+	
+	
+
+	
+	
+	
+	
+	
 	
 	/**
 	 * - Calls user defined constructor.
@@ -142,7 +158,15 @@ class Element extends BaseObject {
 	}
 
 	
-	//@todo: in  arrays format
+	/**
+	 * Retrieves the element's Datas values from the DataSotarage, 
+	 * using the recived Id or the element's id if no id is provided.
+	 *
+	 * @param mixed $id the id of the element whose data we whant to read from de DS
+	 * @throws Exception
+	 * 
+	 * @todo: in  arrays format ????
+	 */
 	public function fillFromDSById($id = null){
 		if(isset($id)) $this->id($id);
 		
@@ -156,6 +180,13 @@ class Element extends BaseObject {
 		}
 	}
 	
+	
+	/**
+	 * Returns an array representation of the Element assigning each Data's name 
+	 * as the key and the data's value as the value.
+	 * 
+	 * @return array
+	 */
 	public function toArray() {
 		foreach($this->dataAttributes() as $dataName ) {
 			$ret[$dataName] = $this->$dataName();
@@ -163,6 +194,12 @@ class Element extends BaseObject {
 		return $ret;
 	}
 	
+	/**
+	 * Assigns to each Data attribute it's corresponding value 
+	 * from an array of values.
+	 * 
+	 * @param array $array_of_data
+	 */
 	public function fillFromArray(array &$array_of_data)
 	{
 		foreach($array_of_data as $dataName=>$value){
@@ -172,6 +209,27 @@ class Element extends BaseObject {
 		}
 	}
 	
+	/**
+	*
+	* NOTE: This method is not a simple redirection to $this->fillFromArray($_REQUEST) because the file upload requeires the $_FILES array
+	* Thus the redirection from fillFromRequest to fillFromArray is made at the DOFData and there for any DOFData that needs to
+	* distinguish between both can do it.
+	*
+	*/
+	public function fillFromRequest()
+	{
+		return $this->fillFromArray($_REQUEST);
+		
+		/**
+		 * COMPLETE THE PART TO HANDLE FILES
+		 */
+	}	
+	
+	/**
+	 * Applies a method to all the Datas and returns an array containing all the responses.
+	 * 
+	 * @param string $method must be a method common to all datas
+	 */
 	public function processData($method)
 	{
 		$return = array();
@@ -185,47 +243,7 @@ class Element extends BaseObject {
 	}
 
 	
-	/**
-	 *
-	 * NOTE: This method is not a simple redirection to $this->fillFromArray($_REQUEST) because the file upload requeires the $_FILES array
-	 * Thus the redirection from fillFromRequest to fillFromArray is made at the DOFData and there for any DOFData that needs to
-	 * distinguish between both can do it.
-	 *
-	 */
-	public function fillFromRequest()
-	{
-		return $this->fillFromArray($_REQUEST);
-	}
-	
-	
-	// public function save()
-	// {
-		// /*@var $this->dataStorage DataStorage*/
-		// $pre = $this->processData('pre'.ucwords(__FUNCTION__));
-		// $exec = $this->processData(__FUNCTION__);
-		// $post = $this->processData('post'.ucwords(__FUNCTION__));
-// 	
-// 		
-		// return $this->dataStorage->__FUNCTION__($pre,$this->storage()) && $this->dataStorage->__FUNCTION__($exec,$this->storage()) && $this->dataStorage->__FUNCTION__($post,$this->storage());
-	// }
-// 	
-	// public function create()
-	// {
-		// /*@var $this->dataStorage DataStorage*/
-		// return $this->processData('pre'.ucwords(__FUNCTION__)) && $this->dataStorage->createElement($this) && $this->processData('post'.ucwords(__FUNCTION__));
-	// }
-// 		
-	// public function update()
-	// {
-		// /*@var $this->dataStorage DataStorage*/
-		// return $this->processData('pre'.ucwords(__FUNCTION__)) && $this->dataStorage->updateElement($this) && $this->processData('post'.ucwords(__FUNCTION__));
-	// }
-// 
-	// public function delete()
-	// {
-		// /*@var $this->dataStorage DataStorage*/
-		// return $this->processData('pre'.ucwords(__FUNCTION__)) && $this->dataStorage->deleteElement($this) && $this->processData('post'.ucwords(__FUNCTION__));
-	// }
+
 	
 	public function templateFilePath($show_type, $alternative = '', $template_type = 'html') {
 		return Main::$GENERIC_TEMPLATES_PATH . '/' . $show_type . '/' .$this->getClass() . $alternative . '.' .$template_type;
@@ -436,9 +454,10 @@ class Element extends BaseObject {
 	}
 	
 	/**
-	* Tells the DOFdata whose their "container" in case any of it has context dependent info or functions.
-	*
-	* @param &$dataParent Reference to the logical data parent.
+	* Sets the current instance the as "logical" parent of the Datas. 
+	* Thus the datas may access other element's datas and methods if requeired
+	* Comments: This is useful in many circumstances for example it enables the existence of ComplexData.
+	* @see ComplexData
 	*/
 	public function assignAsDatasParent(&$parent=null){
 		if(!isset($parent)) $parent = $this;
@@ -454,7 +473,13 @@ class Element extends BaseObject {
 			}
 		}
 	}
+
 	
+	/**
+	 * Sets each Data it’s attribute name within the element instance.
+	 * 
+	 * Comment: Usefull to the generate and handle the filtercriteria
+	 */
 	public function assignDatasName(){
 		foreach($this as $name => $data) {
 			if(($data instanceof Data) && !$data->name()) {
@@ -471,11 +496,14 @@ class Element extends BaseObject {
 	}
 	
 	public function create() {
-		$pre = $this->processData('preCreate');
+		$this->processData('preCreate');
+		
 		$id = $this->dataStorage->createElement($this);
 		$this->{$this->field_id()}($id);
 		
-		return $pre && ($id !== false) && $this->processData('postCreate');
+		$this->processData('postCreate');
+		
+		return $id !== false;
 	}
 	
 	public function update() {

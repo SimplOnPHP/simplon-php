@@ -33,7 +33,6 @@ class ElementLink extends ComplexData {
 	public function val($sources = null){
 		if(!is_array($sources)) $sources = $this->sources;
 		
-		//esto deb ser condicional haslo tu que sabes eso compacto
 		$id = $this->parent->hasMethod($this->parent->field_id())
 			? $this->parent->{$this->parent->field_id()}()
 			: null;
