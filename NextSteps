@@ -1,0 +1,13 @@
+Documenting:
+	Aknowledge about BaseObjects "magic stuff".
+	Document the API format.
+	Sort methods and attributes in a importance order, so that those that are more useful to the developer will stay at the top of the file.
+	Document how templates work (classes, auto-generation).
+	Document the Main class, what it does and how it does.
+	Complete the inline documentation within the code.
+
+Coding:
+	Fix ElementsContainer's showView: it should show only the appropriate Element's data with "list" flag enabled.
+	Add to Element Select and Multiple select actions.
+	Add to Element "showAdmin" and "showPickable" and "showMultiPickable" methods (to be renamed).
+	Add "edit" and "remove" actions to Element(s)Container's showView.

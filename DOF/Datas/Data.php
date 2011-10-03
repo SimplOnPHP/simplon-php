@@ -173,10 +173,13 @@ abstract class Data extends BaseObject {
 
 	
 	/**
-	 * @param string $label
-	 * @param string $flags
-	 * @param mixed $val
-	 * @param string $searchOp
+	 * - Assings the Label, Flags, Value(val) and Serch operand if recibed
+	 * - Calls user defined construct
+	 * 
+	 * @param string $label Human readable descrition of the atribute, it's intended to apear in forms and tables
+	 * @param string $flags VCUSRLF flags sets when the Data will be used within an element {@see dataFlags}
+	 * @param mixed $val If sended sets the value of the data since it's creation
+	 * @param string $searchOp Determines how the data value will be cmpared/evalueted in queries to the Data Storage
 	 */
 	public function __construct($label=null, $flags=null, $val=null, $searchOp=null)
 	{
@@ -191,11 +194,13 @@ abstract class Data extends BaseObject {
 			$this->dataFlags($flags);
 		}
 		
-		
-		/*@todo verificar que esto verdadaramente no se requeire*/
-		//if($inputName){$this->inputName($inputName);}
 	}
 
+	
+	/**
+	 * User defined constructor, called within {@link __constructor()},
+	 * Useful in child clasess to define any class specific construction code without overwritning the __construct method
+	 */
 	public function construct($label=null, $flags=null, $val=null, $searchOp=null) {}
 	
 	

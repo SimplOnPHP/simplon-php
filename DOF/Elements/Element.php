@@ -67,7 +67,7 @@ class Element extends BaseObject {
 
 	
 	
-//-------------------------------------------Internal	
+//------------------------------------------- ???	
 	/**
 	* Flag to avoid the system to validate
 	* DataStorage more than once.
@@ -87,9 +87,9 @@ class Element extends BaseObject {
 	
 	
 
-	
-	
-	
+//-----------------------------------------------------------------------------------------	
+//------------------------------ METHODS --------------------------------------------------	
+//-----------------------------------------------------------------------------------------
 	
 	
 	
@@ -148,52 +148,63 @@ class Element extends BaseObject {
 	public function construct($id_or_array = null, &$specialDataStorage=null) {}
 	
 	/**
-	 * Default method that will be shown in case no methods have been specified.
-	 */
-	public function index() {
-		return '<h1>'.$this->getClass().'</h1><div>'
-			.$this->createAction(array('Create new %s', 'getClassName'))
-			.'</div>'
-		;
-	}
-
-	
-	/**
-	 * Retrieves the element's Datas values from the DataSotarage, 
-	 * using the recived Id or the element's id if no id is provided.
-	 *
-	 * @param mixed $id the id of the element whose data we whant to read from de DS
-	 * @throws Exception
+	 * Allows some simplicity for coding and declarations, auto makes getters and setters 
+	 * so that any Data’s attribute value data->val() can be transparently accessed as a normal
+	 * element attribute by Element->data(); and load all other BasicObject SimplON functionality 
+	 * @see DOF.BaseObject::__call()
 	 * 
-	 * @todo: in  arrays format ????
 	 */
-	public function fillFromDSById($id = null){
-		if(isset($id)) $this->id($id);
-		
-		if($this->id()){
-			
-			$dataArray = $this->dataStorage->readElement( $this );
-			
-			$this->fillFromArray($dataArray);
-		}else{
-			throw new Exception('The object of class: '.$this->getClass()." has no id so it can't be filled using method fillElementById" );
-		}
-	}
+	public function __call($name, $arguments)
+	{
+	
+		if(@$this->$name instanceof Data)
+		{
+			if($arguments){
+				return $this->$name->val($arguments[0]);
+			}
+			else{ return $this->$name->val();
+			}
+			 
+		} else {
+			 
+			$letter=substr($name,0,1);
+			$Xname=substr($name,1);
+			 
+			if(($letter == strtoupper($letter)) && (@$this->$Xname instanceof Data)) {
+				switch($letter) {
+					case 'O':
+						if($arguments){
+							$this->$Xname->val($arguments[0]);
+						}
+						else{ return $this->$Xname;
+						}
+						break;
+						/*
+						 case 'F':
+						if($arguments){ $this->$Xname->val($arguments[0]); }
+						else{ return $this->$Xname->field(); }
+						break;*/
+					case 'L':
+					if($arguments){
+					$this->$Xname->val($arguments[0]);
+					}
+					else{ return $this->$Xname->label();
+					}
+					break;
+					default:
+						throw new \Exception('Letter '.$letter.' not recognized!');
+					}
+				} else {
+					return parent::__call($name, $arguments);
+					}
+					}
+					}	
 	
 	
-	/**
-	 * Returns an array representation of the Element assigning each Data's name 
-	 * as the key and the data's value as the value.
-	 * 
-	 * @return array
-	 */
-	public function toArray() {
-		foreach($this->dataAttributes() as $dataName ) {
-			$ret[$dataName] = $this->$dataName();
-		}
-		return $ret;
-	}
 	
+	
+	
+	// -- SimplON key methods	
 	/**
 	 * Assigns to each Data attribute it's corresponding value 
 	 * from an array of values.
@@ -225,269 +236,28 @@ class Element extends BaseObject {
 		 */
 	}	
 	
+	//------------Data Storage
 	/**
-	 * Applies a method to all the Datas and returns an array containing all the responses.
-	 * 
-	 * @param string $method must be a method common to all datas
-	 */
-	public function processData($method)
-	{
-		$return = array();
-		foreach($this->dataAttributes() as $dataName) {
-			$r = $this->$dataName->$method();
-			if(isset($r)) $return[]= $r;
-		}
-		
-		// @todo: verify if it can stay this way
-		return $return;
-	}
-
-	
-
-	
-	public function templateFilePath($show_type, $alternative = '', $template_type = 'html') {
-		return Main::$GENERIC_TEMPLATES_PATH . '/' . $show_type . '/' .$this->getClass() . $alternative . '.' .$template_type;
-	}
-	
-	public function showCreate($template_file = null, $action = null)
-	{
-		return $this->obtainHtml(__FUNCTION__, $template_file, $action);
-	}
-	
-	/* */
-	public function showUpdate($template_file = null, $action = null)
-	{
-		return $this->obtainHtml(__FUNCTION__, $template_file, $action);
-	}
-
-	public function showView($template_file = null)
-	{
-		return $this->obtainHtml(__FUNCTION__, $template_file, null);
-	}
-	
-	public function showSearch($template_file = null, $action = null)
-	{
-		return $this->obtainHtml(__FUNCTION__, $template_file, $action).$this->processSearch(null, 'multi');
-	}
-		
-	// @todo: allow to obtain only the dom part inherent to the element (and not the whole web page)
-	public function obtainHtml($caller_method, $template_file = null, $action = null)
-	{	
-		//$caller_method = end(// explode('::',$caller_method));
-		$VCSL = substr($caller_method, strlen('show'));
-		$vcsl = strtolower($VCSL);
-		$with_form = in_array($vcsl, array('create', 'update', 'search'));
-		 
-		if(!isset($template_file)) {
-			// get default path
-			$template_file = $this->templateFilePath($VCSL);
-		}
-		
-		if($template_file === false || !file_exists($template_file) || Main::$OVERWRITE_LAYOUT_TEMPLATES) {
-			$dom = \phpQuery::newDocumentFileHTML(Main::$MASTER_TEMPLATE);
-			$dom['head']->append($this->getJS($caller_method, 'html'));
-			$dom['head']->append($this->getCSS($caller_method, 'html'));
-			
-			foreach($this->attributesTypes('\\DOF\\Datas\\File') as $fileData)
-			{
-				if( $fileData->$vcsl() ){
-					$enctype = ' enctype="multipart/form-data" ';
-					break;
-				}
-			}
-			
-			// create and fill file
-			$html = '';
-			if($with_form) {
-				$html.= '<form class="DOF '.$this->getClass().'" '
-					. ' action="'. (@$action ?: $this->encodeURL(Main::$construct_params, 'process'.$VCSL) ) .'" ' 
-					. ' method="post" ' 
-					. @$enctype 
-					.'>';
-			}
-			$html.= '<div class="DOF '.$this->getClass().'">';
-			foreach($this as $keydata => $data)
-			{
-				if( $data instanceof Data && $data->$vcsl() )
-				{					
-					$html.= '<div class="DOF '.$keydata.'">';
-					
-					if($with_form) {
-						$data_id = 'DOF_'.$data->instanceId();
-						$dompart = \phpQuery::newDocumentHTML($data->$caller_method());
-						// @todo: Document that class input is MANDATORY
-						$dompart['.reference']->attr('ref', $data_id);
-						$dompart['.input']->attr('id', $data_id);
-						
-						if($data->label())
-							$html.='<label for="'.$data_id.'">'.$data->label().': </label>';
-						
-						$html.= $dompart;
-					} else {
-						$html.= $data->$caller_method();
-					}
-					
-					$html.= '</div>';
-				}
-			}
-			if($with_form) {
-				$html.= '<button name="commit" type="submit">'.($vcsl == 'search' ? 'Search' : 'Save').'</button>'
-					.'<button name="cancel" onclick="javascript:history.back()">Cancel</button>'
-					.'</div></form>';
-			} else {
-				$html.= '</div>';
-			}
-			$dom['body'] = $html;
-			
-			// save file
-			if($template_file !== false)
-				Main::createFile($template_file, $dom.'');
-		} else {
-			// opens file
-			$dom = \phpQuery::newDocumentFileHTML($template_file);
-			
-			// fill file with data 
-			if($vcsl != 'create') {
-				foreach($this as $keydata=>$data) {
-					if($data instanceof Data && $data->$vcsl())
-					{
-						$dom['.DOF.'.$this->getClass().' .DOF.'.$keydata] = $data->$caller_method($dom['.DOF.'.$this->getClass().' .DOF.'.$keydata]);
-					}
-				}
-			}
-		}
-		
-		return $dom;
-	}
-
-	public function getJS($method, $returnFormat = 'array', $compress = false) {
-		$class = end(explode('\\',$this->getClass()));
-		
-		$local_js = Main::$JS_FLAVOUR_BASE . "/Inits/$class.$method.js";
-		$a_js = file_exists($local_js) ? array($local_js) : array();
-		
-		foreach($this->dataAttributes() as $data) {
-			/*
-			$class = end(explode('\\',$this->{'O'.$data}()->getClass()));
-			$local_js = \DOF\Main::$JS_FLAVOUR_BASE . "/Inits/$class.$method.js";
-			
-			if(file_exists($local_js))
-				$a_js[] = $local_js;
-			 * */
-			foreach($this->{'O'.$data}()->getJS($method) as $local_js)
-				if(file_exists($local_js))
-					$a_js[] = $local_js;
-			}
-		$a_js = array_unique($a_js);
-		$libs = glob(Main::$JS_FLAVOUR_BASE . '/Libs/*.js');
-		sort($a_js);
-		sort($libs);
-		
-		if($compress) {
-			// @todo: compress in one file and return the file path
-		}
-		
-		// converts to remote paths
-		$a_js = array_map(
-			function($fp) {
-				return str_replace(Main::$LOCAL_ROOT, Main::$REMOTE_ROOT, $fp);
-			},
-			array_unique(array_merge(
-				$libs,
-				$a_js
-			))
-		);
-		
-		switch($returnFormat) {
-			case 'html':
-				$html_js = '';
-				foreach($a_js as $js) {
-					$html_js.= '<script type="text/javascript" src="'.$js.'"></script>'."\n";
-				}
-				return $html_js;
-			case 'array':
-				return $a_js;
-		}
-	}
-
-	public function getCSS($method, $returnFormat = 'array', $compress = false) {
-		$class = end(explode('\\',$this->getClass()));
-		
-		$local_css = Main::$CSS_FLAVOUR_BASE . "/ClassSpecific/$class.$method.css";
-		$a_css = file_exists($local_css) ? array($local_css) : array();
-		
-		foreach($this->dataAttributes() as $data) {
-			foreach($this->{'O'.$data}()->getCSS($method) as $local_css)
-				if(file_exists($local_css))
-					$a_css[] = $local_css;
-			}
-		$a_css = array_unique($a_css);
-		$libs = glob(Main::$CSS_FLAVOUR_BASE . '/Libs/*.css');
-		sort($a_css);
-		sort($libs);
-		
-		if($compress) {
-			// @todo: compress in one file and return the file path
-		}
-		
-		// converts to remote paths
-		$a_css = array_map(
-			function($fp) {
-				return str_replace(Main::$LOCAL_ROOT, Main::$REMOTE_ROOT, $fp);
-			},
-			array_unique(array_merge(
-				$libs,
-				$a_css
-			))
-		);
-		
-		switch($returnFormat) {
-			case 'html':
-				$html_css = '';
-				foreach($a_css as $css) {
-					$html_css.= '<link type="text/css" rel="stylesheet" href="'.$css.'" />'."\n";
-				}
-				return $html_css;
-			case 'array':
-				return $a_css;
-		}
-	}
-	
-	/**
-	* Sets the current instance the as "logical" parent of the Datas. 
-	* Thus the datas may access other element's datas and methods if requeired
-	* Comments: This is useful in many circumstances for example it enables the existence of ComplexData.
-	* @see ComplexData
+	* Retrieves the element's Datas values from the DataSotarage,
+	* using the recived Id or the element's id if no id is provided.
+	*
+	* @param mixed $id the id of the element whose data we whant to read from de DS
+	* @throws Exception
+	*
+	* @todo: in  arrays format ????
 	*/
-	public function assignAsDatasParent(&$parent=null){
-		if(!isset($parent)) $parent = $this;
-		
-		foreach($this as $data)
-		{
-			if($data instanceof Data)
-			{
-				if( $data->hasMethod('parent')  )
-				{
-					$data->parent($parent);
-				}
-			}
-		}
-	}
-
+	public function fillFromDSById($id = null){
+		if(isset($id)) $this->id($id);
 	
-	/**
-	 * Sets each Data it’s attribute name within the element instance.
-	 * 
-	 * Comment: Usefull to the generate and handle the filtercriteria
-	 */
-	public function assignDatasName(){
-		foreach($this as $name => $data) {
-			if(($data instanceof Data) && !$data->name()) {
-				$data->name($name);
-			}
+		if($this->id()){
+				
+			$dataArray = $this->dataStorage->readElement( $this );
+				
+			$this->fillFromArray($dataArray);
+		}else{
+			throw new Exception('The object of class: '.$this->getClass()." has no id so it can't be filled using method fillElementById" );
 		}
-	}
-	
+	}	
 	
 	public function save() {
     	return ($this->{$this->field_id()}())
@@ -524,51 +294,9 @@ class Element extends BaseObject {
 			$this->processData('postDelete');
 	}
 	
-	
-    public function __call($name, $arguments)
-    {
-        
-    	if(@$this->$name instanceof Data)
-        {
-        	if($arguments){ return $this->$name->val($arguments[0]); }
-        	else{ return $this->$name->val(); }
-        	
-        } else {	
-        	
-        	$letter=substr($name,0,1);
-        	$Xname=substr($name,1);
-        	
-			if(($letter == strtoupper($letter)) && (@$this->$Xname instanceof Data)) {
-				switch($letter) {
-					case 'O': 
-		   				if($arguments){ $this->$Xname->val($arguments[0]); }
-			        	else{ return $this->$Xname; }
-						break;
-						/*
-					case 'F':
-						if($arguments){ $this->$Xname->val($arguments[0]); }
-        				else{ return $this->$Xname->field(); }
-						break;*/
-					case 'L':
-						if($arguments){ $this->$Xname->val($arguments[0]); }
-	        			else{ return $this->$Xname->label(); }
-						break;
-					default:
-						throw new \Exception('Letter '.$letter.' not recognized!');
-				}
-			} else {
-        		return parent::__call($name, $arguments);
-        	}
-        }
-    }
-	
 	/*@todo determina if this method is neceary or not
 	 updateInDS // este debe ser automatico desde el save si se tiene id se genera
 	*/
-	
-	function encodeURL(array $construct_params = array(), $method, array $method_params = array()) {
-		return Main::encodeURL($this->getClass(), $construct_params, $method, $method_params);
-	}
 	
 	function processCreate($result = null){
 		$this->fillFromRequest();
@@ -595,8 +323,16 @@ class Element extends BaseObject {
 			user_error('Cannot update in DS!', E_USER_ERROR);
 		}
 	}
-	
-	
+
+	function processDelete() {
+		if($this->delete()) {
+			header('Location: '.$this->encodeURL(array(), 'showCreate'));
+		} else {
+			// @todo: error handling
+			user_error('Cannot delete in DS!', E_USER_ERROR);
+		}
+	}
+		
 	function processSearch(){
 		$this->fillFromRequest();
 		$search = new Search(array($this->getClass()));
@@ -615,6 +351,8 @@ class Element extends BaseObject {
 	}
 	
 	/**
+	 * ????????????????????
+	 * 
 	 * Possible labels:
 	 * 	name to refer to a data name;
 	 * 	.name to refer to a data filterCriteria;
@@ -640,15 +378,338 @@ class Element extends BaseObject {
 		}
 	}
 	
-	function processDelete() {
-		if($this->delete()) {
-			header('Location: '.$this->encodeURL(array(), 'showCreate'));
-		} else {
-			// @todo: error handling
-			user_error('Cannot delete in DS!', E_USER_ERROR);
+	
+	
+	
+
+
+	
+	
+	/**
+	* Sets the current instance the as "logical" parent of the Datas.
+	* Thus the datas may access other element's datas and methods if requeired
+	* Comments: This is useful in many circumstances for example it enables the existence of ComplexData.
+	* @see ComplexData
+	*/
+	public function assignAsDatasParent(&$parent=null){
+		if(!isset($parent)) $parent = $this;
+	
+		foreach($this as $data)
+		{
+			if($data instanceof Data)
+			{
+				if( $data->hasMethod('parent')  )
+				{
+					$data->parent($parent);
+				}
+			}
 		}
 	}
 	
+	/**
+	 * Sets each Data it’s attribute name within the element instance.
+	 *
+	 * Comment: Usefull to the generate and handle the filtercriteria
+	 */
+	public function assignDatasName(){
+		foreach($this as $name => $data) {
+			if(($data instanceof Data) && !$data->name()) {
+				$data->name($name);
+			}
+		}
+	}
+	
+	
+	
+	
+
+
+	
+	
+	
+	
+	//----- Display
+	
+	/**
+	* Default method that will be shown in case no methods have been specified.
+	*/
+	public function index() {
+		return '<h1>'.$this->getClass().'</h1><div>'
+		.$this->createAction(array('Create new %s', 'getClassName'))
+		.'</div>'
+		;
+	}
+	
+	public function showCreate($template_file = null, $action = null)
+	{
+		return $this->obtainHtml(__FUNCTION__, $template_file, $action);
+	}
+	
+	/* */
+	public function showUpdate($template_file = null, $action = null)
+	{
+		return $this->obtainHtml(__FUNCTION__, $template_file, $action);
+	}
+	
+	public function showView($template_file = null)
+	{
+		return $this->obtainHtml(__FUNCTION__, $template_file, null);
+	}
+	
+	public function showSearch($template_file = null, $action = null)
+	{
+		return $this->obtainHtml(__FUNCTION__, $template_file, $action).$this->processSearch(null, 'multi');
+	}
+	
+	// @todo: allow to obtain only the dom part inherent to the element (and not the whole web page)
+	public function obtainHtml($caller_method, $template_file = null, $action = null)
+	{
+		//$caller_method = end(// explode('::',$caller_method));
+		$VCSL = substr($caller_method, strlen('show'));
+		$vcsl = strtolower($VCSL);
+		$with_form = in_array($vcsl, array('create', 'update', 'search'));
+			
+		if(!isset($template_file)) {
+			// get default path
+			$template_file = $this->templateFilePath($VCSL);
+		}
+	
+		if($template_file === false || !file_exists($template_file) || Main::$OVERWRITE_LAYOUT_TEMPLATES) {
+			$dom = \phpQuery::newDocumentFileHTML(Main::$MASTER_TEMPLATE);
+			$dom['head']->append($this->getJS($caller_method, 'html'));
+			$dom['head']->append($this->getCSS($caller_method, 'html'));
+				
+			foreach($this->attributesTypes('\\DOF\\Datas\\File') as $fileData)
+			{
+				if( $fileData->$vcsl() ){
+					$enctype = ' enctype="multipart/form-data" ';
+					break;
+				}
+			}
+				
+			// create and fill file
+			$html = '';
+			if($with_form) {
+				$html.= '<form class="DOF '.$this->getClass().'" '
+				. ' action="'. (@$action ?: $this->encodeURL(Main::$construct_params, 'process'.$VCSL) ) .'" '
+				. ' method="post" '
+				. @$enctype
+				.'>';
+			}
+			$html.= '<div class="DOF '.$this->getClass().'">';
+			foreach($this as $keydata => $data)
+			{
+				if( $data instanceof Data && $data->$vcsl() )
+				{
+					$html.= '<div class="DOF '.$keydata.'">';
+						
+					if($with_form) {
+						$data_id = 'DOF_'.$data->instanceId();
+						$dompart = \phpQuery::newDocumentHTML($data->$caller_method());
+						// @todo: Document that class input is MANDATORY
+						$dompart['.reference']->attr('ref', $data_id);
+						$dompart['.input']->attr('id', $data_id);
+	
+						if($data->label())
+						$html.='<label for="'.$data_id.'">'.$data->label().': </label>';
+	
+						$html.= $dompart;
+					} else {
+						$html.= $data->$caller_method();
+					}
+						
+					$html.= '</div>';
+				}
+			}
+			if($with_form) {
+				$html.= '<button name="commit" type="submit">'.($vcsl == 'search' ? 'Search' : 'Save').'</button>'
+				.'<button name="cancel" onclick="javascript:history.back()">Cancel</button>'
+				.'</div></form>';
+			} else {
+				$html.= '</div>';
+			}
+			$dom['body'] = $html;
+				
+			// save file
+			if($template_file !== false)
+			Main::createFile($template_file, $dom.'');
+		} else {
+			// opens file
+			$dom = \phpQuery::newDocumentFileHTML($template_file);
+				
+			// fill file with data
+			if($vcsl != 'create') {
+				foreach($this as $keydata=>$data) {
+					if($data instanceof Data && $data->$vcsl())
+					{
+						$dom['.DOF.'.$this->getClass().' .DOF.'.$keydata] = $data->$caller_method($dom['.DOF.'.$this->getClass().' .DOF.'.$keydata]);
+					}
+				}
+			}
+		}
+	
+		return $dom;
+	}
+	
+	public function getJS($method, $returnFormat = 'array', $compress = false) {
+		$class = end(explode('\\',$this->getClass()));
+	
+		$local_js = Main::$JS_FLAVOUR_BASE . "/Inits/$class.$method.js";
+		$a_js = file_exists($local_js) ? array($local_js) : array();
+	
+		foreach($this->dataAttributes() as $data) {
+			/*
+				$class = end(explode('\\',$this->{'O'.$data}()->getClass()));
+			$local_js = \DOF\Main::$JS_FLAVOUR_BASE . "/Inits/$class.$method.js";
+				
+			if(file_exists($local_js))
+			$a_js[] = $local_js;
+			* */
+			foreach($this->{'O'.$data}()->getJS($method) as $local_js)
+			if(file_exists($local_js))
+			$a_js[] = $local_js;
+		}
+		$a_js = array_unique($a_js);
+		$libs = glob(Main::$JS_FLAVOUR_BASE . '/Libs/*.js');
+		sort($a_js);
+		sort($libs);
+	
+		if($compress) {
+			// @todo: compress in one file and return the file path
+		}
+	
+		// converts to remote paths
+		$a_js = array_map(
+		function($fp) {
+			return str_replace(Main::$LOCAL_ROOT, Main::$REMOTE_ROOT, $fp);
+		},
+		array_unique(array_merge(
+		$libs,
+		$a_js
+		))
+		);
+	
+		switch($returnFormat) {
+			case 'html':
+				$html_js = '';
+				foreach($a_js as $js) {
+					$html_js.= '<script type="text/javascript" src="'.$js.'"></script>'."\n";
+				}
+				return $html_js;
+			case 'array':
+				return $a_js;
+		}
+	}
+	
+	public function getCSS($method, $returnFormat = 'array', $compress = false) {
+		$class = end(explode('\\',$this->getClass()));
+	
+		$local_css = Main::$CSS_FLAVOUR_BASE . "/ClassSpecific/$class.$method.css";
+		$a_css = file_exists($local_css) ? array($local_css) : array();
+	
+		foreach($this->dataAttributes() as $data) {
+			foreach($this->{'O'.$data}()->getCSS($method) as $local_css)
+			if(file_exists($local_css))
+			$a_css[] = $local_css;
+		}
+		$a_css = array_unique($a_css);
+		$libs = glob(Main::$CSS_FLAVOUR_BASE . '/Libs/*.css');
+		sort($a_css);
+		sort($libs);
+	
+		if($compress) {
+			// @todo: compress in one file and return the file path
+		}
+	
+		// converts to remote paths
+		$a_css = array_map(
+		function($fp) {
+			return str_replace(Main::$LOCAL_ROOT, Main::$REMOTE_ROOT, $fp);
+		},
+		array_unique(array_merge(
+		$libs,
+		$a_css
+		))
+		);
+	
+		switch($returnFormat) {
+			case 'html':
+				$html_css = '';
+				foreach($a_css as $css) {
+					$html_css.= '<link type="text/css" rel="stylesheet" href="'.$css.'" />'."\n";
+				}
+				return $html_css;
+			case 'array':
+				return $a_css;
+		}
+	}
+	
+	function showMultiPicker(){
+		return Main::$DEFAULT_RENDERER->table(array($this->toArray()));
+	}
+			
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+//------------------------------- ????	
+
+	function encodeURL(array $construct_params = array(), $method, array $method_params = array()) {
+		return Main::encodeURL($this->getClass(), $construct_params, $method, $method_params);
+	}
+	
+	public function templateFilePath($show_type, $alternative = '', $template_type = 'html') {
+		return Main::$GENERIC_TEMPLATES_PATH . '/' . $show_type . '/' .$this->getClass() . $alternative . '.' .$template_type;
+	}	
+	
+	/**
+	* Returns an array representation of the Element assigning each Data's name
+	* as the key and the data's value as the value.
+	*
+	* @return array
+	*/
+	public function toArray() {
+		foreach($this->dataAttributes() as $dataName ) {
+			$ret[$dataName] = $this->$dataName();
+		}
+		return $ret;
+	}	
+
+	/**
+	* Applies a method to all the Datas and returns an array containing all the responses.
+	*
+	* @param string $method must be a method common to all datas
+	*/
+	public function processData($method)
+	{
+		$return = array();
+		foreach($this->dataAttributes() as $dataName) {
+			$r = $this->$dataName->$method();
+			if(isset($r)) $return[]= $r;
+		}
+	
+		// @todo: verify if it can stay this way
+		return $return;
+	}	
+	
+	
+	
+//------------------------------- Performance	
+	
+	function dataAttributes() {
+		if(!$this->dataAttributes) {
+			$this->dataAttributes = $this->attributesTypes();
+		}
+	
+		return $this->dataAttributes;
+	}
+
 	// @todo: change name to attributesOfType
 	function attributesTypes($type = '\\DOF\\Datas\\Data') {
 		foreach($this as $name => $data) {
@@ -656,50 +717,40 @@ class Element extends BaseObject {
 				$a[] = $name;
 			}
 		}
-		
+	
 		return @$a ?: array();
 	}
 	
-	function dataAttributes() {
-		if(!$this->dataAttributes) {
-			$this->dataAttributes = $this->attributesTypes();
-		}
-		
-		return $this->dataAttributes;
-	}
-	
+
 	//vcsrl
 	public function datasForView(){
 		foreach($this as $data) {
 			if($data instanceof Data && $data->$what()) {
 				$output.= $data->{'show'.ucfirst($what)}();
 			}
-		}		
+		}
 	}
 	
 	public function datasForCreate(){
-		
+	
 	}
 	
 	public function datasForUpdate(){
-		
-	}	
+	
+	}
 	
 	public function datasForSearch(){
-		
-	}	
+	
+	}
 	
 	public function datasForList(){
-		
-	}	
-		
+	
+	}
+	
 	public function datasRequired(){
+	
+	}
 		
-	}
 	
 	
-	
-	function showMultiPicker(){
-		return Main::$DEFAULT_RENDERER->table(array($this->toArray()));
-	}
 }
