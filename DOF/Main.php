@@ -80,6 +80,31 @@ class Main {
 		self::setup($ini);
 	}
 	
+	static function run($ini = null) {
+		self::setup($ini);
+		
+		if(class_exists(self::$class)) {
+			$rc = new \ReflectionClass(self::$class);
+			if( 
+				isset(self::$method)
+				&&
+				($obj = $rc->newInstanceArgs(self::$construct_params))
+				&&
+				($obj instanceof Elements\Element)
+			){
+				echo call_user_func_array(array($obj, self::$method), self::$method_params);
+			} else {
+				unset($obj);
+				header('HTTP/1.1 403 Access forbidden');
+				return;
+			}
+		} else {
+			//header('HTTP/1.1 404 File not found');
+			echo 'Class '.self::$class.' not found';
+			return;
+		}
+	}
+	
 	static function setup($ini = null) {
 		if(file_exists(self::DEFAULT_INI))
 			self::fromArray(parse_ini_file(self::DEFAULT_INI));
@@ -92,12 +117,18 @@ class Main {
 			}
 		}
 		
+		if(self::$DEV_MODE) {
+			error_reporting(E_ALL);
+			ini_set('display_errors', true);
+		} else {
+			error_reporting(0);
+			ini_set('display_errors', false);
+		}
+		
 		if(!self::$JS_FLAVOUR_BASE)
 			self::$JS_FLAVOUR_BASE = self::$LOCAL_ROOT . '/JS/' . self::$JS_FLAVOUR;
 		if(!self::$CSS_FLAVOUR_BASE)
 			self::$CSS_FLAVOUR_BASE = self::$LOCAL_ROOT . '/CSS/' . self::$CSS_FLAVOUR;
-		
-		include(self::$DOF_PATH.'/Utilities/check.php');
 		
 		self::decodeURL();
 	}
@@ -132,20 +163,11 @@ class Main {
 		));
 		
 		self::$class = @array_shift($virtual_path) ?: self::$DEFAULT_ELEMENT;
-		
-		//var_dump(@array_values($virtual_path));
 		self::$construct_params = array_map($f_decode_param, @array_values($virtual_path) ?: array());
-		
-		//var_dump($_SERVER);exit();
 		
 		$GET_virtual_path = array_values(explode('/',$query_string));
 		self::$method = @array_shift($GET_virtual_path) ?: self::$DEFAULT_METHOD;
-		
-		//var_dump(@$GET_virtual_path);
 		self::$method_params = array_map($f_decode_param, @$GET_virtual_path ?: array());
-		
-		//var_dump(self::$construct_params);
-		//var_dump(self::$method_params);
 	}
 	
 	static function encodeURL($class, array $construct_params, $method, array $method_params = array()) {

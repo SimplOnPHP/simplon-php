@@ -300,8 +300,6 @@ class Element extends BaseObject {
 	
 	function processCreate($result = null){
 		$this->fillFromRequest();
-		//var_dump($result); exit();
-		//var_dump($this); exit;
 		if($this->create()) {
 			if(@$result == 'json') {
 				return json_encode(array('id' => $this->id(), 'preview' => $this->showView()->find('body')->html()));

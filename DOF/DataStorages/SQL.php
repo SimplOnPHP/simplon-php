@@ -155,7 +155,6 @@ abstract class SQL extends DataStorage
 		$alters[] = 'ADD PRIMARY KEY (`'.$element->field_id().'`)';
 		
 		$q = 'ALTER TABLE `'.$element->storage().'` '.implode(', ', $alters);
-		// var_dump($q);
 		return $this->db->query($q);
 	}
 	
@@ -422,7 +421,6 @@ abstract class SQL extends DataStorage
 		$query_string = implode("\n".' UNION ', $selects).'
 			ORDER BY DOF_id desc
 		';
-		// var_dump($query_string); exit;
 		$query = $this->db->prepare($query_string);
 		
 		// Obtains values
@@ -444,7 +442,7 @@ abstract class SQL extends DataStorage
 		
 		// Executes the query and returns the results
 		$query->execute($values);
-		//var_dump($values);
+		
 		return $query->fetchAll();
 	}
 

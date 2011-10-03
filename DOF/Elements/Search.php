@@ -143,8 +143,6 @@ class Search extends Element
 
 	public function showSearch($template_file = '')
 	{
-		//var_dump($this);
-		var_dump($this->elementsTypes);
 		return 
 			$this->processSearch()
 			.
@@ -160,10 +158,8 @@ class Search extends Element
 		else
 			$this->fillFromRequest();
 		
-		var_dump($this->elementsTypes);
 		$elementsTypes = $this->elementsTypes();
 		$this->elementsTypes = null;
-		//var_dump( $this->dataStorage->readElements($this) );
 		
 		$return = Main::$DEFAULT_RENDERER->table($this->dataStorage->readElements($this));
 		$this->elementsTypes($elementsTypes);
