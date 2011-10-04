@@ -19,6 +19,31 @@
 namespace DOF;
 use \DOF\Exception;
 
+/*! \mainpage SimplON PHP
+ *
+ * \section intro_sec What is SimplON?
+ *
+ * SimplON is a web framework based on the concept of embedding meta-data 
+ * into PHP objects to automate CRUD tasks and rendering them 
+ * (ie. in HTML format).
+ * 
+ * \section core_obj_sec SimplON uses two core objects
+ *
+ * \subsection datas_subsec Datas
+ * 
+ * Replaces regular object's attributes, contains informations 
+ * about value's type and where to display it.
+ *  
+ * \subsection elements_subsec Elements
+ * 
+ * Replaces regular objects, using Datas as attributes and offers 
+ * a standard interface to Data Storages (MySQL, MongoDB, ...) 
+ * and Renderers (HTML, XML, JSON, ...).
+ * 
+ * \see http://tinyurl.com/SimplON-chart
+ * 
+ */
+
 spl_autoload_register( __NAMESPACE__ . '\\Main::load_obj');
 
 class Main {

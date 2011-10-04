@@ -100,7 +100,7 @@ class Element extends BaseObject {
 	 * - Fills its Datas' values if possible (requires a valid ID or array of values).
 	 * - Fills some of its Datas' meta-datas (parent, names).
 	 * @param mixed $id_or_array ID of the Element or array of Element's Datas values.  
-	 * @param DOF\DataStorages\DataStorage $specialDataStorage DataStorage to use in uncommon cases.
+	 * @param DataStorage $specialDataStorage DataStorage to use in uncommon cases.
 	 */
 	public function __construct($id_or_array = null, &$specialDataStorage=null)
 	{
