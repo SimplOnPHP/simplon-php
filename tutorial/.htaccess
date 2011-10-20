@@ -1,0 +1,8 @@
+<IfModule mod_rewrite.c>
+Options +FollowSymLinks
+RewriteEngine on
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ /SimplON/tutorial/index.php [QSA,L]
+
+</IfModule>
