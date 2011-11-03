@@ -13,3 +13,4 @@ Coding:
 	Add to Element Select and Multiple select actions.
 	Add to Element "showAdmin" and "showPickable" and "showMultiPickable" methods (to be renamed).
 	Add "edit" and "remove" actions to Element(s)Container's showView.
+        Add a Label Data to do add messages to the forms.

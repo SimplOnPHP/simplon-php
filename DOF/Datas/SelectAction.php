@@ -18,41 +18,17 @@
 */
 namespace DOF\Datas;
 
-/**
-* ID para las tablas
-* --- No imprime un label y manda un input hidden.
-*
-* @version	1.0
-* @author	Ruben Schaffer
-* @todo
-*/
-class Id extends Integer
-{
+class SelectAction extends ElementLink {
 	protected
 		$view = false,
 		$create = false,
 		$update = true,
-		$required = true;
+		$search = false,
+		$list = true
+	;
 	
-	public function showInput($fill)
-	{
-		if($this->val())
-		{
-			return '<input class="DOF input '. $this->getClass() .'" name="'. $this->name() .'" '.(($fill)?' value="'.$this->val() .'"':'').' type="hidden" />';
-		} else {
-			throw new \DOF\Exception('Cannot show this field with empty value!');
-		}
+	public function __construct($label, array $sources, $flags=null, $searchOp=null){
+		parent::__construct($label,$sources, 'JSEEEEEEE', array(), $flags,null,$searchOp);
 	}
 	
-        /**
-         *This needs to be redefined to enshure that REQURED can not be unset since this is an ID
-         * @param type $flags 
-         */
-	function dataFlags($flags)
-	{
-		parent::dataFlags($flags);
-		$this->required = true;
-	}
-	
-	public function label() {}
 }

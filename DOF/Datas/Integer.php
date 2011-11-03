@@ -21,7 +21,7 @@ namespace DOF\Datas;
 class Integer extends Data {
 	function val($val = null) {
 		if(isset($val)) {
-			if(is_numeric($val))
+			if( is_numeric($val) && is_int($val*1) ) 
 				$this->val = intval($val);
 			else
 				user_error('Non-numeric value received.');

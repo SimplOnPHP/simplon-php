@@ -19,15 +19,35 @@
 namespace DOF\Renderers;
 
 class Html4 {
+    
+        static function table_from_elements($elements) {
+            $headers = array();
+            $contents = array();
+            foreach($elements as $element) {
+                $datas = array();
+                foreach($element->dataAttributes() as $dataName) {
+                    $data = $element->{'O'.$dataName}();
+                    if($data->list()) {
+                        $headers[$dataName] = $data->label();
+                        $datas[$dataName] = $data->val();
+                    }
+                }
+                $contents[] = $datas;
+            }
+            
+            return self::table($contents, array($headers));
+        }
+    
 	static function table(array $contents, array $headers = array(), array $footers = array(), array $ths_matrix = array(), $caption = '') {
 		
 		$html = '<table>';
 		foreach(array('headers' => 'thead', 'contents' => 'tbody', 'footers' => 'tfoot') as $dataVar => $tag) {
 			$html .= '<'.$tag.'>';
+                        $cell_tag = $tag == 'thead' ? 'th' : 'td';
 			foreach($$dataVar as $row){
 				$html .= '<tr>';	
-				foreach($row as $cell){
-					$html .= '<td>'.$cell.'</td>';
+				foreach($row as $class => $cell){
+					$html .= '<'.$cell_tag.' class="DOF-td-'.$class.'">'.$cell.'</td>';
 				}
 				$html .= '</tr>';
 			}

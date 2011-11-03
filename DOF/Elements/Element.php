@@ -121,6 +121,8 @@ class Element extends BaseObject {
 		$this->createAction = new Datas\CreateAction('', array('Create'));
 		$this->updateAction = new Datas\UpdateAction('', array('Update'));
 		$this->deleteAction = new Datas\DeleteAction('', array('Delete'));
+		$this->selectAction = new Datas\SelectAction('', array('Select'));
+		//$this->multiSelectAction = new Datas\DeleteAction('', array('Select'));
 
 		// Tells the DOFdata whose thier "container" in case any of it has context dependent info or functions.
 		$this->assignAsDatasParent();
@@ -688,8 +690,11 @@ class Element extends BaseObject {
 	{
 		$return = array();
 		foreach($this->dataAttributes() as $dataName) {
-			$r = $this->$dataName->$method();
-			if(isset($r)) $return[]= $r;
+                        if(isset($this->$dataName)) {
+                            $r = $this->$dataName->$method();
+                            if(isset($r))
+                                $return[]= $r;
+                        }
 		}
 	
 		// @todo: verify if it can stay this way

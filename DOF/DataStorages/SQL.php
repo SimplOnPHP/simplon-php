@@ -393,8 +393,10 @@ abstract class SQL extends DataStorage
 		')->execute($values);
 	}
 
-	public function readElements(\DOF\Elements\Element &$element){
-		$storages = is_array($element->storage()) ? $element->storage() : array($element->getClass() => $element->storage());
+	public function readElements(\DOF\Elements\Element &$element, $returnAs = 'array'){
+		$storages = is_array($element->storage())
+                        ? $element->storage() 
+                        : array($element->getClass() => $element->storage());
 		
 		foreach($element->processData('doRead') as $dataInfo){
 			foreach($dataInfo as $fieldInfo){
@@ -428,7 +430,7 @@ abstract class SQL extends DataStorage
 		foreach($element->processData('doSearch') as $dataInfo){
 			foreach($dataInfo as $fieldInfo){
 				$bindable_values = array(
-					':'.$fieldInfo[0]			 => $fieldInfo[2],
+					':'.$fieldInfo[0]		 => $fieldInfo[2],
 					':RLLIKE__'.$fieldInfo[0]	 => '%'.$fieldInfo[2].'%',
 					':LLIKE__'.$fieldInfo[0]	 => '%'.$fieldInfo[2],
 					':RLIKE__'.$fieldInfo[0]	 => $fieldInfo[2].'%',
@@ -443,7 +445,38 @@ abstract class SQL extends DataStorage
 		// Executes the query and returns the results
 		$query->execute($values);
 		
-		return $query->fetchAll();
+                /**
+                 * Example:
+                 * $array_of_datas = array(
+                 *      array(
+                 *          'DOF_class' => 'Home',
+                 *          'DOF_field_id' => 'id',
+                 *          'DOF_id' => 1,
+                 *          'id' => 1,
+                 *          ...
+                 *      ),
+                 *      ...
+                 * );
+                 */
+                $array_of_datas = $query->fetchAll();
+                
+                switch($returnAs) {
+                    case 'array':
+                        $return = $array_of_datas;
+                        break;
+                    
+                    case 'Elements':
+                        $return = array();
+                        foreach($array_of_datas as $datas) {
+                            $return[] = new $datas['DOF_class']($datas);
+                        }
+                        break;
+                        
+                    default:
+                        //trigger error
+                }
+                
+		return $return;
 	}
 
 	public function filterCriteria(\DOF\Elements\Element &$element){

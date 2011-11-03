@@ -1,4 +1,6 @@
 <?php
+
+// check for a guided tutorial at https://simplonphp.org/tutorial
 date_default_timezone_set('America/Mexico_City');
 setlocale(LC_ALL, 'es_MX.UTF-8', 'es_ES.UTF-8');
 

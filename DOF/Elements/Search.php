@@ -63,7 +63,7 @@ class Search extends Element
 			if(array_values($id_or_elementsTypes) === $id_or_elementsTypes) {
 				$this->elementsTypes = new DArray('', 'vclsR', $id_or_elementsTypes);
 			} else {
-				$this->fillFromArray($id_or_array);
+				$this->fillFromArray($id_or_elementsTypes);
 			}
 		} else if(isset($id_or_elementsTypes)) {
 			$id = $id_or_elementsTypes;
@@ -109,11 +109,11 @@ class Search extends Element
 			$new = new $class;
 			foreach($new->dataAttributes() as $dataName) {
 				$data = $new->{'O'.$dataName}();
-				if($data->search()) {
+				//if($data->search()) {
 					@$fields[$class][$dataName] = $data->getClass();
 					if(!isset($dataObjects[$dataName]))
 						$dataObjects[$dataName] = $data;
-				}
+				//}
 			}
 		}
 		
@@ -143,13 +143,12 @@ class Search extends Element
 
 	public function showSearch($template_file = '')
 	{
-		return 
-			$this->processSearch()
-			.
-			$this->obtainHtml(__FUNCTION__, $this->templateFilePath('Search', '_'.implode('-', $this->elementsTypes())), null)
-			. 
-			$this->processSearch()
-		;
+		//$this->fillFromRequest();
+            return 
+                $this->obtainHtml(__FUNCTION__, $this->templateFilePath('Search', '_'.implode('-', $this->elementsTypes())), null)
+                . 
+                $this->processSearch()
+            ;
 	}
 
 	function processSearch($params = null, $showMode = null){
@@ -158,12 +157,19 @@ class Search extends Element
 		else
 			$this->fillFromRequest();
 		
+                // mutilation
+                if(is_array($this->dataAttributes)) 
+                        $this->dataAttributes = array_diff($this->dataAttributes, array('elementsTypes'));
 		$elementsTypes = $this->elementsTypes();
 		$this->elementsTypes = null;
 		
-		$return = Main::$DEFAULT_RENDERER->table($this->dataStorage->readElements($this));
+		$return = Main::$DEFAULT_RENDERER->table_from_elements($this->dataStorage->readElements($this, 'Elements'));
+                
+                // restoration
 		$this->elementsTypes($elementsTypes);
-		return $return;
+                $this->dataAttributes[] = 'elementsTypes';
+		
+                return $return;
 	}
 	
 	public function index() {
