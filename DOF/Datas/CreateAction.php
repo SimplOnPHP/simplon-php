@@ -23,7 +23,7 @@ class CreateAction extends ElementLink {
 		$view = false,
 		$create = false,
 		$update = false,
-		$list = true
+		$list = false
 	;
 	
 	public function __construct($label, array $sources, $flags=null, $searchOp=null){

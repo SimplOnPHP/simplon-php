@@ -338,6 +338,13 @@ class Element extends BaseObject {
 		$search = new Search(array($this->getClass()));
 		return $search->processSearch($this->toArray());
 	}
+        
+ 	function processSelect(){
+		$this->fillFromRequest();
+		$search = new Search(array($this->getClass()));
+		return $search->processSearch($this->toArray(),array("selectAction"));
+	}       
+        
 	
 	public function defaultFilterCriteria($operator = 'AND') {
 		//@todo: make a function that returns the data with a specific VCRSL flag ON or OFF
@@ -460,7 +467,13 @@ class Element extends BaseObject {
 	{
 		return $this->obtainHtml(__FUNCTION__, $template_file, $action).$this->processSearch(null, 'multi');
 	}
-	
+
+ 	public function showSelect($template_file = null, $action = null)
+	{
+		return $this->obtainHtml(__FUNCTION__, $template_file, $action).$this->processSelect(null, 'multi');
+	}       
+        
+        
 	// @todo: allow to obtain only the dom part inherent to the element (and not the whole web page)
 	public function obtainHtml($caller_method, $template_file = null, $action = null)
 	{

@@ -20,18 +20,31 @@ namespace DOF\Renderers;
 
 class Html4 {
     
-        static function table_from_elements($elements) {
+        static function table_from_elements($elements, $columns = null) {
             $headers = array();
             $contents = array();
             foreach($elements as $element) {
                 $datas = array();
-                foreach($element->dataAttributes() as $dataName) {
-                    $data = $element->{'O'.$dataName}();
-                    if($data->list()) {
-                        $headers[$dataName] = $data->label();
-                        $datas[$dataName] = $data->val();
-                    }
+                
+                
+                if(is_array($columns) ){
+                   foreach($columns as $column){
+                       $data = $element->{'O'.$column}();
+                       
+                       //@todo: this need to be improved in order to evetuly suport list Datas that are not common to all Elements
+                       $headers[$column] = $data->label();
+                       $datas[$column] = $data->val();                      
+                   }
+                }else{
+                   foreach($element->dataAttributes() as $dataName) {
+                        $data = $element->{'O'.$dataName}();
+                        if($data->list()) {
+                            $headers[$dataName] = $data->label();
+                            $datas[$dataName] = $data->val();
+                        }
+                    }                 
                 }
+                
                 $contents[] = $datas;
             }
             

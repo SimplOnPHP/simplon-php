@@ -312,7 +312,12 @@ abstract class Data extends BaseObject {
 		}
 	}
 	
-	
+        
+	public function select() {
+                $this->search();
+        }     
+
+        
 	public function getCSS($method) {
 		$class = end(explode('\\',$this->getClass()));
 		$local_css = Main::$CSS_FLAVOUR_BASE . "/ClassSpecific/$class.$method.css";
@@ -363,7 +368,12 @@ abstract class Data extends BaseObject {
 	function showSearch(){
 		return $this->showInput(true);
 	}
-	
+
+ 	function showSelect(){
+		return $this->showSearch();
+	}       
+        
+        
 	/**
 	 * Returns the label for the input
 	 *

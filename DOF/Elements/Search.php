@@ -151,7 +151,19 @@ class Search extends Element
             ;
 	}
 
-	function processSearch($params = null, $showMode = null){
+        
+	public function showSelect($template_file = '')
+	{
+		//$this->fillFromRequest();
+            return 
+                $this->obtainHtml(__FUNCTION__, $this->templateFilePath('Search', '_'.implode('-', $this->elementsTypes())), null)
+                . 
+                $this->processSearch(null,null)
+            ;
+	}        
+        
+        
+	function processSearch($params = null, $columns = null){
 		if(is_array($params))
 			$this->fillFromArray($params);
 		else
@@ -163,7 +175,7 @@ class Search extends Element
 		$elementsTypes = $this->elementsTypes();
 		$this->elementsTypes = null;
 		
-		$return = Main::$DEFAULT_RENDERER->table_from_elements($this->dataStorage->readElements($this, 'Elements'));
+		$return = Main::$DEFAULT_RENDERER->table_from_elements($this->dataStorage->readElements($this, 'Elements'),$columns);
                 
                 // restoration
 		$this->elementsTypes($elementsTypes);
