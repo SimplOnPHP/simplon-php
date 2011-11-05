@@ -441,10 +441,11 @@ class Element extends BaseObject {
 	* Default method that will be shown in case no methods have been specified.
 	*/
 	public function index() {
-		return '<h1>'.$this->getClass().'</h1><div>'
-		.$this->createAction(array('Create new %s', 'getClassName'))
-		.'</div>'
+		$footer = '<h1>'.$this->getClass().'</h1>'
+			.'<div id="DOF-create-new" class="DOF section">'.$this->createAction(array('Create new %s', 'getClassName')).'</div>'
+			.'<div id="DOF-list" class="DOF section">'.$this->processSearch().'</div>'
 		;
+		return $this->obtainHtml(__FUNCTION__, null, null, array('footer' => $footer));
 	}
 	
 	public function showCreate($template_file = null, $action = null)
@@ -475,19 +476,24 @@ class Element extends BaseObject {
         
         
 	// @todo: allow to obtain only the dom part inherent to the element (and not the whole web page)
-	public function obtainHtml($caller_method, $template_file = null, $action = null)
+	public function obtainHtml($caller_method, $template_file = null, $action = null, $add_html = array())
 	{
 		//$caller_method = end(// explode('::',$caller_method));
-		$VCSL = substr($caller_method, strlen('show'));
-		$vcsl = strtolower($VCSL);
-		$with_form = in_array($vcsl, array('create', 'update', 'search'));
-			
+		if(strpos($caller_method, 'show') === false) {
+			$vcsl = $VCSL = $caller_method;
+			$with_form = false;
+		} else {
+			$VCSL = substr($caller_method, strlen('show'));
+			$vcsl = strtolower($VCSL);
+			$with_form = in_array($vcsl, array('create', 'update', 'search'));
+		}
+		
 		if(!isset($template_file)) {
 			// get default path
 			$template_file = $this->templateFilePath($VCSL);
 		}
 	
-		if($template_file === false || !file_exists($template_file) || Main::$OVERWRITE_LAYOUT_TEMPLATES) {
+		if(empty($template_file) || !file_exists($template_file) || Main::$OVERWRITE_LAYOUT_TEMPLATES) {
 			$dom = \phpQuery::newDocumentFileHTML(Main::$MASTER_TEMPLATE);
 			$dom['head']->append($this->getJS($caller_method, 'html'));
 			$dom['head']->append($this->getCSS($caller_method, 'html'));
@@ -512,7 +518,7 @@ class Element extends BaseObject {
 			$html.= '<div class="DOF '.$this->getClass().'">';
 			foreach($this as $keydata => $data)
 			{
-				if( $data instanceof Data && $data->$vcsl() )
+				if( $data instanceof Data && $data->hasMethod($vcsl) && $data->$vcsl() )
 				{
 					$html.= '<div class="DOF '.$keydata.'">';
 						
@@ -541,7 +547,8 @@ class Element extends BaseObject {
 			} else {
 				$html.= '</div>';
 			}
-			$dom['body'] = $html;
+			
+			$dom['body'] = @$add_html['header'] . $html . @$add_html['footer'];
 				
 			// save file
 			if($template_file !== false)
