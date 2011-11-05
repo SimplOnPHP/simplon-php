@@ -8,7 +8,7 @@ class Fe extends Element
 		$this->cabeza = new Datas\String('¿Cuando tendrás Fe?', 'S');
 		$this->contenido = new Datas\String('Contenido', 'S');
 		$this->home = new Datas\ElementContainer(new Home(), 'Home');
-		$this->homes = new Datas\ElementsContainer(array(new Home()), 'Homes');
+		//$this->homes = new Datas\ElementsContainer(array(new Home()), 'Homes');
 		
 		$this->concat = new Datas\Concat("concat---", array('cabeza','contenido'));
 		$this->updateAction = new Datas\UpdateAction("E-Link", array('Jaja %s jojo %s','cabeza','contenido'));
