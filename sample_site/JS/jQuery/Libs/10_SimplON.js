@@ -1,6 +1,6 @@
 $(function() {
 	if(parent !== window) {
-		$('form').each(function() {
+		$('form.DOF.create, form.DOF.update').each(function() {
 			$(this).ajaxForm({
 				url: $(this).attr('action')+'/"json"',
 				dataType: 'json',
