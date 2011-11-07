@@ -156,15 +156,12 @@ class Element extends BaseObject {
 	 * @see DOF.BaseObject::__call()
 	 * 
 	 */
-	public function __call($name, $arguments)
-	{
-	
-		if(@$this->$name instanceof Data)
-		{
+	public function __call($name, $arguments) {
+		if(@$this->$name instanceof Data) {
 			if($arguments){
 				return $this->$name->val($arguments[0]);
-			}
-			else{ return $this->$name->val();
+			} else {
+				return $this->$name->val();
 			}
 			 
 		} else {
@@ -177,31 +174,30 @@ class Element extends BaseObject {
 					case 'O':
 						if($arguments){
 							$this->$Xname->val($arguments[0]);
-						}
-						else{ return $this->$Xname;
+						} else {
+							return $this->$Xname;
 						}
 						break;
-						/*
-						 case 'F':
+					/*
+					case 'F':
 						if($arguments){ $this->$Xname->val($arguments[0]); }
 						else{ return $this->$Xname->field(); }
 						break;*/
 					case 'L':
-					if($arguments){
-					$this->$Xname->val($arguments[0]);
-					}
-					else{ return $this->$Xname->label();
-					}
-					break;
+						if($arguments) {
+							$this->$Xname->val($arguments[0]);
+						} else {
+							return $this->$Xname->label();
+						}
+						break;
 					default:
 						throw new \Exception('Letter '.$letter.' not recognized!');
-					}
-				} else {
-					return parent::__call($name, $arguments);
-					}
-					}
-					}	
-	
+				}
+			} else {
+				return parent::__call($name, $arguments);
+			}
+		}
+	}
 	
 	
 	
@@ -459,7 +455,10 @@ class Element extends BaseObject {
 	
 	public function showSearch($template_file = null, $action = null)
 	{
-		return $this->obtainHtml(__FUNCTION__, $template_file, $action).$this->processSearch(null, 'multi');
+		$footer = 
+			'<div id="DOF-list" class="DOF section">'.$this->processSearch().'</div>'
+		;
+		return $this->obtainHtml(__FUNCTION__, $template_file, $action, array('footer' => $footer));
 	}
 	
 	// @todo: allow to obtain only the dom part inherent to the element (and not the whole web page)
@@ -496,7 +495,7 @@ class Element extends BaseObject {
 			// create and fill file
 			$html = '';
 			if($with_form) {
-				$html.= '<form class="DOF '.$this->getClass().'" '
+				$html.= '<form class="DOF '.$vcsl.' '.$this->getClass().'" '
 				. ' action="'. (@$action ?: $this->encodeURL(Main::$construct_params, 'process'.$VCSL) ) .'" '
 				. ' method="post" '
 				. @$enctype
