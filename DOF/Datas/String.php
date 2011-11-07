@@ -24,6 +24,7 @@ class String extends Data {
 	$view = true,
 	$create = true,
 	$update = true,
+        $list = true,
 	$filterCriteria = 'name ~= :name';
 	
 	function showInput($fill)

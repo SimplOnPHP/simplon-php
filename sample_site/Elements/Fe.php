@@ -10,8 +10,8 @@ class Fe extends Element
 		$this->home = new Datas\ElementContainer(new Home(), 'Home');
 		//$this->homes = new Datas\ElementsContainer(array(new Home()), 'Homes');
 		
-		$this->concat = new Datas\Concat("concat---", array('cabeza','contenido'));
-		$this->updateAction = new Datas\UpdateAction("E-Link", array('Jaja %s jojo %s','cabeza','contenido'));
+		$this->concat = new Datas\Concat("Concat test", array(' ','Cabeza:','cabeza',' contenido','contenido'),"L");
+        $this->compose = new Datas\Compose("Compose test", array('%s concat %s','cabeza','concat'),"L");
 	}
 	
 	public function test(){

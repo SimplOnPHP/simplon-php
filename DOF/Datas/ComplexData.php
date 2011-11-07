@@ -29,7 +29,7 @@ class ComplexData extends Data {
 		$view = true,
 		$create = false,
 		$update = false,
-		$list = true,
+		$list = false,
 		$fetch = false,
 		$required = false,
 		$search = false,

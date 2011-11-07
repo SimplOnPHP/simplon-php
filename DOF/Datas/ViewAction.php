@@ -19,13 +19,6 @@
 namespace DOF\Datas;
 
 class ViewAction extends ElementLink {
-	protected
-		$view = false,
-		$create = false,
-		$update = true,
-		$search = false,
-		$list = true
-	;
 	
 	public function __construct($label, array $sources, $flags=null, $searchOp=null){
 		parent::__construct($label,$sources, 'showView', array(), $flags,null,$searchOp);

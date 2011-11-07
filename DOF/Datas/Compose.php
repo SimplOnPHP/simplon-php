@@ -17,30 +17,15 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace DOF\Datas;
-use \DOF\Main;
 
-class ElementLink extends ComplexData {
-	protected
-		$list = false,
-		$required = false;
-	
-	public function __construct($label, array $sources, $method, array $method_params = array(), $flags=null, $searchOp=null){
-		$this->method = $method;
-		$this->method_params = $method_params;
-		
-		parent::__construct($label,$sources,$flags,null,$searchOp);
-	}
+class Compose extends ComplexData {
 
-	public function val($sources = null){
+ 	public function val($sources = null){
 		if(!is_array($sources)) $sources = $this->sources;
 		
-		$id = $this->parent->hasMethod($this->parent->field_id())
-			? $this->parent->{$this->parent->field_id()}()
-			: null;
+        $content = vsprintf(array_shift($sources), $this->sourcesToValues($sources));
 		
-		$href = $this->parent->encodeURL($id ? array($id) : array(), $this->method, $this->method_params);
-		$content = vsprintf(array_shift($sources), $this->sourcesToValues($sources));
-		
-		return Main::$DEFAULT_RENDERER->link($content, $href);
-	}
+		return $content;
+	}  
+
 }
