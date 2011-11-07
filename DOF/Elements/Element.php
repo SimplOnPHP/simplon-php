@@ -342,8 +342,13 @@ class Element extends BaseObject {
  	function processSelect(){
 		$this->fillFromRequest();
 		$search = new Search(array($this->getClass()));
-		return $search->processSearch($this->toArray(),array("selectAction"));
+                
+                $colums = array_diff( $this->dataAttributes(), array($this->field_id(),"deleteAction","createAction","viewAction","seacrhAction","updateAction") );
+                
+		return $search->processSearch($this->toArray(),$colums);
 	}       
+
+        
         
 	
 	public function defaultFilterCriteria($operator = 'AND') {
@@ -471,7 +476,7 @@ class Element extends BaseObject {
 
  	public function showSelect($template_file = null, $action = null)
 	{
-		return $this->obtainHtml(__FUNCTION__, $template_file, $action).$this->processSelect(null, 'multi');
+		return $this->obtainHtml("showSearch", $template_file, "processSelect").$this->processSelect(null, 'multi');
 	}       
         
         
