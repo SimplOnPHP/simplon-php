@@ -19,13 +19,6 @@
 namespace DOF\Datas;
 
 class UpdateAction extends ElementLink {
-	protected
-		$view = false,
-		$create = false,
-		$update = false,
-		$search = false,
-		$list = true
-	;
 	
 	public function __construct($label, array $sources, $flags=null, $searchOp=null){
 		parent::__construct($label,$sources, 'showUpdate', array(), $flags,null,$searchOp);

@@ -19,13 +19,7 @@
 namespace DOF\Datas;
 
 class CreateAction extends ElementLink {
-	protected
-		$view = false,
-		$create = false,
-		$update = false,
-		$list = true
-	;
-	
+
 	public function __construct($label, array $sources, $flags=null, $searchOp=null){
 		parent::__construct($label, $sources, 'showCreate', array(), $flags,null,$searchOp);
 	}

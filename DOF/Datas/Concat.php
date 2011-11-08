@@ -20,11 +20,18 @@ namespace DOF\Datas;
 
 class Concat extends ComplexData {
 		
-	public function showView($fill = null){
+	public function val($fill = null){
 		
+        $sources=$this->sources;
+        
 		$ret ='';
-		foreach($this->sources as $source){
-			$ret .= $this->parent->$source().' ';
+        $glue=array_shift($sources);
+		foreach($sources as $source){
+            if($this->parent->hasMethod($source) ){
+                $ret .= $this->parent->$source().$glue;
+            }else{
+                $ret .= $source.$glue;
+            }
 		}
 		
 		return  trim($ret);

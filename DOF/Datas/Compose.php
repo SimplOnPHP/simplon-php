@@ -18,10 +18,14 @@
 */
 namespace DOF\Datas;
 
-class DeleteAction extends ElementLink {
+class Compose extends ComplexData {
 
-	public function __construct($label, array $sources, $flags=null, $searchOp=null){
-		parent::__construct($label,$sources, 'showDelete', array(), $flags,null,$searchOp);
-	}
-	
+ 	public function val($sources = null){
+		if(!is_array($sources)) $sources = $this->sources;
+		
+        $content = vsprintf(array_shift($sources), $this->sourcesToValues($sources));
+		
+		return $content;
+	}  
+
 }

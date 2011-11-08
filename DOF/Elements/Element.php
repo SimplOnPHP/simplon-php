@@ -117,11 +117,11 @@ class Element extends BaseObject {
 			$this->dataStorage=&$specialDataStorage;
 		}
 		
-		$this->viewAction = new Datas\ViewAction('', array('View'));
-		$this->createAction = new Datas\CreateAction('', array('Create'));
-		$this->updateAction = new Datas\UpdateAction('', array('Update'));
-		$this->deleteAction = new Datas\DeleteAction('', array('Delete'));
-		$this->selectAction = new Datas\SelectAction('', array('Select'));
+		if( !isset($this->viewAction) )$this->viewAction = new Datas\ViewAction('', array('View'));
+		if( !isset($this->createAction) )$this->createAction = new Datas\CreateAction('', array('Create'));
+		if( !isset($this->updateAction) )$this->updateAction = new Datas\UpdateAction('', array('Update'));
+		if( !isset($this->deleteAction) )$this->deleteAction = new Datas\DeleteAction('', array('Delete'));
+		if( !isset($this->selectAction) )$this->selectAction = new Datas\SelectAction('', array('Select'));
 		//$this->multiSelectAction = new Datas\DeleteAction('', array('Select'));
 
 		// Tells the DOFdata whose thier "container" in case any of it has context dependent info or functions.
@@ -334,6 +334,26 @@ class Element extends BaseObject {
 		$search = new Search(array($this->getClass()));
 		return $search->processSearch($this->toArray());
 	}
+        
+ 	function processSelect(){
+		$this->fillFromRequest();
+		$search = new Search(array($this->getClass()));
+                
+        $colums = array_merge( $this->datasWith("list"), array("selectAction") );
+
+		return $search->processSearch($this->toArray(),$colums);
+	}       
+
+         
+ 	function processAdmin(){
+		$this->fillFromRequest();
+		$search = new Search(array($this->getClass()));
+  
+        $colums = array_merge($this->datasWith("list"), array("deleteAction","viewAction","updateAction") );
+                              
+		return $search->processSearch($this->toArray(),$colums);
+	}        
+        
 	
 	public function defaultFilterCriteria($operator = 'AND') {
 		//@todo: make a function that returns the data with a specific VCRSL flag ON or OFF
@@ -432,7 +452,7 @@ class Element extends BaseObject {
 	public function index() {
 		$footer = '<h1>'.$this->getClass().'</h1>'
 			.'<div id="DOF-create-new" class="DOF section">'.$this->createAction(array('Create new %s', 'getClassName')).'</div>'
-			.'<div id="DOF-list" class="DOF section">'.$this->processSearch().'</div>'
+			.'<div id="DOF-list" class="DOF section">'.$this->showAdmin().'</div>'
 		;
 		return $this->obtainHtml(__FUNCTION__, null, null, array('footer' => $footer));
 	}
@@ -455,13 +475,30 @@ class Element extends BaseObject {
 	
 	public function showSearch($template_file = null, $action = null)
 	{
+<<<<<<< HEAD
 		$add_html = array(
 			'header' => '<div class="DOF showSearch">',
 			'footer' => '<div class="DOF section list">'.$this->processSearch().'</div></div>',
 		);
 		return $this->obtainHtml(__FUNCTION__, $template_file, $action, $add_html);
+=======
+		$footer = 
+			'<div id="DOF-list" class="DOF section">'.$this->processSearch(null, 'multi').'</div>'
+		;
+		return $this->obtainHtml(__FUNCTION__, $template_file, $this->encodeURL(array(),'showSearch'), array('footer' => $footer));
+>>>>>>> branch 'master' of github.com:SimplOnPHP/SimplOnPHP.git
 	}
-	
+
+ 	public function showSelect($template_file = null, $action = null)
+	{
+		return $this->obtainHtml("showSearch", $template_file, $this->encodeURL(array(),'showSelect')).$this->processSelect(null, 'multi');
+	}       
+           
+  	public function showAdmin($template_file = null, $action = null)
+	{
+		return $this->obtainHtml("showSearch", $template_file, $this->encodeURL(array(),'showAdmin')).$this->processAdmin(null, 'multi');
+	}       
+        
 	// @todo: allow to obtain only the dom part inherent to the element (and not the whole web page)
 	public function obtainHtml($caller_method, $template_file = null, $action = null, $add_html = array())
 	{
@@ -716,7 +753,6 @@ class Element extends BaseObject {
 		if(!$this->dataAttributes) {
 			$this->dataAttributes = $this->attributesTypes();
 		}
-	
 		return $this->dataAttributes;
 	}
 
@@ -727,40 +763,17 @@ class Element extends BaseObject {
 				$a[] = $name;
 			}
 		}
-	
 		return @$a ?: array();
 	}
 	
 
 	//vcsrl
-	public function datasForView(){
-		foreach($this as $data) {
-			if($data instanceof Data && $data->$what()) {
-				$output.= $data->{'show'.ucfirst($what)}();
+	public function datasWith($what){
+		foreach($this->dataAttributes() as $data) {
+			if( $this->$data->$what() ) {
+				$output[] = $data;
 			}
 		}
+        return $output;
 	}
-	
-	public function datasForCreate(){
-	
-	}
-	
-	public function datasForUpdate(){
-	
-	}
-	
-	public function datasForSearch(){
-	
-	}
-	
-	public function datasForList(){
-	
-	}
-	
-	public function datasRequired(){
-	
-	}
-		
-	
-	
 }

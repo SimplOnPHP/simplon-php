@@ -21,6 +21,7 @@ use \DOF\Main;
 
 class ElementLink extends ComplexData {
 	protected
+		$list = false,
 		$required = false;
 	
 	public function __construct($label, array $sources, $method, array $method_params = array(), $flags=null, $searchOp=null){
