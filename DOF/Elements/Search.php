@@ -157,19 +157,19 @@ class Search extends Element
 		else
 			$this->fillFromRequest();
 		
-                // mutilation
-                if(is_array($this->dataAttributes)) 
-                        $this->dataAttributes = array_diff($this->dataAttributes, array('elementsTypes'));
+		// mutilation
+		if(is_array($this->dataAttributes)) 
+				$this->dataAttributes = array_diff($this->dataAttributes, array('elementsTypes'));
 		$elementsTypes = $this->elementsTypes();
 		$this->elementsTypes = null;
 		
 		$return = Main::$DEFAULT_RENDERER->table_from_elements($this->dataStorage->readElements($this, 'Elements'));
                 
-                // restoration
+        // restoration
 		$this->elementsTypes($elementsTypes);
-                $this->dataAttributes[] = 'elementsTypes';
-		
-                return $return;
+		$this->dataAttributes[] = 'elementsTypes';
+
+		return $return;
 	}
 	
 	public function index() {

@@ -38,9 +38,9 @@ class Html4 {
             return self::table($contents, array($headers));
         }
     
-	static function table(array $contents, array $headers = array(), array $footers = array(), array $ths_matrix = array(), $caption = '') {
-		
-		$html = '<table>';
+	static function table(array $contents, array $headers = array(), array $footers = array(), array $extra = array()) {
+		$table_classes = array_merge(array('DOF', 'table'), @$extra['table_classes'] ?: array());
+		$html = '<table class="'.implode(' ',$table_classes).'">';
 		foreach(array('headers' => 'thead', 'contents' => 'tbody', 'footers' => 'tfoot') as $dataVar => $tag) {
 			$html .= '<'.$tag.'>';
                         $cell_tag = $tag == 'thead' ? 'th' : 'td';

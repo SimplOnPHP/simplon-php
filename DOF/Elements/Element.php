@@ -455,10 +455,11 @@ class Element extends BaseObject {
 	
 	public function showSearch($template_file = null, $action = null)
 	{
-		$footer = 
-			'<div id="DOF-list" class="DOF section">'.$this->processSearch().'</div>'
-		;
-		return $this->obtainHtml(__FUNCTION__, $template_file, $action, array('footer' => $footer));
+		$add_html = array(
+			'header' => '<div class="DOF showSearch">',
+			'footer' => '<div class="DOF section list">'.$this->processSearch().'</div></div>',
+		);
+		return $this->obtainHtml(__FUNCTION__, $template_file, $action, $add_html);
 	}
 	
 	// @todo: allow to obtain only the dom part inherent to the element (and not the whole web page)
@@ -481,8 +482,8 @@ class Element extends BaseObject {
 	
 		if(empty($template_file) || !file_exists($template_file) || Main::$OVERWRITE_LAYOUT_TEMPLATES) {
 			$dom = \phpQuery::newDocumentFileHTML(Main::$MASTER_TEMPLATE);
-			$dom['head']->append($this->getJS($caller_method, 'html'));
 			$dom['head']->append($this->getCSS($caller_method, 'html'));
+			$dom['head']->append($this->getJS($caller_method, 'html'));
 				
 			foreach($this->attributesTypes('\\DOF\\Datas\\File') as $fileData)
 			{
