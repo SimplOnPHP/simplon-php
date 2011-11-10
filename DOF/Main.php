@@ -108,8 +108,8 @@ class Main {
 	static function run($ini = null) {
 		self::setup($ini);
 		
-		if(class_exists(self::$class)) {
-			$rc = new \ReflectionClass(self::$class);
+		if(class_exists(self::$class) || class_exists('\\DOF\\Elements\\'.self::$class)) {
+			$rc = new \ReflectionClass(class_exists(self::$class) ? self::$class : '\\DOF\\Elements\\'.self::$class);
 			if( 
 				isset(self::$method)
 				&&
@@ -119,7 +119,6 @@ class Main {
 			){
 				echo call_user_func_array(array($obj, self::$method), self::$method_params);
 			} else {
-				unset($obj);
 				header('HTTP/1.1 403 Access forbidden');
 				return;
 			}
@@ -173,7 +172,9 @@ class Main {
 		
 		// Parses the URL
 		$f_decode_param = function($p) {
-			return json_decode(urldecode($p));
+			$url_decoded = urldecode($p);
+			$json_decoded = json_decode($url_decoded);
+			return isset($json_decoded) ? $json_decoded : $url_decoded;
 		};
 		
 		$server_request = $_SERVER['REDIRECT_URL'];

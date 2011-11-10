@@ -475,18 +475,11 @@ class Element extends BaseObject {
 	
 	public function showSearch($template_file = null, $action = null)
 	{
-<<<<<<< HEAD
 		$add_html = array(
 			'header' => '<div class="DOF showSearch">',
 			'footer' => '<div class="DOF section list">'.$this->processSearch().'</div></div>',
 		);
 		return $this->obtainHtml(__FUNCTION__, $template_file, $action, $add_html);
-=======
-		$footer = 
-			'<div id="DOF-list" class="DOF section">'.$this->processSearch(null, 'multi').'</div>'
-		;
-		return $this->obtainHtml(__FUNCTION__, $template_file, $this->encodeURL(array(),'showSearch'), array('footer' => $footer));
->>>>>>> branch 'master' of github.com:SimplOnPHP/SimplOnPHP.git
 	}
 
  	public function showSelect($template_file = null, $action = null)
@@ -704,7 +697,7 @@ class Element extends BaseObject {
 	
 //------------------------------- ????	
 
-	function encodeURL(array $construct_params = array(), $method, array $method_params = array()) {
+	function encodeURL(array $construct_params = array(), $method = null, array $method_params = array()) {
 		return Main::encodeURL($this->getClass(), $construct_params, $method, $method_params);
 	}
 	
