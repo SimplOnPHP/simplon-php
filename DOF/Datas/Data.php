@@ -17,7 +17,7 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace DOF\Datas;
-use \DOF\Main, \DOF\BaseObject;
+use \DOF\Main, \DOF\BaseObject, \DOF\Elements\JS, \DOF\Elements\CSS;
 
 /**
  * @todo Agregar posibilidad de especificar indices de b�squeda:
@@ -314,22 +314,27 @@ abstract class Data extends BaseObject {
 	
         
 	public function select() {
-                $this->search();
-        }     
+		$this->search();
+	}
 
         
 	public function getCSS($method) {
-		$class = end(explode('\\',$this->getClass()));
-		$local_css = Main::$CSS_FLAVOUR_BASE . "/ClassSpecific/$class.$method.css";
-		return array($local_css);
+		if($this->hasMethod($method)) {
+			$class = end(explode('\\',$this->getClass()));
+			return array(CSS::getPath("$class.$method.css"));
+		} else {
+			return array();
+		}
 	}
 	
 	public function getJS($method) {
-		$class = end(explode('\\',$this->getClass()));
-		$local_js = Main::$JS_FLAVOUR_BASE . "/Inits/$class.$method.js";
-		return array($local_js);
+		if($this->hasMethod($method)) {
+			$class = end(explode('\\',$this->getClass()));
+			return array(JS::getPath("$class.$method.js"));
+		} else {
+			return array();
+		}
 	}
-	
 	
 	
 	/**

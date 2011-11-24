@@ -22,9 +22,9 @@ class MySql extends SQL
 {
 	/*@var db MySqlDataBase */
 
-	public function __construct($server,$dataBase,$user = 'root',$password = '') {
+	public function __construct($host = 'localhost', $dataBase = 'sample_site', $user = 'root',$password = '') {
 		$this->db = new \PDO(
-			'mysql:dbname='.$dataBase.';host='.$server,
+			'mysql:dbname='.$dataBase.';host='.$host,
 			$user,
 			$password,
 			array(

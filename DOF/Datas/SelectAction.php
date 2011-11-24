@@ -21,7 +21,7 @@ namespace DOF\Datas;
 class SelectAction extends ElementLink {
 
 	public function __construct($label, array $sources, $flags=null, $searchOp=null){
-		parent::__construct($label,$sources, 'JSEEEEEEE', array(), $flags,null,$searchOp);
+		parent::__construct($label, $sources, 'makeSelection', array(), $flags,null,$searchOp);
 	}
 	
 }
