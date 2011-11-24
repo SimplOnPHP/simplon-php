@@ -21,7 +21,7 @@ use DOF\Datas\ComplexData;
 
 use DOF\DataStorages\DataStorage;
 
-use \DOF\Datas, \DOF\Datas\Data, \DOF\BaseObject, \DOF\Main, \DOF\Exception;
+use \DOF\Datas, \DOF\Datas\Data, \DOF\BaseObject, \DOF\Main, \DOF\Exception, \DOF\Elements\JS, \DOF\Elements\CSS;
 
 /**
  * This is the core element to build the site. Elements are the way to indicate the system all data that conforms it. 
@@ -113,7 +113,7 @@ class Element extends BaseObject {
 		
 		//Asings the storage element for the DOFelement. (a global one : or a particular one)
 		if(!$specialDataStorage){
-			$this->dataStorage = Main::$DATA_STORAGE;
+			$this->dataStorage = Main::dataStorage();
 		}else{
 			$this->dataStorage=&$specialDataStorage;
 		}
@@ -654,49 +654,38 @@ class Element extends BaseObject {
 	
 	public function getJS($method, $returnFormat = 'array', $compress = false) {
 		$class = end(explode('\\',$this->getClass()));
-	
-		$local_js = Main::$JS_FLAVOUR_BASE . "/Inits/$class.$method.js";
-		$a_js = file_exists($local_js) ? array($local_js) : array();
-	
-		foreach($this->dataAttributes() as $data) {
-			/*
-				$class = end(explode('\\',$this->{'O'.$data}()->getClass()));
-			$local_js = \DOF\Main::$JS_FLAVOUR_BASE . "/Inits/$class.$method.js";
-				
-			if(file_exists($local_js))
-			$a_js[] = $local_js;
-			* */
+		
+		// gets component's js file
+		$local_js = JS::getPath("$class.$method.js");
+		$a_js = $local_js ? array($local_js) : array();
+		
+		// adds
+		foreach($this->dataAttributes() as $data)
 			foreach($this->{'O'.$data}()->getJS($method) as $local_js)
-			if(file_exists($local_js))
-			$a_js[] = $local_js;
-		}
+				if($local_js)
+					$a_js[] = $local_js;
+				
 		$a_js = array_unique($a_js);
-		$libs = glob(Main::$JS_FLAVOUR_BASE . '/Libs/*.js');
 		sort($a_js);
-		sort($libs);
+		
+		// includes libs
+		$a_js = array_unique(array_merge($a_js, JS::getLibs()));
 	
 		if($compress) {
 			// @todo: compress in one file and return the file path
 		}
 	
 		// converts to remote paths
-		$a_js = array_map(
-		function($fp) {
-			return str_replace(Main::$LOCAL_ROOT, Main::$REMOTE_ROOT, $fp);
-		},
-		array_unique(array_merge(
-		$libs,
-		$a_js
-		))
-		);
+		$a_js = array_unique(array_map(array('\\DOF\\Main', 'localToRemotePath'), $a_js));
 	
 		switch($returnFormat) {
 			case 'html':
 				$html_js = '';
 				foreach($a_js as $js) {
-					$html_js.= '<script type="text/javascript" src="'.$js.'"></script>'."\n";
+					$html_js.= '<script type="text/javascript" src="'.$js.'" />'."\n";
 				}
 				return $html_js;
+			default:
 			case 'array':
 				return $a_js;
 		}
@@ -704,34 +693,29 @@ class Element extends BaseObject {
 	
 	public function getCSS($method, $returnFormat = 'array', $compress = false) {
 		$class = end(explode('\\',$this->getClass()));
-	
-		$local_css = Main::$CSS_FLAVOUR_BASE . "/ClassSpecific/$class.$method.css";
-		$a_css = file_exists($local_css) ? array($local_css) : array();
-	
-		foreach($this->dataAttributes() as $data) {
+		
+		// gets component's css file
+		$local_css = CSS::getPath("$class.$method.css");
+		$a_css = $local_css ? array($local_css) : array();
+		
+		// adds
+		foreach($this->dataAttributes() as $data)
 			foreach($this->{'O'.$data}()->getCSS($method) as $local_css)
-			if(file_exists($local_css))
-			$a_css[] = $local_css;
-		}
+				if($local_css)
+					$a_css[] = $local_css;
+				
 		$a_css = array_unique($a_css);
-		$libs = glob(Main::$CSS_FLAVOUR_BASE . '/Libs/*.css');
 		sort($a_css);
-		sort($libs);
+		
+		// includes libs
+		$a_css = array_unique(array_merge($a_css, CSS::getLibs()));
 	
 		if($compress) {
 			// @todo: compress in one file and return the file path
 		}
 	
 		// converts to remote paths
-		$a_css = array_map(
-		function($fp) {
-			return str_replace(Main::$LOCAL_ROOT, Main::$REMOTE_ROOT, $fp);
-		},
-		array_unique(array_merge(
-		$libs,
-		$a_css
-		))
-		);
+		$a_css = array_map(array('\\DOF\\Main', 'localToRemotePath'), $a_css);
 	
 		switch($returnFormat) {
 			case 'html':
@@ -740,6 +724,7 @@ class Element extends BaseObject {
 					$html_css.= '<link type="text/css" rel="stylesheet" href="'.$css.'" />'."\n";
 				}
 				return $html_css;
+			default:
 			case 'array':
 				return $a_css;
 		}

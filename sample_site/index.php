@@ -28,6 +28,12 @@ DOF\Main::run(array(
 	
 	'DEV_MODE' => true,
 	
-	'DATA_STORAGE' => new DOF\DataStorages\MySql('localhost','sample_site','root',''),
+	'DATA_STORAGE' => array(
+		'driver' => 'DOF\\DataStorages\\MySql',
+		'host' => 'localhost',
+		'db' => 'sample_site',
+		'user' => 'root',
+		'pass' => ''
+	),
 	//'DATA_STORAGE' => new DOF\DataStorages\SQLite('localhost',__DIR__.'/sample_site.sqlite'),
 ));

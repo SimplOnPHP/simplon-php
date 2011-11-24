@@ -53,7 +53,7 @@ class Search extends Element
 		
 		//Asings the storage element for the DOFelement. (a global one : or a particular one)
 		if(!$specialDataStorage){
-			$this->dataStorage = Main::$DATA_STORAGE;
+			$this->dataStorage = Main::dataStorage();
 		}else{
 			$this->dataStorage=&$specialDataStorage;
 		}

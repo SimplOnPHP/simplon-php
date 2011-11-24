@@ -71,10 +71,7 @@ class Main {
 		$USE_FROM_TEMPLATES,
 		
 		$JS_FLAVOUR = 'jQuery',
-		$JS_FLAVOUR_BASE,
-	
 		$CSS_FLAVOUR = 'jQuery',
-		$CSS_FLAVOUR_BASE,
 	
 		$DEV_MODE = false,
 
@@ -107,6 +104,7 @@ class Main {
 	function __construct($ini = null) {
 		self::setup($ini);
 	}
+	
 	
 	static function run($ini = null) {
 		self::setup($ini);
@@ -161,12 +159,15 @@ class Main {
 			ini_set('display_errors', false);
 		}
 		
-		if(!self::$JS_FLAVOUR_BASE)
-			self::$JS_FLAVOUR_BASE = self::$LOCAL_ROOT . '/JS/' . self::$JS_FLAVOUR;
-		if(!self::$CSS_FLAVOUR_BASE)
-			self::$CSS_FLAVOUR_BASE = self::$LOCAL_ROOT . '/CSS/' . self::$CSS_FLAVOUR;
-		
 		self::decodeURL();
+	}
+	
+	static function dataStorage() {
+		if(is_array(self::$DATA_STORAGE)) {
+			$d = self::$DATA_STORAGE;
+			self::$DATA_STORAGE = new $d['driver'](@$d['host'], @$d['db'], @$d['user'], @$d['pass']); 
+		}
+		return self::$DATA_STORAGE;
 	}
 	
 	static function decodeURL() {
@@ -265,6 +266,10 @@ class Main {
 	    return false;
 	}
 	
+	static function localToRemotePath($file_path) {
+		return str_replace(array(Main::$LOCAL_ROOT, Main::$DOF_PATH), Main::$REMOTE_ROOT, $file_path);
+	}
+	
 	/**
 	 * Includes a (class)file looking for it in the following order 1.- Site directory, 2.- Site template directory, 3.- DOF directory
 	 */
@@ -273,8 +278,7 @@ class Main {
 		
 		if(reset($pathExploded) == 'DOF') {
 			$file_to_load = '../' . str_replace('\\', '/', $classToLoad) . '.php';
-			// echo 'DOF -> '.$file_to_load.'<br>';
-			require_once $file_to_load;
+			require $file_to_load;
 			return true;
 		} else {
 			$classToLoad = end($pathExploded);

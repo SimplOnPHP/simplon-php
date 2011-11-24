@@ -20,21 +20,20 @@ namespace DOF\Elements;
 use \DOF\Main,
 	\DOF\Elements\Element;
 
-class CSS extends Element {
+class JS extends Element {
 	const
-		mime = 'text/css', 
-		type = 'CSS', 
-		default_dir = 'PerMethod';
+		mime = 'text/javascript', 
+		type = 'JS', 
+		default_dir = 'Inits';
 	
 	var $flavour, $directory, $file;
 	
 	static $files_exists = array();
 	
 	function __construct($flavour, $directory, $file) {
-		$args = func_get_args();
-		$this->flavour = array_shift($args);
-		$this->directory = array_shift($args);
-		$this->file = implode('/',$args);
+		$this->flavour = $flavour;
+		$this->directory = $directory;
+		$this->file = $file;
 	}
 	
 	static function compress() {
