@@ -29,9 +29,11 @@ class Integer extends Data {
 			return $this->val;
 		}
 	}
-	
-	public function showInput($fill)
-	{
-		return '<input class="DOF input '.$this->getClass().'" name="'.$this->field().'" '.(($fill)?'value="'.$this->val().'"':'').' />';
+    
+	public function showInput($fill) {
+        $data_id = 'DOF_'.$this->instanceId();
+		return 
+            ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
+            '<input id="'.$data_id.'" class="DOF input '.$this->getClassName().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
 	}
 }

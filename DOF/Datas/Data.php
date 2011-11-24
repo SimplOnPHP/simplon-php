@@ -181,14 +181,16 @@ abstract class Data extends BaseObject {
 	 * @param mixed $val If sended sets the value of the data since it's creation
 	 * @param string $searchOp Determines how the data value will be cmpared/evalueted in queries to the Data Storage
 	 */
-	public function __construct($label=null, $flags=null, $val=null, $searchOp=null)
+	public function __construct($label=null, $flags=null, $val=null, $filterCriteria=null)
 	{
 		//check($label);
-		$this->construct($label, $flags, $val, $searchOp);
+		$this->construct($label, $flags, $val, $filterCriteria);
 		
 		$this->val = $val;
 		$this->label=$label;
 		
+        $this->filterCriteria($filterCriteria);
+        
 		if($flags)
 		{
 			$this->dataFlags($flags);
@@ -201,7 +203,7 @@ abstract class Data extends BaseObject {
 	 * User defined constructor, called within {@link __constructor()},
 	 * Useful in child clasess to define any class specific construction code without overwritning the __construct method
 	 */
-	public function construct($label=null, $flags=null, $val=null, $searchOp=null) {}
+	public function construct($label=null, $flags=null, $val=null, $filterCriteria=null) {}
 	
 	
 	
@@ -240,7 +242,7 @@ abstract class Data extends BaseObject {
 
 	public function doSearch()
 	{
-		return ($this->search())
+		return ($this->search() && $this->fetch())
 			? array(array($this->name(), $this->getClass(), $this->val(), $this->filterCriteria()))
 			: null;		
 	}

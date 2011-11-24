@@ -18,21 +18,29 @@
 */
 namespace DOF\Datas;
 
-class String extends Data {
+/**
+* Hidden para las tablas
+* --- No imprime un label y manda un input hidden.
+*
+* @version	1.0
+* @author	Ruben Schaffer
+* @todo fix so val retuns the value and only the inputmethod retuns the hidden inpunt
+*/
+class Hidden extends Data
+{
+	protected
+		$view = false,
+		$create = false,
+		$update = true,
+		$required = false;
 	
-	protected 
-	$view = true,
-	$create = true,
-	$update = true,
-    $list = true,
-	$filterCriteria = 'name ~= :name';
-	
-    
-    
-	public function showInput($fill) {
-        $data_id = 'DOF_'.$this->instanceId();
-		return 
-            ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
-            '<input id="'.$data_id.'" class="DOF input '.$this->getClassName().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
+	public function showInput($fill)
+	{
+		if($this->val())
+		{
+			return '<input class="DOF input '. $this->getClass() .'" name="'. $this->name() .'" '.(($fill)?' value="'.$this->val() .'"':'').' type="hidden" />';
+		} 
 	}
+		
+	public function label() {}
 }

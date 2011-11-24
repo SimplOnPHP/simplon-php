@@ -17,11 +17,28 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace DOF\Datas;
+use \DOF\Main;
 
 class SelectAction extends ElementLink {
 
 	public function __construct($label, array $sources, $flags=null, $searchOp=null){
-		parent::__construct($label,$sources, 'JSEEEEEEE', array(), $flags,null,$searchOp);
+		parent::__construct($label,$sources, 'makeSelection', array(), $flags,null,$searchOp);
 	}
-	
+
+    
+	public function val($sources = null){
+		if(!is_array($sources)) $sources = $this->sources;
+		
+		$id = $this->parent->hasMethod($this->parent->field_id())
+			? $this->parent->{$this->parent->field_id()}()
+			: null;
+		
+		//$href = $this->parent->encodeURL($id ? array($id) : array(), $this->method,   array( $this->parent->parentClass() )      );
+        $params = $this->parent->hasMethod('parentClass') ? array( $this->parent->parentClass() ) : array();
+        $href = $this->parent->encodeURL($id ? array($id) : array(), $this->method ,  $params    );
+		$content = vsprintf(array_shift($sources), $this->sourcesToValues($sources));
+		
+		return Main::$DEFAULT_RENDERER->link($content, $href, array('class'=>'DOF '.$this->getClassName()));
+	} 
+
 }

@@ -24,7 +24,7 @@ namespace DOF\Datas;
 *
 * @version	1.0
 * @author	Ruben Schaffer
-* @todo
+* @todo fix so val retuns the value and only the inputmethod retuns the hidden inpunt
 */
 class Id extends Integer
 {

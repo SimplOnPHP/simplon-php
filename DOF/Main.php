@@ -78,7 +78,10 @@ class Main {
 	
 		$DEV_MODE = false,
 
-		$DATA_STORAGE;
+		$DATA_STORAGE,
+        
+        //super array to alter classes atributes on the fly nus bee in the format "class" -> array("data1name"=>$data1)
+        $onTheFlyAttributes = array();
 	
 	static	
 		$AUTOLOAD_DIRS = array(
@@ -128,7 +131,16 @@ class Main {
 			return;
 		}
 	}
-	
+
+    
+	static function addOnTheFlyAttribute($class,$attributeName,$attribute) {
+		self::$onTheFlyAttributes[$class][$attributeName]=$attribute;
+	}
+    
+    static function getOnTheFlyAttributes($class) {
+		return @self::$onTheFlyAttributes[$class] ?: array();
+	}
+    
 	static function setup($ini = null) {
 		if(file_exists(self::DEFAULT_INI))
 			self::fromArray(parse_ini_file(self::DEFAULT_INI));

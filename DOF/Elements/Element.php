@@ -104,7 +104,8 @@ class Element extends BaseObject {
 	 */
 	public function __construct($id_or_array = null, &$specialDataStorage=null)
 	{
-		$this->construct($id_or_array, $specialDataStorage);
+
+        $this->construct($id_or_array, $specialDataStorage);
 		
 		//On heirs put here the asignation of DOFdata and attributes
 		
@@ -123,7 +124,10 @@ class Element extends BaseObject {
 		if( !isset($this->deleteAction) )$this->deleteAction = new Datas\DeleteAction('', array('Delete'));
 		if( !isset($this->selectAction) )$this->selectAction = new Datas\SelectAction('', array('Select'));
 		//$this->multiSelectAction = new Datas\DeleteAction('', array('Select'));
-
+ 
+        //Load the attributes on the fly
+        $this->addOnTheFlyAttributes();
+        
 		// Tells the DOFdata whose thier "container" in case any of it has context dependent info or functions.
 		$this->assignAsDatasParent();
 		
@@ -138,7 +142,8 @@ class Element extends BaseObject {
 			//if there is a storage and an ID it fills the element with the proper info.
 			$this->fillFromDSById($id_or_array);
 		}
-		 
+ 
+        
 	}
 	
 	/**
@@ -334,13 +339,32 @@ class Element extends BaseObject {
 		$search = new Search(array($this->getClass()));
 		return $search->processSearch($this->toArray());
 	}
+   /* 
+    function processSelection(){
+
+        $parentClass = $_??????['parentClass'];
         
+        
+        
+        
+        //-------------------
+        $jsInstructions = array(
+            '' => , 
+            'b' => , 
+            'c' => , 
+            'd' => , 
+            'e' => ,
+        );
+        echo json_encode($jsInstructions);
+	}
+     */   
  	function processSelect(){
 		$this->fillFromRequest();
 		$search = new Search(array($this->getClass()));
                 
+       // $colums = array_merge( $this->datasWith("list"), array("selectAction","parentClass") );
         $colums = array_merge( $this->datasWith("list"), array("selectAction") );
-
+        
 		return $search->processSearch($this->toArray(),$colums);
 	}       
 
@@ -359,7 +383,7 @@ class Element extends BaseObject {
 		//@todo: make a function that returns the data with a specific VCRSL flag ON or OFF
 		$searchables = array();
 		foreach ($this->dataAttributes() as $dataName){
-			if($this->{'O'.$dataName}()->search() && ($this->$dataName() !== null && $this->$dataName() !== '') ){
+			if($this->{'O'.$dataName}()->search() && $this->{'O'.$dataName}()->fetch() && ($this->$dataName() !== null && $this->$dataName() !== '') ){
 				$searchables[]=' (.'.$dataName.') ';
 			}
 		}
@@ -378,16 +402,25 @@ class Element extends BaseObject {
 	public function filterCriteria($filterCriteria = null) {
 		if(isset($filterCriteria)) $this->filterCriteria = $filterCriteria;
 		else{
-			if(!isset($this->filterCriteria))
-				$this->filterCriteria = $this->defaultFilterCriteria();
 			
-			$filterCriteria = $this->filterCriteria;
+            //REMOVED so it adapts on every run if necesary
+            //if(!isset($this->filterCriteria))
+			//	$this->filterCriteria = $this->defaultFilterCriteria();
+			
+			//$filterCriteria = $this->filterCriteria;
+            
+            $filterCriteria = $this->defaultFilterCriteria();
+            
+            
 			$patterns = array();
 			$subs = array();
 			foreach( $this->dataAttributes() as $dataName){
 				// Regexp thanks to Jens: http://stackoverflow.com/questions/6462578/alternative-to-regex-match-all-instances-not-inside-quotes/6464500#6464500
-				$patterns[] = '/(\.'.$dataName.')(?=([^"\\\\]*(\\\\.|"([^"\\\\]*\\\\.)*[^"\\\\]*"))*[^"]*$)/';
-				$subs[] = $this->{'O'.$dataName}()->filterCriteria();
+				$fc = $this->{'O'.$dataName}()->filterCriteria();
+                if( !empty($fc) ){ 
+                        $patterns[] = '/(\.'.$dataName.')(?=([^"\\\\]*(\\\\.|"([^"\\\\]*\\\\.)*[^"\\\\]*"))*[^"]*$)/';
+                        $subs[] = $fc;
+                    }
 			}
 			
 			return preg_replace($patterns, $subs, $this->filterCriteria);
@@ -457,7 +490,7 @@ class Element extends BaseObject {
 		return $this->obtainHtml(__FUNCTION__, null, null, array('footer' => $footer));
 	}
 	
-	public function showCreate($template_file = null, $action = null)
+	public function showCreate($template_file = null, $action = null, $parentClass = null)
 	{
 		return $this->obtainHtml(__FUNCTION__, $template_file, $action);
 	}
@@ -482,9 +515,37 @@ class Element extends BaseObject {
 		return $this->obtainHtml(__FUNCTION__, $template_file, $action, $add_html);
 	}
 
- 	public function showSelect($template_file = null, $action = null)
+    public function addOnTheFlyAttribute( $attributeName, $attribute = null)
 	{
-		return $this->obtainHtml("showSearch", $template_file, $this->encodeURL(array(),'showSelect')).$this->processSelect(null, 'multi');
+        Main::addOnTheFlyAttribute($this->getClass(),$attributeName,$attribute);
+        $this->$attributeName=$attribute;
+        if($attribute instanceof Data ){ 
+            if( is_array($this->dataAttributes)){ $this->dataAttributes[$attributeName]=$attribute; }else{ $this->dataAttributes = $this->attributesTypes(); }
+        }
+    }
+   
+    public function addOnTheFlyAttributes()
+	{
+        foreach ( Main::getOnTheFlyAttributes($this->getClass()) as  $attributeName=>$attribute ){
+            $this->$attributeName=$attribute;
+            if($attribute instanceof Data ){ 
+                if( is_array($this->dataAttributes)){ $this->dataAttributes[$attributeName]=$attribute; }else{ $this->dataAttributes = $this->attributesTypes(); }
+            }           
+        }
+    }    
+    
+    
+ 	public function showSelect($template_file = null, $action = null, $parentClass = null)
+	{
+		
+        if($parentClass){ 
+            
+            $this->addOnTheFlyAttribute('parentClass' , new Datas\Hidden(null,'CUSf', $parentClass, '' )    );
+                               
+        }
+        
+        
+        return $this->obtainHtml("showSearch", $template_file, $this->encodeURL(array(),'showSelect')).$this->processSelect(null, 'multi');
 	}       
            
   	public function showAdmin($template_file = null, $action = null)
@@ -493,7 +554,7 @@ class Element extends BaseObject {
 	}       
         
 	// @todo: allow to obtain only the dom part inherent to the element (and not the whole web page)
-	public function obtainHtml($caller_method, $template_file = null, $action = null, $add_html = array())
+	public function obtainHtml($caller_method, $template = null, $action = null, $add_html = array())
 	{
 		//$caller_method = end(// explode('::',$caller_method));
 		if(strpos($caller_method, 'show') === false) {
@@ -505,12 +566,18 @@ class Element extends BaseObject {
 			$with_form = in_array($vcsl, array('create', 'update', 'search'));
 		}
 		
-		if(!isset($template_file)) {
+		if(empty($template)) {
 			// get default path
 			$template_file = $this->templateFilePath($VCSL);
-		}
+            
+            $template = file_exists($template_file)
+                ? \phpQuery::newDocumentFileHTML($template_file)
+                : '';
+		} else {
+            $template = \phpQuery::newDocument($template);
+        }
 	
-		if(empty($template_file) || !file_exists($template_file) || Main::$OVERWRITE_LAYOUT_TEMPLATES) {
+		if(empty($template) || Main::$OVERWRITE_LAYOUT_TEMPLATES) {
 			$dom = \phpQuery::newDocumentFileHTML(Main::$MASTER_TEMPLATE);
 			$dom['head']->append($this->getCSS($caller_method, 'html'));
 			$dom['head']->append($this->getJS($caller_method, 'html'));
@@ -546,9 +613,6 @@ class Element extends BaseObject {
 						$dompart['.reference']->attr('ref', $data_id);
 						$dompart['.input']->attr('id', $data_id);
 	
-						if($data->label())
-						$html.='<label for="'.$data_id.'">'.$data->label().': </label>';
-	
 						$html.= $dompart;
 					} else {
 						$html.= $data->$caller_method();
@@ -568,11 +632,11 @@ class Element extends BaseObject {
 			$dom['body'] = @$add_html['header'] . $html . @$add_html['footer'];
 				
 			// save file
-			if($template_file !== false)
-			Main::createFile($template_file, $dom.'');
+			if($template_file)
+                Main::createFile($template_file, $dom.'');
 		} else {
 			// opens file
-			$dom = \phpQuery::newDocumentFileHTML($template_file);
+			$dom = $template;
 				
 			// fill file with data
 			if($vcsl != 'create') {

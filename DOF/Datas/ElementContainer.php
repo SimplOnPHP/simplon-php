@@ -60,7 +60,11 @@ class ElementContainer extends Data {
 		//return $this->parent()->getClass();
 		$id = $this->element()->{$this->element()->field_id()}();
 		if($id !== null) {
-			$dom = \phpQuery::newDocumentHTML($this->element()->showView());
+            if($template) {
+                $template = \phpQuery::newDocument($template);
+                $template = $template['.DOF.'.$this->element()->getClass()].'';
+            }
+			$dom = \phpQuery::newDocument($this->element()->showView($template));
 			return $dom['.DOF.'.$this->element()->getClass()].'';
 		} else {
 			return '';
@@ -79,22 +83,19 @@ class ElementContainer extends Data {
 	}
 	
 	
-	public function padre(&$parent=null)
+	public function parent(&$parent=null)
 	{
-		//check('Hola tu'.$padre->id() );
-		if($this->element()->hasMethod('parent') ) {
-			if($parent) {
-				$this->element()->parent($parent);
-			} else {
-				return $this->element()->parent();
-			}
-		}		
+        if($parent) {
+            $this->parent =$parent ;
+        } else {
+            return $this->parent;
+        }	
 	}	
 	
 	function showInput($fill)
 	{
 		return  '
-			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showSelect').'">List</a>
+			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showSelect',array('','', $this->parent()->getClass() )).'">List</a>
 			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showCreate').'">Add</a>
 			<div class="preview">'.$this->showView().'</div>
 			<input class="input" name="'.$this->name().'" type="hidden" />
