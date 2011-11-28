@@ -95,7 +95,7 @@ class ElementContainer extends Data {
 	function showInput($fill)
 	{
 		return  '
-			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showSelect',array('','', $this->parent()->getClass() )).'">List</a>
+			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showSelect',array('','', $this->parent()->getClass(), $this->name() )).'">List</a>
 			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showCreate').'">Add</a>
 			<div class="preview">'.$this->showView().'</div>
 			<input class="input" name="'.$this->name().'" type="hidden" />

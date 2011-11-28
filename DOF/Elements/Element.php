@@ -344,10 +344,14 @@ class Element extends BaseObject {
     
     
     
-    function makeSelection(){
-   
+    function makeSelection($parentClass, $attributeName){
+        /*@var parentElement /DOF/Elements/Element */
+        $parentElement = new $parentClass();
+        //echo $this->showView($parentElement->templateFilePath('View'));    
+        echo $parentElement->templateFilePath('View');
         
- 
+        
+ /*
         $this->JS(
                 array('function'=>'remove',
                       'content'=>'',
@@ -407,6 +411,9 @@ class Element extends BaseObject {
                       'path'=>'colorbox',
                      )
                  );
+    */
+        
+        
     }
    /* 
     function processSelection(){
@@ -589,7 +596,7 @@ class Element extends BaseObject {
         Main::addOnTheFlyAttribute($this->getClass(),$attributeName,$attribute);
         $this->$attributeName=$attribute;
         if($attribute instanceof Data ){ 
-            if( is_array($this->dataAttributes)){ $this->dataAttributes[$attributeName]=$attribute; }else{ $this->dataAttributes = $this->attributesTypes(); }
+            if( is_array($this->dataAttributes)){ $this->dataAttributes[]=$attributeName; }else{ $this->dataAttributes = $this->attributesTypes(); }
         }
     }
    
@@ -598,21 +605,20 @@ class Element extends BaseObject {
         foreach ( Main::getOnTheFlyAttributes($this->getClass()) as  $attributeName=>$attribute ){
             $this->$attributeName=$attribute;
             if($attribute instanceof Data ){ 
-                if( is_array($this->dataAttributes)){ $this->dataAttributes[$attributeName]=$attribute; }else{ $this->dataAttributes = $this->attributesTypes(); }
+                if( is_array($this->dataAttributes)){ $this->dataAttributes[]=$attributeName; }else{ $this->dataAttributes = $this->attributesTypes(); }
             }           
         }
     }    
     
     
- 	public function showSelect($template_file = null, $action = null, $parentClass = null)
+ 	public function showSelect($template_file = null, $action = null, $parentClass = null, $attributeElementName = null)
 	{
 		
-        if($parentClass){ 
+        if($parentClass && $attributeElementName){ 
             
             $this->addOnTheFlyAttribute('parentClass' , new Datas\Hidden(null,'CUSf', $parentClass, '' )    );
-                               
-        }
-        
+            $this->addOnTheFlyAttribute('attributeElementName' , new Datas\Hidden(null,'CUSf', $attributeElementName, '' )    );                                  
+        } 
         
         return $this->obtainHtml("showSearch", $template_file, $this->encodeURL(array(),'showSelect')).$this->processSelect(null, 'multi');
 	}       
