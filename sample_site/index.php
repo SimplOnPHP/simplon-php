@@ -35,5 +35,4 @@ DOF\Main::run(array(
 		'user' => 'root',
 		'pass' => ''
 	),
-	//'DATA_STORAGE' => new DOF\DataStorages\SQLite('localhost',__DIR__.'/sample_site.sqlite'),
 ));

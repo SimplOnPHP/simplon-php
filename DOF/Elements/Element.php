@@ -280,12 +280,10 @@ class Element extends BaseObject {
 	}
 	
 	public function update() {
-		return 
-			$this->processData('preUpdate') 
-			&& 
-			$this->dataStorage->updateElement($this)
-			&& 
-			$this->processData('postUpdate');
+		$this->processData('preUpdate');
+		$return = $this->dataStorage->updateElement($this);
+		$this->processData('postUpdate');
+		return $return;
 	}
 	
 	public function delete() {
@@ -855,11 +853,11 @@ class Element extends BaseObject {
 	{
 		$return = array();
 		foreach($this->dataAttributes() as $dataName) {
-                        if(isset($this->$dataName)) {
-                            $r = $this->$dataName->$method();
-                            if(isset($r))
-                                $return[]= $r;
-                        }
+			if(isset($this->$dataName)) {
+				$r = $this->$dataName->$method();
+				if(isset($r))
+					$return[]= $r;
+			}
 		}
 	
 		// @todo: verify if it can stay this way

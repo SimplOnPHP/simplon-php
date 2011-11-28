@@ -1,0 +1,24 @@
+body {
+	font: 12px/14px sans-serif;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+th {
+	border: 1px solid #666;
+	background: #666;
+	color: white;
+}
+
+td {
+	border: 1px solid #666;
+	padding: 10px;
+}
+
+tr:nth-child(even) {background: #f6f6f6;}
+
+.section {
+	margin: 20px 5px
+}
