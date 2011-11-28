@@ -17,7 +17,7 @@ DOF\Main::run(array(
 	'DEFAULT_RENDERER' => new DOF\Renderers\Html4(),
 
 	'CREATE_LAYOUT_TEMPLATES' => true,
-	'OVERWRITE_LAYOUT_TEMPLATES' => 0,
+	'OVERWRITE_LAYOUT_TEMPLATES' => true,
 	'USE_LAYOUT_TEMPLATES' => true,
 	
 	'CREATE_FROM_TEMPLATES' => true,

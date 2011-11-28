@@ -13,7 +13,7 @@ class Fe extends Element
 		$this->concat = new Datas\Concat("Concat test", array(' ','Cabeza:','cabeza',' contenido','contenido'),"L");
         $this->compose = new Datas\Compose("Compose test", array('%s concat %s','cabeza','concat'),"L");
 	}
-	/*
+
 	public function test(){
 
 		$this->fillFromDSById();
@@ -27,5 +27,5 @@ class Fe extends Element
 		echo $this->updateAction->showView();
 		
 	}
-     */
+  
 }

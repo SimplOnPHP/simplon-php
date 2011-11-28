@@ -339,6 +339,75 @@ class Element extends BaseObject {
 		$search = new Search(array($this->getClass()));
 		return $search->processSearch($this->toArray());
 	}
+    
+    
+    
+    
+    
+    function makeSelection(){
+   
+        
+ 
+        $this->JS(
+                array('function'=>'remove',
+                      'content'=>'',
+                      'path'=>'container .preview',
+                      'class'=>'home'
+                     )
+        );       
+        
+         $this->JS(
+                array('function'=>'append',
+                      'content'=>'',
+                      'path'=>'container .preview',
+                      'class'=>'home'
+                     )
+        );        
+        
+      
+        
+         $this->JS(
+                array('function'=>'insert',
+                      'content'=>$this->showView(),
+                      'path'=>'container .preview',
+                      'class'=>$this->getClass()
+                     )
+        );       
+        
+         
+         
+        
+        $this->JS(
+                array('function'=>'update',
+                      'content'=>$this->showView(),
+                      'path'=>'container .preview',
+                      'class'=>$this->getClass()
+                     )
+        );
+
+         $this->JS(
+                array('function'=>'update',
+                      'content'=>'Un-Select',
+                      'path'=>'.????',
+                      
+                     )
+        );       
+        
+        
+        $this->JS(
+                array('function'=>'changeValue',
+                      'content'=>'',
+                      'path'=>'container .input',
+                      'class'=>'home'
+                     )
+        );        
+        
+         $this->JS(
+                array('function'=>'Close',
+                      'path'=>'colorbox',
+                     )
+                 );
+    }
    /* 
     function processSelection(){
 
@@ -637,11 +706,21 @@ class Element extends BaseObject {
 		} else {
 			// opens file
 			$dom = $template;
-				
+			
+            /**
+             * 
+             * @todo change the way HTL is filled instead of cicle triugh the datas 
+             * and filling the template cicle trough the template and run elment's 
+             * or data's methods as required.
+             * 
+             * 
+             */
+            
+            
 			// fill file with data
 			if($vcsl != 'create') {
 				foreach($this as $keydata=>$data) {
-					if($data instanceof Data && $data->$vcsl())
+					if( $data instanceof Data && $data->hasMethod($vcsl) && $data->$vcsl() )
 					{
 						$dom['.DOF.'.$this->getClass().' .DOF.'.$keydata] = $data->$caller_method($dom['.DOF.'.$this->getClass().' .DOF.'.$keydata]);
 					}

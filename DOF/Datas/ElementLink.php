@@ -21,6 +21,7 @@ use \DOF\Main;
 
 class ElementLink extends ComplexData {
 	protected
+		$view = false,
 		$list = false,
 		$required = false;
 	
