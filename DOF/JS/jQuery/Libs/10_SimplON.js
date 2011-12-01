@@ -12,7 +12,7 @@ var SimplOn = new function() {
 			$this.colorbox({iframe: true, innerWidth: "80%", innerHeight: "80%", href: href});
 		});
 		
-		$('.DOF.SelectAction').click(function(e) {
+		$('.SimplOn.SelectAction').click(function(e) {
 			e.preventDefault();
 			var $this = $(this);
 			$.ajax({
@@ -24,7 +24,7 @@ var SimplOn = new function() {
 	
 	this.initForms = function () {
 		if(parent !== window) {
-			$('form.DOF.create, form.DOF.update').each(function() {
+			$('form.SimplOn.create, form.SimplOn.update').each(function() {
 				$(this).ajaxForm({
 					url: $(this).attr('action')+'/"json"',
 					dataType: 'json',
@@ -36,7 +36,7 @@ var SimplOn = new function() {
 				});
 			});
 
-			$('.DOF.showSearch .DOF.selectAction').click(function() {
+			$('.SimplOn.showSearch .SimplOn.selectAction').click(function() {
 				$(this).ajaxForm({
 					url: $(this).attr('action')+'/"json"',
 					dataType: 'json',
@@ -49,8 +49,8 @@ var SimplOn = new function() {
 			});
 		}
 
-		$('.DOF.showSearch form.DOF.search').each(function() {
-			var $list = $(this).siblings('.DOF.list');
+		$('.SimplOn.showSearch form.SimplOn.search').each(function() {
+			var $list = $(this).siblings('.SimplOn.list');
 			$(this).ajaxForm({
 				url: $(this).attr('action'),
 				dataType: 'html',
@@ -68,10 +68,13 @@ var SimplOn = new function() {
 			status: true,
 			type: 'functions call',
 			data: [{
-				func: 'insert',
+				func: 'changeValue',
 				args: ['hola']
 			},{
-				func: 'close',
+				func: 'changePreview',
+				args: ['<h1>hola '+Math.floor(Math.random()*100)+'</h1>','home']
+			},{
+				func: 'closeLightbox',
 				args: []
 			}]
 		};
@@ -91,12 +94,17 @@ var SimplOn = new function() {
 		}
 	}
 	
-	this.insert = function (content, element, selector) {
-		//alert(Array.prototype.slice.call(arguments).join(', '));
+	this.changePreview = function (content, element, selector) {
+		var id = window.location.hash;
+		$(id, parent.document).closest('.SimplOn.'+element).find('.preview').html(content);
+	};
+	
+	this.changeValue = function (content, element, selector) {
 		var id = window.location.hash;
 		$(id, parent.document).val(content);
 	};
-	this.close = function () {
+	
+	this.closeLightbox = function () {
 		parent.$.colorbox.close();
 	};
 };
