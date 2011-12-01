@@ -3,6 +3,7 @@ Options +FollowSymLinks
 RewriteEngine on
 
 RewriteCond %{REQUEST_FILENAME} !-f
+#RewriteRule ^(.*)$ /SimplON/sample_site/index.php [QSA,L]
 RewriteRule ^(.*)$ index.php [QSA,L]
 
 </IfModule>
