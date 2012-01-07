@@ -66,7 +66,7 @@ var SimplOn = new function() {
 		/* example */
 		r = {
 			status: true,
-			type: 'functions call',
+			type: 'commands',
 			data: [{
 				func: 'changeValue',
 				args: ['hola']
@@ -81,10 +81,10 @@ var SimplOn = new function() {
 		/* */
 		if(r.status) {
 			switch(r.type) {
-				case 'functions call':
+				case 'commands':
 					for(var i=0; i<r.data.length; i++) {
-						if(SimplOn.hasOwnProperty(r.data[i].func))
-							SimplOn[r.data[i].func].apply(window, r.data[i].args);
+						if(SimplOn.commands.hasOwnProperty(r.data[i].func))
+							SimplOn.commands[r.data[i].func].apply(window, r.data[i].args);
 					}
 					break;
 			}
@@ -94,19 +94,45 @@ var SimplOn = new function() {
 		}
 	}
 	
-	this.changePreview = function (content, element, selector) {
-		var id = window.location.hash;
-		$(id, parent.document).closest('.SimplOn.'+element).find('.preview').html(content);
+	this.commands = {
+		changePreview: function (content, element, selector) {
+			var id = window.location.hash;
+			$(id, parent.document).closest('.SimplOn.'+element).find('.preview').html(content);
+		},
+		changeValue: function (content, element, selector) {
+			var id = window.location.hash;
+			$(id, parent.document).val(content);
+		},
+		closeLightbox: function () {
+			parent.$.colorbox.close();
+		}
 	};
 	
-	this.changeValue = function (content, element, selector) {
-		var id = window.location.hash;
-		$(id, parent.document).val(content);
-	};
-	
-	this.closeLightbox = function () {
-		parent.$.colorbox.close();
-	};
+	this.utils = {
+		scheduler: function () {
+			return {
+				running: false,
+				events: [],
+				add: function(context, func, args) {
+					this.events.push({context: context, func: func, args: args});
+					if(!this.running)
+						this.run();
+				},
+				run: function() {
+					var ret = null;
+
+					this.running = true;
+					if(this.events.length) {
+						var event = this.events.shift();
+						ret = event.func.apply(event.context, event.args);
+					}
+					this.running = false;
+
+					return ret;
+				}
+			};
+		}
+	}
 };
 
 $(function(){SimplOn.init();});
