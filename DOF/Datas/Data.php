@@ -141,6 +141,8 @@ abstract class Data extends BaseObject {
 	$fetch = true,
 	
 	$name,
+            
+    $parent,
 	
 	$filterCriteria = 'name == :name';
 	
@@ -205,7 +207,20 @@ abstract class Data extends BaseObject {
 	 */
 	public function construct($label=null, $flags=null, $val=null, $filterCriteria=null) {}
 	
-	
+
+ 	function htmlClasses($append = '', $sid = null){
+       if(!$sid){
+            $sid = $this->parent()->sid();
+       } 
+       return 'SimplOn Data '.'sid'.$sid.' '.$this->getClassName().' '.$this->name().' '.$append; 
+    }   
+    
+ 	function cssSelector($append = '', $sid = null) {
+        if(!$sid){
+            $sid = $this->parent()->sid();
+        }
+        return '.SimplOn.Data.sid'.$sid.'.'.$this->getClassName().'.'.$this->name().$append; 
+    }    
 	
 	public function preRead() {}
 	

@@ -34,11 +34,11 @@ class SelectAction extends ElementLink {
 			: null;
 		
 		//$href = $this->parent->encodeURL($id ? array($id) : array(), $this->method,   array( $this->parent->parentClass() )      );
-        $params = ($this->parent->hasMethod('parentClass') && $this->parent->hasMethod('attributeElementName') ) ? array( $this->parent->parentClass(), $this->parent->attributeElementName() ) : array();
+        $params = ($this->parent->hasMethod('parentClass') && $this->parent->hasMethod('attributeElementName') ) ? array( $this->parent->parentClass(), $this->parent->attributeElementName(), $this->parent->parentSid() ) : array();
         $href = $this->parent->encodeURL($id ? array($id) : array(), $this->method ,  $params    );
 		$content = vsprintf(array_shift($sources), $this->sourcesToValues($sources));
 		
-		return Main::$DEFAULT_RENDERER->link($content, $href, array('class'=>'DOF '.$this->getClassName()));
+		return Main::$DEFAULT_RENDERER->link($content, $href, array('class'=>$this->htmlClasses()));
 	} 
 
 }

@@ -25,6 +25,6 @@ class HTMLText extends Data
 	function showInput($fill)
 	{
 		//@todo: display a RichText editor instead of Textarea
-		return  '<textarea class="DOF input '.$this->getClass().' editor" id="'.$this->inputName().'" name="'.$this->inputName().'">'.(($fill)? $this->val :'').'</textarea>';
+		return  '<textarea class="'.$this->htmlClasses('input editor').'" id="'.$this->inputName().'" name="'.$this->inputName().'">'.(($fill)? $this->val :'').'</textarea>';
 	}
 }

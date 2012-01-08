@@ -26,6 +26,6 @@ class Date extends Data {
 	
 	function showInput($fill)
 	{
-		return  '<input class="DOF input '.$this->getClass().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
+		return  '<input class="'.$this->htmlClasses('input').'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
 	}
 }

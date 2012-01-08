@@ -86,7 +86,7 @@ class Element extends BaseObject {
 	
 	
 	
-
+    protected $sid;
 //-----------------------------------------------------------------------------------------	
 //------------------------------ METHODS --------------------------------------------------	
 //-----------------------------------------------------------------------------------------
@@ -104,7 +104,10 @@ class Element extends BaseObject {
 	 */
 	public function __construct($id_or_array = null, &$specialDataStorage=null)
 	{
-
+        $this->sid(Main::$globalSID++);
+        
+        
+        
         $this->construct($id_or_array, $specialDataStorage);
 		
 		//On heirs put here the asignation of DOFdata and attributes
@@ -204,8 +207,19 @@ class Element extends BaseObject {
 		}
 	}
 	
+	function htmlClasses($append = '', $sid = null) {
+        if(!$sid){
+            $sid = $this->sid();
+        }       
+        return 'SimplOn Element '.'sid'.$sid.' '.$this->getClassName().' '.$append;
+    }
 	
-	
+	function cssSelector($append = '', $sid = null) {
+        if(!$sid){
+            $sid = $this->sid();
+        }
+        return '.SimplOn.Element.sid'.$sid.'.'.$this->getClassName().$append;
+    }    
 	
 	// -- SimplON key methods	
 	/**
@@ -342,11 +356,15 @@ class Element extends BaseObject {
     
     
     
-    function makeSelection($parentClass, $attributeName){
+    function makeSelection($parentClass, $attributeName, $sid){
         /*@var parentElement /DOF/Elements/Element */
+        $orig_sid = Main::$globalSID;
+        Main::$globalSID = $sid-1;
         $parentElement = new $parentClass();
-        //echo $this->showView($parentElement->templateFilePath('View'));    
-        echo $parentElement->templateFilePath('View');
+        Main::$globalSID = $orig_sid;
+        $template = $parentElement->templateFilePath('View');
+  
+        echo $this->showView($template);
         
         
  /*
@@ -596,6 +614,7 @@ class Element extends BaseObject {
         if($attribute instanceof Data ){ 
             if( is_array($this->dataAttributes)){ $this->dataAttributes[]=$attributeName; }else{ $this->dataAttributes = $this->attributesTypes(); }
         }
+        $this->$attributeName->parent($this);
     }
    
     public function addOnTheFlyAttributes()
@@ -609,14 +628,17 @@ class Element extends BaseObject {
     }    
     
     
- 	public function showSelect($template_file = null, $action = null, $parentClass = null, $attributeElementName = null)
+ 	public function showSelect($template_file = null, $action = null, $parentClass = null, $attributeElementName = null, $parentSid = null)
 	{
 		
-        if($parentClass && $attributeElementName){ 
+        if($parentClass && $attributeElementName && $parentSid){ 
             
             $this->addOnTheFlyAttribute('parentClass' , new Datas\Hidden(null,'CUSf', $parentClass, '' )    );
-            $this->addOnTheFlyAttribute('attributeElementName' , new Datas\Hidden(null,'CUSf', $attributeElementName, '' )    );                                  
-        } 
+            $this->addOnTheFlyAttribute('attributeElementName' , new Datas\Hidden(null,'CUSf', $attributeElementName, '' )    ); 
+            $this->addOnTheFlyAttribute('parentSid' , new Datas\Hidden(null,'CUSf', $parentSid, '' )    );
+        }
+        
+        
         
         return $this->obtainHtml("showSearch", $template_file, $this->encodeURL(array(),'showSelect')).$this->processSelect(null, 'multi');
 	}       
@@ -646,11 +668,17 @@ class Element extends BaseObject {
             $template = file_exists($template_file)
                 ? \phpQuery::newDocumentFileHTML($template_file)
                 : '';
-		} else {
+		} else if(file_exists($template)){
+            $template_file = $template;
+            $template = \phpQuery::newDocumentFileHTML($template);
+        } else {
+            // is an html snippet
             $template = \phpQuery::newDocument($template);
         }
 	
-		if(empty($template) || Main::$OVERWRITE_LAYOUT_TEMPLATES) {
+		if(empty($template) OR Main::$OVERWRITE_LAYOUT_TEMPLATES) {
+            if(empty($template_file)) $template_file = $this->templateFilePath($VCSL);
+            
 			$dom = \phpQuery::newDocumentFileHTML(Main::$MASTER_TEMPLATE);
 			$dom['head']->append($this->getCSS($caller_method, 'html'));
 			$dom['head']->append($this->getJS($caller_method, 'html'));
@@ -666,28 +694,28 @@ class Element extends BaseObject {
 			// create and fill file
 			$html = '';
 			if($with_form) {
-				$html.= '<form class="DOF '.$vcsl.' '.$this->getClass().'" '
+				$html.= '<form class="'.$this->htmlClasses($vcsl).'" '
 				. ' action="'. (@$action ?: $this->encodeURL(Main::$construct_params, 'process'.$VCSL) ) .'" '
 				. ' method="post" '
 				. @$enctype
 				.'>';
 			}
-			$html.= '<div class="DOF '.$this->getClass().'">';
+			$html.= '<div class="'.$this->htmlClasses().'">';
 			foreach($this as $keydata => $data)
 			{
 				if( $data instanceof Data && $data->hasMethod($vcsl) && $data->$vcsl() )
 				{
-					$html.= '<div class="DOF '.$keydata.'">';
+					$html.= '<div class="'.$data->htmlClasses().'">';
 						
 					if($with_form) {
-						$data_id = 'DOF_'.$data->instanceId();
+						$data_id = 'SimplOn_'.$data->instanceId();
 						$dompart = \phpQuery::newDocumentHTML($data->$caller_method());
 						// @todo: Document that class input is MANDATORY
 						$dompart['.reference']->attr('ref', $data_id);
 						$dompart['.input']->attr('id', $data_id);
-	
 						$html.= $dompart;
 					} else {
+                        $ee = $data->$caller_method();
 						$html.= $data->$caller_method();
 					}
 						
@@ -705,7 +733,7 @@ class Element extends BaseObject {
 			$dom['body'] = @$add_html['header'] . $html . @$add_html['footer'];
 				
 			// save file
-			if($template_file)
+			if(!empty($template_file))
                 Main::createFile($template_file, $dom.'');
 		} else {
 			// opens file
@@ -722,14 +750,29 @@ class Element extends BaseObject {
             
             
 			// fill file with data
+      //*    
+            
+            
+            foreach($dom['.SimplOn.Data.sid'.$this->sid()] as $node) {
+                //echo '<div>'.pq($DomElement)->attr('class').' -- sid'.$this->sid.' -- </div>';
+                $domNode = pq($node);
+                $data = explode(' ', $domNode->attr('class'));
+                $data = $this->{'O'.$data[4]}();
+                $domNode->html($data->$caller_method());
+            }
+            
+      /*/  
+            
+          
 			if($vcsl != 'create') {
 				foreach($this as $keydata=>$data) {
 					if( $data instanceof Data && $data->hasMethod($vcsl) && $data->$vcsl() )
 					{
-						$dom['.DOF.'.$this->getClass().' .DOF.'.$keydata] = $data->$caller_method($dom['.DOF.'.$this->getClass().' .DOF.'.$keydata]);
+						$dom['.SimplOn.'.$this->getClass().' .SimplOn.'.$keydata] = $data->$caller_method($dom['.SimplOn.'.$this->getClass().' .SimplOn.'.$keydata]);
 					}
 				}
 			}
+  /**/
 		}
 	
 		return $dom;

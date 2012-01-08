@@ -59,16 +59,24 @@ class ElementContainer extends Data {
 	{
 		//return $this->parent()->getClass();
 		$id = $this->element()->{$this->element()->field_id()}();
-		if($id !== null) {
+		//if($id !== null) {
             if($template) {
                 $template = \phpQuery::newDocument($template);
-                $template = $template['.DOF.'.$this->element()->getClass()].'';
+                $template = $template['.SimplOn.'.$this->element()->getClassName().'.sid'.$this->element()->sid()].'';
+            } else {
+                $tempSid = $this->element()->sid();
+                $this->element()->sid(1);
             }
 			$dom = \phpQuery::newDocument($this->element()->showView($template));
-			return $dom['.DOF.'.$this->element()->getClass()].'';
-		} else {
-			return '';
-		}
+            
+            if(@$tempSid) {
+                $this->element()->sid($tempSid);
+                $this->sidFix($dom);
+            }
+			return $dom['.SimplOn.'.$this->element()->getClassName()].'';
+		//} else {
+		//	return '';
+		//}
 	}
 	
 	public function val($val = null) {
@@ -95,11 +103,25 @@ class ElementContainer extends Data {
 	function showInput($fill)
 	{
 		return  '
-			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showSelect',array('','', $this->parent()->getClass(), $this->name() )).'">List</a>
+			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showSelect',array('','', $this->parent->getClass(), $this->name(), $this->element->sid() )).'">List</a>
 			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showCreate').'">Add</a>
 			<div class="preview">'.$this->showView().'</div>
 			<input class="input" name="'.$this->name().'" type="hidden" />
 		';
 	}	
 	
+    function sidFix(&$dom, &$base = 1) {
+        $dom[$this->element->cssSelector('', $base)]->attr('class', $this->element->htmlClasses());
+        foreach($dom['.SimplOn.Data.sid'.$base] as $node) {
+            $domNode = pq($node);
+            $data = explode(' ', $domNode->attr('class'));
+            $data = $this->element->{'O'.$data[4]}();
+            
+            $domNode->attr('class',$data->htmlClasses());
+            if( $data instanceof \DOF\Datas\ElementContainer ){
+                $base++;
+                $domNode = $data->sidFix($domNode, $base);
+            }
+        }
+    }
 }

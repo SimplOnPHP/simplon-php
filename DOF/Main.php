@@ -93,7 +93,8 @@ class Main {
 		$class,
 		$method,
 		$construct_params,
-		$method_params;
+		$method_params,
+        $globalSID = 1;
 	
 	/**
 	 * Loads all the parameters specific to a website and loads needed classes.
