@@ -363,8 +363,25 @@ class Element extends BaseObject {
         $parentElement = new $parentClass();
         Main::$globalSID = $orig_sid;
         $template = $parentElement->templateFilePath('View');
-  
-        echo $this->showView($template);
+        
+        header('Content-type: application/json');
+        echo json_encode(array(
+			'status' => true,
+			'type' => 'commands',
+			'data' => array(
+                array(
+                    'func' => 'changeValue',
+                    'args' => array($this->id())
+                ),
+                array(
+                    'func' => 'changePreview',
+                    'args' => array($this->showView($template,true).'')
+                ),
+                array(
+                    'func' => 'closeLightbox'
+                ),
+            )
+        ));
         
         
  /*
@@ -593,9 +610,9 @@ class Element extends BaseObject {
 		return $this->obtainHtml(__FUNCTION__, $template_file, $action);
 	}
 	
-	public function showView($template_file = null)
+	public function showView($template_file = null, $elementOnly = false)
 	{
-		return $this->obtainHtml(__FUNCTION__, $template_file, null);
+        return $this->obtainHtml(__FUNCTION__, $template_file, null, null, $elementOnly );
 	}
 	
 	public function showSearch($template_file = null, $action = null)
@@ -630,7 +647,6 @@ class Element extends BaseObject {
     
  	public function showSelect($template_file = null, $action = null, $parentClass = null, $attributeElementName = null, $parentSid = null)
 	{
-		
         if($parentClass && $attributeElementName && $parentSid){ 
             
             $this->addOnTheFlyAttribute('parentClass' , new Datas\Hidden(null,'CUSf', $parentClass, '' )    );
@@ -649,7 +665,7 @@ class Element extends BaseObject {
 	}       
         
 	// @todo: allow to obtain only the dom part inherent to the element (and not the whole web page)
-	public function obtainHtml($caller_method, $template = null, $action = null, $add_html = array())
+	public function obtainHtml($caller_method, $template = null, $action = null, $add_html = array(), $elementOnly = false)
 	{
 		//$caller_method = end(// explode('::',$caller_method));
 		if(strpos($caller_method, 'show') === false) {
@@ -660,7 +676,8 @@ class Element extends BaseObject {
 			$vcsl = strtolower($VCSL);
 			$with_form = in_array($vcsl, array('create', 'update', 'search'));
 		}
-		
+        
+		$overwrite_template = Main::$OVERWRITE_LAYOUT_TEMPLATES;
 		if(empty($template)) {
 			// get default path
 			$template_file = $this->templateFilePath($VCSL);
@@ -674,17 +691,16 @@ class Element extends BaseObject {
         } else {
             // is an html snippet
             $template = \phpQuery::newDocument($template);
+            $overwrite_template = false;
         }
 	
-		if(empty($template) OR Main::$OVERWRITE_LAYOUT_TEMPLATES) {
+		if(empty($template) OR $overwrite_template) {
             if(empty($template_file)) $template_file = $this->templateFilePath($VCSL);
             
 			$dom = \phpQuery::newDocumentFileHTML(Main::$MASTER_TEMPLATE);
-			$dom['head']->append($this->getCSS($caller_method, 'html'));
-			$dom['head']->append($this->getJS($caller_method, 'html'));
-				
-			foreach($this->attributesTypes('\\DOF\\Datas\\File') as $fileData)
-			{
+            $dom['head']->append($this->getCSS($caller_method, 'html') . $this->getJS($caller_method, 'html'));
+            
+			foreach($this->attributesTypes('\\DOF\\Datas\\File') as $fileData){
 				if( $fileData->$vcsl() ){
 					$enctype = ' enctype="multipart/form-data" ';
 					break;
@@ -755,10 +771,14 @@ class Element extends BaseObject {
             
             foreach($dom['.SimplOn.Data.sid'.$this->sid()] as $node) {
                 //echo '<div>'.pq($DomElement)->attr('class').' -- sid'.$this->sid.' -- </div>';
+                
                 $domNode = pq($node);
                 $data = explode(' ', $domNode->attr('class'));
-                $data = $this->{'O'.$data[4]}();
-                $domNode->html($data->$caller_method());
+                if($data[4]) {
+                    $data = $this->{'O'.$data[4]}();
+                    if( $data instanceof Data && $data->hasMethod($caller_method) )
+                        $domNode->html($data->$caller_method($domNode) ?: '');
+                }
             }
             
       /*/  
@@ -775,7 +795,7 @@ class Element extends BaseObject {
   /**/
 		}
 	
-		return $dom;
+		return $elementOnly ? $dom['.SimplOn.Element.sid'.$this->sid()] : $dom;
 	}
 	
 	public function getJS($method, $returnFormat = 'array', $compress = false) {

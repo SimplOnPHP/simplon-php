@@ -106,7 +106,7 @@ class ElementContainer extends Data {
 			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showSelect',array('','', $this->parent->getClass(), $this->name(), $this->element->sid() )).'">List</a>
 			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showCreate').'">Add</a>
 			<div class="preview">'.$this->showView().'</div>
-			<input class="input" name="'.$this->name().'" type="hidden" />
+			<input class="input" name="'.$this->name().'" type="hidden" value="'.($fill?$this->val():'').'" />
 		';
 	}	
 	

@@ -63,7 +63,7 @@ var SimplOn = new function() {
 	};
 	
 	this.ajaxHandler = function(r) {
-		/* example */
+		/* example *
 		r = {
 			status: true,
 			type: 'commands',
@@ -72,7 +72,7 @@ var SimplOn = new function() {
 				args: ['hola']
 			},{
 				func: 'changePreview',
-				args: ['<h1>hola '+Math.floor(Math.random()*100)+'</h1>','home']
+				args: ['<h1>hola '+Math.floor(Math.random()*100)+'</h1>']
 			},{
 				func: 'closeLightbox',
 				args: []
@@ -83,8 +83,9 @@ var SimplOn = new function() {
 			switch(r.type) {
 				case 'commands':
 					for(var i=0; i<r.data.length; i++) {
-						if(SimplOn.commands.hasOwnProperty(r.data[i].func))
-							SimplOn.commands[r.data[i].func].apply(window, r.data[i].args);
+						if(SimplOn.commands.hasOwnProperty(r.data[i].func)) {
+							SimplOn.commands[r.data[i].func].apply(window, r.data[i].args ? r.data[i].args : []);
+                        }
 					}
 					break;
 			}
@@ -95,11 +96,11 @@ var SimplOn = new function() {
 	}
 	
 	this.commands = {
-		changePreview: function (content, element, selector) {
+		changePreview: function (content) {
 			var id = window.location.hash;
-			$(id, parent.document).closest('.SimplOn.'+element).find('.preview').html(content);
+			$(id, parent.document).closest('.SimplOn.ElementContainer').find('.preview').html(content);
 		},
-		changeValue: function (content, element, selector) {
+		changeValue: function (content) {
 			var id = window.location.hash;
 			$(id, parent.document).val(content);
 		},
