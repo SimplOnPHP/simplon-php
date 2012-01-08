@@ -12,7 +12,7 @@ var SimplOn = new function() {
 			$this.colorbox({iframe: true, innerWidth: "80%", innerHeight: "80%", href: href});
 		});
 		
-		$('.DOF.SelectAction').click(function(e) {
+		$('.SimplOn.SelectAction').click(function(e) {
 			e.preventDefault();
 			var $this = $(this);
 			$.ajax({
@@ -24,7 +24,7 @@ var SimplOn = new function() {
 	
 	this.initForms = function () {
 		if(parent !== window) {
-			$('form.DOF.create, form.DOF.update').each(function() {
+			$('form.SimplOn.create, form.SimplOn.update').each(function() {
 				$(this).ajaxForm({
 					url: $(this).attr('action')+'/"json"',
 					dataType: 'json',
@@ -36,7 +36,7 @@ var SimplOn = new function() {
 				});
 			});
 
-			$('.DOF.showSearch .DOF.selectAction').click(function() {
+			$('.SimplOn.showSearch .SimplOn.selectAction').click(function() {
 				$(this).ajaxForm({
 					url: $(this).attr('action')+'/"json"',
 					dataType: 'json',
@@ -49,8 +49,8 @@ var SimplOn = new function() {
 			});
 		}
 
-		$('.DOF.showSearch form.DOF.search').each(function() {
-			var $list = $(this).siblings('.DOF.list');
+		$('.SimplOn.showSearch form.SimplOn.search').each(function() {
+			var $list = $(this).siblings('.SimplOn.list');
 			$(this).ajaxForm({
 				url: $(this).attr('action'),
 				dataType: 'html',
@@ -66,22 +66,25 @@ var SimplOn = new function() {
 		/* example */
 		r = {
 			status: true,
-			type: 'functions call',
+			type: 'commands',
 			data: [{
-				func: 'insert',
+				func: 'changeValue',
 				args: ['hola']
 			},{
-				func: 'close',
+				func: 'changePreview',
+				args: ['<h1>hola '+Math.floor(Math.random()*100)+'</h1>','home']
+			},{
+				func: 'closeLightbox',
 				args: []
 			}]
 		};
 		/* */
 		if(r.status) {
 			switch(r.type) {
-				case 'functions call':
+				case 'commands':
 					for(var i=0; i<r.data.length; i++) {
-						if(SimplOn.hasOwnProperty(r.data[i].func))
-							SimplOn[r.data[i].func].apply(window, r.data[i].args);
+						if(SimplOn.commands.hasOwnProperty(r.data[i].func))
+							SimplOn.commands[r.data[i].func].apply(window, r.data[i].args);
 					}
 					break;
 			}
@@ -91,14 +94,45 @@ var SimplOn = new function() {
 		}
 	}
 	
-	this.insert = function (content, element, selector) {
-		//alert(Array.prototype.slice.call(arguments).join(', '));
-		var id = window.location.hash;
-		$(id, parent.document).val(content);
+	this.commands = {
+		changePreview: function (content, element, selector) {
+			var id = window.location.hash;
+			$(id, parent.document).closest('.SimplOn.'+element).find('.preview').html(content);
+		},
+		changeValue: function (content, element, selector) {
+			var id = window.location.hash;
+			$(id, parent.document).val(content);
+		},
+		closeLightbox: function () {
+			parent.$.colorbox.close();
+		}
 	};
-	this.close = function () {
-		parent.$.colorbox.close();
-	};
+	
+	this.utils = {
+		scheduler: function () {
+			return {
+				running: false,
+				events: [],
+				add: function(context, func, args) {
+					this.events.push({context: context, func: func, args: args});
+					if(!this.running)
+						this.run();
+				},
+				run: function() {
+					var ret = null;
+
+					this.running = true;
+					if(this.events.length) {
+						var event = this.events.shift();
+						ret = event.func.apply(event.context, event.args);
+					}
+					this.running = false;
+
+					return ret;
+				}
+			};
+		}
+	}
 };
 
 $(function(){SimplOn.init();});

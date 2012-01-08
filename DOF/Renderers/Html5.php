@@ -18,7 +18,7 @@
 */
 namespace DOF\Renderers;
 
-class Html4 {
+class Html5 {
     
         static function table_from_elements($elements, $columns = null) {
             $headers = array();
@@ -52,7 +52,7 @@ class Html4 {
         }
     
 	static function table(array $contents, array $headers = array(), array $footers = array(), array $extra = array()) {
-		$table_classes = array_merge(array('DOF', 'table'), @$extra['table_classes'] ?: array());
+		$table_classes = array_merge(array('SimplOn', 'table'), @$extra['table_classes'] ?: array());
 		$html = '<table class="'.implode(' ',$table_classes).'">';
 		foreach(array('headers' => 'thead', 'contents' => 'tbody', 'footers' => 'tfoot') as $dataVar => $tag) {
 			$html .= '<'.$tag.'>';
@@ -60,7 +60,7 @@ class Html4 {
 			foreach($$dataVar as $row){
 				$html .= '<tr>';	
 				foreach($row as $class => $cell){
-					$html .= '<'.$cell_tag.' class="DOF-td-'.$class.'">'.$cell.'</td>';
+					$html .= '<'.$cell_tag.' class="SimplOn-td-'.$class.'">'.$cell.'</td>';
 				}
 				$html .= '</tr>';
 			}

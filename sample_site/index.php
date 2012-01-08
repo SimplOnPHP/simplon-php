@@ -8,13 +8,13 @@ DOF\Main::run(array(
 	'REMOTE_ROOT' => dirname($_SERVER['PHP_SELF']),
 	
 	'DOF_PATH' => realpath('../DOF'),
-	'GENERIC_TEMPLATES_PATH' => realpath('Templates'),
-	'MASTER_TEMPLATE' => realpath('Templates') . '/Master.html',
 	
 	'DEFAULT_ELEMENT' => 'Fe',
 	'DEFAULT_METHOD' => 'index',
 	
-	'DEFAULT_RENDERER' => new DOF\Renderers\Html4(),
+	'GENERIC_TEMPLATES_PATH' => realpath('Templates'),
+	'MASTER_TEMPLATE' => realpath('../DOF').'/Renderers/Html5.html',
+	'DEFAULT_RENDERER' => new DOF\Renderers\Html5(),
 
 	'CREATE_LAYOUT_TEMPLATES' => true,
 	'OVERWRITE_LAYOUT_TEMPLATES' => FALSE,
