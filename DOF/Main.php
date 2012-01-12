@@ -186,7 +186,7 @@ class Main {
 		
 		// Parses the URL
 		$f_decode_param = function($p) {
-			$url_decoded = urldecode($p);
+			$url_decoded = urldecode(urldecode($p));
 			$json_decoded = json_decode($url_decoded);
 			return isset($json_decoded) ? $json_decoded : $url_decoded;
 		};
@@ -212,7 +212,7 @@ class Main {
 	
 	static function encodeURL($class, array $construct_params, $method, array $method_params = array()) {
 		$fencoder = function ($p) {
-			return urlencode(json_encode($p));
+			return urlencode(urlencode(json_encode($p)));
 		};
 		
 		$construct_params = array_map($fencoder, $construct_params);

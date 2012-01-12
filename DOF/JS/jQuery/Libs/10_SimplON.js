@@ -2,20 +2,27 @@ var SimplOn = new function() {
 	this.init = function() {
 		this.initActions();
 		this.initForms();
+        this.htmlReference = 1;
 	};
 	
 	this.initActions = function () {
-		$('a.lightbox').click(function(e) {
+		$('.SimplOn.Data a.lightbox').click(function(e) {
 			e.preventDefault();
 			var $this = $(this);
-			var href = $this.attr('href') + '#' + $this.siblings('.input').attr('id');
-			$this.colorbox({iframe: true, innerWidth: "80%", innerHeight: "80%", href: href});
+            $this.closest('.SimplOn.Data').find('.SimplOn.input').attr('SimplOnReference', SimplOn.htmlReference);
+			$this.colorbox({
+                iframe: true, 
+                innerWidth: "80%", 
+                innerHeight: "80%", 
+                href: $this.attr('href') + '#' + SimplOn.htmlReference++
+            });
 		});
 		
 		$('.SimplOn.SelectAction').click(function(e) {
 			e.preventDefault();
 			var $this = $(this);
 			$.ajax({
+				dataType: 'json',
 				url: $this.attr('href'),
 				success: SimplOn.ajaxHandler
 			});
@@ -26,25 +33,28 @@ var SimplOn = new function() {
 		if(parent !== window) {
 			$('form.SimplOn.create, form.SimplOn.update').each(function() {
 				$(this).ajaxForm({
-					url: $(this).attr('action')+'/"json"',
+					url: $(this).attr('action'),
 					dataType: 'json',
-					success: function(data) {
-						$(window.location.hash, parent.document).val(data.id)
+					success: SimplOn.ajaxHandler
+                        /*
+                    function(data) {
+						$('[SimplOnReference='+window.location.hash.substring(1)+']', parent.document).val(data.id)
 							.siblings('.preview').html(data.preview);
 						parent.$.colorbox.close();
-					}
+					}*/
 				});
 			});
 
 			$('.SimplOn.showSearch .SimplOn.selectAction').click(function() {
 				$(this).ajaxForm({
-					url: $(this).attr('action')+'/"json"',
+					url: $(this).attr('action'),
 					dataType: 'json',
-					success: function(data) {
-						$(window.location.hash, parent.document).val(data.id)
+					success:  SimplOn.ajaxHandler
+                        /*function(data) {
+						$('[SimplOnReference='+window.location.hash.substring(1)+']', parent.document).val(data.id)
 							.siblings('.preview').html(data.preview);
 						parent.$.colorbox.close();
-					}
+					}*/
 				});
 			});
 		}
@@ -97,12 +107,10 @@ var SimplOn = new function() {
 	
 	this.commands = {
 		changePreview: function (content) {
-			var id = window.location.hash;
-			$(id, parent.document).closest('.SimplOn.ElementContainer').find('.preview').html(content);
+			$('[SimplOnReference='+window.location.hash.substring(1)+']', parent.document).closest('.SimplOn.ElementContainer').find('.preview').html(content);
 		},
 		changeValue: function (content) {
-			var id = window.location.hash;
-			$(id, parent.document).val(content);
+			$('[SimplOnReference='+window.location.hash.substring(1)+']', parent.document).val(content);
 		},
 		closeLightbox: function () {
 			parent.$.colorbox.close();

@@ -34,7 +34,7 @@ class SelectAction extends ElementLink {
 			: null;
 		
 		//$href = $this->parent->encodeURL($id ? array($id) : array(), $this->method,   array( $this->parent->parentClass() )      );
-        $params = ($this->parent->hasMethod('parentClass') && $this->parent->hasMethod('attributeElementName') ) ? array( $this->parent->parentClass(), $this->parent->attributeElementName(), $this->parent->parentSid() ) : array();
+        $params = ($this->parent->hasMethod('previewTemplate') && $this->parent->hasMethod('sid') ) ? array( $this->parent->previewTemplate(), $this->parent->sid() ) : array();
         $href = $this->parent->encodeURL($id ? array($id) : array(), $this->method ,  $params    );
 		$content = vsprintf(array_shift($sources), $this->sourcesToValues($sources));
 		

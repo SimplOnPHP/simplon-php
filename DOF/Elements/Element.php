@@ -327,10 +327,17 @@ class Element extends BaseObject {
 		}
 	}
 	
-	function processUpdate(){
+	function processUpdate($short_template=null, $sid=null){
 		$this->fillFromRequest();
-		if($this->update()) {
-			header('Location: '.$this->encodeURL(array($this->id()), 'showUpdate'));
+        if($this->update()){
+
+            if(empty($short_template)) {
+                header('Location: '.$this->encodeURL(array($this->id()), 'showAdmin'));
+            } else {
+                if($sid) $this->sid($sid);
+                return $this->makeSelection($short_template, $sid);
+            }
+        
 		} else {
 			// @todo: error handling
 			user_error('Cannot update in DS!', E_USER_ERROR);
@@ -356,13 +363,15 @@ class Element extends BaseObject {
     
     
     
-    function makeSelection($parentClass, $attributeName, $sid){
+    function makeSelection($short_template, $sid){
         /*@var parentElement /DOF/Elements/Element */
-        $orig_sid = Main::$globalSID;
-        Main::$globalSID = $sid-1;
-        $parentElement = new $parentClass();
-        Main::$globalSID = $orig_sid;
-        $template = $parentElement->templateFilePath('View');
+        //$orig_sid = Main::$globalSID;
+        $this->sid($sid);
+        //$parentElement = new $parentClass();
+        //Main::$globalSID = $orig_sid;
+        
+        
+        //$template = $parentElement->templateFilePath('View');
         
         header('Content-type: application/json');
         echo json_encode(array(
@@ -375,7 +384,7 @@ class Element extends BaseObject {
                 ),
                 array(
                     'func' => 'changePreview',
-                    'args' => array($this->showView($template,true).'')
+                    'args' => array($this->showView(Main::$GENERIC_TEMPLATES_PATH . $short_template,true).'')
                 ),
                 array(
                     'func' => 'closeLightbox'
@@ -645,13 +654,17 @@ class Element extends BaseObject {
     }    
     
     
- 	public function showSelect($template_file = null, $action = null, $parentClass = null, $attributeElementName = null, $parentSid = null)
+ 	public function showSelect($template_file = null, $action = null, $previewTemplate = null, $sid = null)
 	{
-        if($parentClass && $attributeElementName && $parentSid){ 
+        if( $previewTemplate && $sid ){ 
             
-            $this->addOnTheFlyAttribute('parentClass' , new Datas\Hidden(null,'CUSf', $parentClass, '' )    );
-            $this->addOnTheFlyAttribute('attributeElementName' , new Datas\Hidden(null,'CUSf', $attributeElementName, '' )    ); 
-            $this->addOnTheFlyAttribute('parentSid' , new Datas\Hidden(null,'CUSf', $parentSid, '' )    );
+            //$this->addOnTheFlyAttribute('parentClass' , new Datas\Hidden(null,'CUSf', $parentClass, '' )    );
+            //$this->addOnTheFlyAttribute('attributeElementName' , new Datas\Hidden(null,'CUSf', $attributeElementName, '' )    ); 
+            //$this->addOnTheFlyAttribute('parentSid' , new Datas\Hidden(null,'CUSf', $parentSid, '' )    );
+            
+            $this->addOnTheFlyAttribute('previewTemplate' , new Datas\Hidden(null,'CUSf', $previewTemplate, '' )    );
+            $this->addOnTheFlyAttribute('sid' , new Datas\Hidden(null,'CUSf', $sid, '' )    );
+            
         }
         
         
@@ -768,7 +781,9 @@ class Element extends BaseObject {
 			// fill file with data
       //*    
             
-            
+            if($with_form && $action) {
+                $dom['form.SimplOn.Element.sid'.$this->sid()]->attr('action', $action);
+            }
             foreach($dom['.SimplOn.Data.sid'.$this->sid()] as $node) {
                 //echo '<div>'.pq($DomElement)->attr('class').' -- sid'.$this->sid.' -- </div>';
                 
@@ -884,7 +899,9 @@ class Element extends BaseObject {
 	
 	
 	
-	
+	function getId(){
+        return $this->{$this->field_id()}();
+    }
 	
 	
 	
@@ -893,11 +910,14 @@ class Element extends BaseObject {
 //------------------------------- ????	
 
 	function encodeURL(array $construct_params = array(), $method = null, array $method_params = array()) {
+        if( empty($construct_params) && $this->getId() ) {
+            $construct_params = array( $this->getId() );
+        }
 		return Main::encodeURL($this->getClass(), $construct_params, $method, $method_params);
 	}
 	
-	public function templateFilePath($show_type, $alternative = '', $template_type = 'html') {
-		return Main::$GENERIC_TEMPLATES_PATH . '/' . $show_type . '/' .$this->getClass() . $alternative . '.' .$template_type;
+	public function templateFilePath($show_type, $alternative = '', $short = false, $template_type = 'html') {
+		return ($short?'':Main::$GENERIC_TEMPLATES_PATH) . '/' . $show_type . '/' .$this->getClass() . $alternative . '.' .$template_type;
 	}	
 	
 	/**

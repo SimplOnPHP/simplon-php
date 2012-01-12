@@ -102,11 +102,26 @@ class ElementContainer extends Data {
 	
 	function showInput($fill)
 	{
-		return  '
-			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showSelect',array('','', $this->parent->getClass(), $this->name(), $this->element->sid() )).'">List</a>
+        /*
+        session_start();
+        if(empty($_SESSION['nestedElements'])){
+            $_SESSION['nestedElements']=array();
+        }
+        
+        $_SESSION['nestedElements'][$this->sid()]=$this->parent()->templateFilePath('View');
+        */
+        
+        return  '
+			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showSelect',array('','', $this->parent->templateFilePath('View', '', true) , $this->element->sid() )).'">List</a>
 			<a class="lightbox" href="'.$this->element->encodeURL(array(),'showCreate').'">Add</a>
-			<div class="preview">'.$this->showView().'</div>
-			<input class="input" name="'.$this->name().'" type="hidden" value="'.($fill?$this->val():'').'" />
+			<div>
+                <div>
+                    <a class="lightbox" href="'.$this->element->encodeURL(array(),'showUpdate',array('',$this->element->encodeURL(array(),'processUpdate',array($this->parent->templateFilePath('View', '', true) , $this->element->sid()))  )).'">Edit</a>
+                    <a class="lightbox" href="" onClick="">X</a>
+                </div>
+                <div class="preview">'.$this->showView().'</div>
+            </div>
+            <input class="SimplOn input" name="'.$this->name().'" type="hidden" value="'.($fill?$this->val():'').'" />
 		';
 	}	
 	
