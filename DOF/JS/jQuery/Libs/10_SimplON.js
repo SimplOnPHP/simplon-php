@@ -1,12 +1,14 @@
 var SimplOn = new function() {
 	this.init = function() {
+        this.context = window.document;
 		this.initActions();
 		this.initForms();
         this.htmlReference = 1;
 	};
 	
-	this.initActions = function () {
-		$('.SimplOn.Data a.lightbox').click(function(e) {
+	this.initActions = function (context) {
+		if(!context) context = window;
+		$('.SimplOn.Data a.SimplOn.lightbox', context.document).click(function(e) {
 			e.preventDefault();
 			var $this = $(this);
             $this.closest('.SimplOn.Data').find('.SimplOn.input').attr('SimplOnReference', SimplOn.htmlReference);
@@ -18,7 +20,7 @@ var SimplOn = new function() {
             });
 		});
 		
-		$('.SimplOn.SelectAction').click(function(e) {
+		$('.SimplOn.SelectAction', context.document).click(function(e) {
 			e.preventDefault();
 			var $this = $(this);
 			$.ajax({
@@ -27,6 +29,12 @@ var SimplOn = new function() {
 				success: SimplOn.ajaxHandler
 			});
 		});
+        
+        $('.SimplOn.delete', context.document).click(function(e) {
+            e.preventDefault();
+            SimplOn.commands.changeValue('', $(this).closest('.SimplOn.Data').find('.SimplOn.input'));
+            SimplOn.commands.changeHtml('', $(this).closest('.SimplOn.preview'));
+        });
 	};
 	
 	this.initForms = function () {
@@ -106,14 +114,28 @@ var SimplOn = new function() {
 	}
 	
 	this.commands = {
-		changePreview: function (content) {
-			$('[SimplOnReference='+window.location.hash.substring(1)+']', parent.document).closest('.SimplOn.ElementContainer').find('.preview').html(content);
+		changeHtml: function (content, $element, context) {
+			if(!context) context = window;
+			$($element).html(content);
+            context.SimplOn.initActions(context);
 		},
-		changeValue: function (content) {
-			$('[SimplOnReference='+window.location.hash.substring(1)+']', parent.document).val(content);
+		changePreview: function (content, $element, context) {
+			if(!context) context = parent;
+            if(!$element) $element = $('[SimplOnReference='+window.location.hash.substring(1)+']', context.document).closest('.SimplOn.ElementContainer').find('.preview');
+            else $element = $($element);
+            
+			SimplOn.commands.changeHtml(content, $element, context);
 		},
-		closeLightbox: function () {
-			parent.$.colorbox.close();
+		changeValue: function (content, $element, context) {
+			if(!context) context = parent;
+            if(!$element) $element = $('[SimplOnReference='+window.location.hash.substring(1)+']', context.document);
+            else $element = $($element);
+            
+			$element.val(content);
+		},
+		closeLightbox: function (context) {
+			if(!context) context = parent;
+            context.$.colorbox.close();
 		}
 	};
 	

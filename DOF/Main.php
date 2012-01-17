@@ -180,7 +180,7 @@ class Main {
 		$construct_params = explode('/', substr($parts[0], strlen($basePath)) );
 		$class = array_shift($construct_params);
 		
-		$method_params = explode('/',$parts[1]);
+		$me thod_params = explode('/',$parts[1]);
 		$method = array_shift($method_params);
 		*/		
 		
@@ -191,11 +191,12 @@ class Main {
 			return isset($json_decoded) ? $json_decoded : $url_decoded;
 		};
 		
-		$server_request = $_SERVER['REDIRECT_URL'];
+		$server_request = $_SERVER['REQUEST_URI'];
 		$query_string = '';
-		if(strpos($server_request, '|') !== false) {
-			$query_string = substr($server_request, strpos($server_request, '|')+1);
-			$server_request = substr($server_request, 0, strpos($server_request, '|'));
+        $query_separator = '%7C';
+		if(strpos($server_request, $query_separator) !== false) {
+			$query_string = substr($server_request, strpos($server_request, $query_separator)+strlen($query_separator));
+			$server_request = substr($server_request, 0, strpos($server_request, $query_separator));
 		}
 		$virtual_path = array_values(array_diff(
 			explode('/',$server_request), 
@@ -306,4 +307,8 @@ class Main {
 		//throw new \Exception("Can't find the file: $classToLoad.php");
 	}
 	/* */
+    
+    static function loadDom($template) {
+        return is_file($template) ? \phpQuery::newDocumentFile($template) : \phpQuery::newDocument($template);
+    }
 }

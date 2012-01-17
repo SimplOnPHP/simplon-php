@@ -21,7 +21,7 @@ use \DOF\Main;
 
 class SelectAction extends ElementLink {
 
-	public function __construct($label, array $sources, $flags=null, $searchOp=null){
+	public function __construct($label, array $sources = array(), $flags=null, $searchOp=null){
 		parent::__construct($label,$sources, 'makeSelection', array(), $flags,null,$searchOp);
 	}
 
@@ -29,16 +29,26 @@ class SelectAction extends ElementLink {
 	public function val($sources = null){
 		if(!is_array($sources)) $sources = $this->sources;
 		
-		$id = $this->parent->hasMethod($this->parent->field_id())
-			? $this->parent->{$this->parent->field_id()}()
-			: null;
-		
 		//$href = $this->parent->encodeURL($id ? array($id) : array(), $this->method,   array( $this->parent->parentClass() )      );
-        $params = ($this->parent->hasMethod('previewTemplate') && $this->parent->hasMethod('sid') ) ? array( $this->parent->previewTemplate(), $this->parent->sid() ) : array();
-        $href = $this->parent->encodeURL($id ? array($id) : array(), $this->method ,  $params    );
+        $params =  array( $this->parent->dataName(), 'makeSelection', array($this->parent->getId()) ) ;
+        $href = Main::encodeURL($this->parent->parentClass(), array($this->parent->parentId()), 'callDataMethod', $params);
 		$content = vsprintf(array_shift($sources), $this->sourcesToValues($sources));
 		
 		return Main::$DEFAULT_RENDERER->link($content, $href, array('class'=>$this->htmlClasses()));
 	} 
+    
+    /*
 
+        $this->element->addOnTheFlyAttribute('parentClass' , new Datas\Hidden(null,'CUSf', $this->parent->getClassName(), '' )    );
+        $this->element->addOnTheFlyAttribute('dataName' , new Datas\Hidden(null,'CUSf', $this->name(), '' )    );
+        $this->element->addOnTheFlyAttribute('parentId' , new Datas\Hidden(null,'CUSf', $this->parent->getId(), '' )    );
+        
+        
+        // http://localhost/SimplON/sample_site/Fe         /2       |callDataMethod/"home    "/"makeSelection"
+        // http://localhost/SimplON/sample_site/parentClass/parentId|callDataMethod/"dataName"/"makeSelection"
+
+     */
+    
+    
+    
 }

@@ -125,7 +125,7 @@ class Element extends BaseObject {
 		if( !isset($this->createAction) )$this->createAction = new Datas\CreateAction('', array('Create'));
 		if( !isset($this->updateAction) )$this->updateAction = new Datas\UpdateAction('', array('Update'));
 		if( !isset($this->deleteAction) )$this->deleteAction = new Datas\DeleteAction('', array('Delete'));
-		if( !isset($this->selectAction) )$this->selectAction = new Datas\SelectAction('', array('Select'));
+		//if( !isset($this->selectAction) )$this->selectAction = new Datas\SelectAction('', array('Select'));
 		//$this->multiSelectAction = new Datas\DeleteAction('', array('Select'));
  
         //Load the attributes on the fly
@@ -327,15 +327,17 @@ class Element extends BaseObject {
 		}
 	}
 	
-	function processUpdate($short_template=null, $sid=null){
+	//function processUpdate($short_template=null, $sid=null){
+	function processUpdate($nextStep = null){
 		$this->fillFromRequest();
         if($this->update()){
 
-            if(empty($short_template)) {
+            if(empty($nextStep)) {
                 header('Location: '.$this->encodeURL(array($this->id()), 'showAdmin'));
             } else {
-                if($sid) $this->sid($sid);
-                return $this->makeSelection($short_template, $sid);
+                header('Location: '.$nextStep);
+                //if($sid) $this->sid($sid);
+                //return $this->makeSelection($short_template, $sid);
             }
         
 		} else {
@@ -360,103 +362,6 @@ class Element extends BaseObject {
 	}
     
     
-    
-    
-    
-    function makeSelection($short_template, $sid){
-        /*@var parentElement /DOF/Elements/Element */
-        //$orig_sid = Main::$globalSID;
-        $this->sid($sid);
-        //$parentElement = new $parentClass();
-        //Main::$globalSID = $orig_sid;
-        
-        
-        //$template = $parentElement->templateFilePath('View');
-        
-        header('Content-type: application/json');
-        echo json_encode(array(
-			'status' => true,
-			'type' => 'commands',
-			'data' => array(
-                array(
-                    'func' => 'changeValue',
-                    'args' => array($this->id())
-                ),
-                array(
-                    'func' => 'changePreview',
-                    'args' => array($this->showView(Main::$GENERIC_TEMPLATES_PATH . $short_template,true).'')
-                ),
-                array(
-                    'func' => 'closeLightbox'
-                ),
-            )
-        ));
-        
-        
- /*
-        $this->JS(
-                array('function'=>'remove',
-                      'content'=>'',
-                      'path'=>'container .preview',
-                      'class'=>'home'
-                     )
-        );       
-        
-         $this->JS(
-                array('function'=>'append',
-                      'content'=>'',
-                      'path'=>'container .preview',
-                      'class'=>'home'
-                     )
-        );        
-        
-      
-        
-         $this->JS(
-                array('function'=>'insert',
-                      'content'=>$this->showView(),
-                      'path'=>'container .preview',
-                      'class'=>$this->getClass()
-                     )
-        );       
-        
-         
-         
-        
-        $this->JS(
-                array('function'=>'update',
-                      'content'=>$this->showView(),
-                      'path'=>'container .preview',
-                      'class'=>$this->getClass()
-                     )
-        );
-
-         $this->JS(
-                array('function'=>'update',
-                      'content'=>'Un-Select',
-                      'path'=>'.????',
-                      
-                     )
-        );       
-        
-        
-        $this->JS(
-                array('function'=>'changeValue',
-                      'content'=>'',
-                      'path'=>'container .input',
-                      'class'=>'home'
-                     )
-        );        
-        
-         $this->JS(
-                array('function'=>'Close',
-                      'path'=>'colorbox',
-                     )
-                 );
-    */
-        
-        
-    }
    /* 
     function processSelection(){
 
@@ -602,7 +507,7 @@ class Element extends BaseObject {
 	*/
 	public function index() {
 		$footer = '<h1>'.$this->getClass().'</h1>'
-			.'<div id="DOF-create-new" class="DOF section">'.$this->createAction(array('Create new %s', 'getClassName')).'</div>'
+			.'<div id="DOF-create-new" class="DOF section">'.$this->createAction('', array('Create new %s','getClassName')).'</div>'
 			.'<div id="DOF-list" class="DOF section">'.$this->showAdmin().'</div>'
 		;
 		return $this->obtainHtml(__FUNCTION__, null, null, array('footer' => $footer));
@@ -624,6 +529,22 @@ class Element extends BaseObject {
         return $this->obtainHtml(__FUNCTION__, $template_file, null, null, $elementOnly );
 	}
 	
+	public function showInputView($template_file = null, $elementOnly = true) // @todo delete
+	{
+        return '
+                <div class="actions">
+                    <a class="lightbox" href="'.$this->encodeURL(array(),'showUpdate',array('',$this->encodeURL(array(),'processUpdate',array($template_file , $this->sid()))  )).'">Edit</a>
+                    <a href="" onclick="">Xyyyy</a>
+                </div>
+                <div class="view">'.$this->showView(Main::$GENERIC_TEMPLATES_PATH . $template_file, $elementOnly).'</div>
+        ';
+	}
+	
+    public function callDataMethod($dataName, $method, array $params = array()){
+        return call_user_func_array(array($this->{'O'.$dataName}(), $method), $params);
+    }
+    
+    
 	public function showSearch($template_file = null, $action = null)
 	{
 		$add_html = array(
@@ -654,7 +575,7 @@ class Element extends BaseObject {
     }    
     
     
- 	public function showSelect($template_file = null, $action = null, $previewTemplate = null, $sid = null)
+ 	public function showSelect($template_file = null, $action = null, $previewTemplate = null, $sid = null) //@todo delete??????
 	{
         if( $previewTemplate && $sid ){ 
             
@@ -782,7 +703,7 @@ class Element extends BaseObject {
       //*    
             
             if($with_form && $action) {
-                $dom['form.SimplOn.Element.sid'.$this->sid()]->attr('action', $action);
+                $dom['form.SimplOn.Element.'.$this->getClassName()]->attr('action', $action);
             }
             foreach($dom['.SimplOn.Data.sid'.$this->sid()] as $node) {
                 //echo '<div>'.pq($DomElement)->attr('class').' -- sid'.$this->sid.' -- </div>';
@@ -903,7 +824,10 @@ class Element extends BaseObject {
         return $this->{$this->field_id()}();
     }
 	
-	
+	function setId($id){
+        $this->{$this->field_id()}($id);
+        return $this;
+    }	
 	
 	
 	
