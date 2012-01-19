@@ -394,16 +394,27 @@ abstract class SQL extends DataStorage
 	}
 
 	public function readElements(\DOF\Elements\Element &$element, $returnAs = 'array'){
-		$storages = is_array($element->storage())
+		
+        /*
+         * Reads the storage "table" for each class, usually it's the same 
+         * as the class name but could be otherwise (any class may use 
+         * any storage if wanted)
+         */
+        $storages = is_array($element->storage())
                         ? $element->storage() 
                         : array($element->getClass() => $element->storage());
-		
+		/*
+         * Select only the readable elements
+         */
 		foreach($element->processData('doRead') as $dataInfo){
 			foreach($dataInfo as $fieldInfo){
 				$fields[] = $fieldInfo[0];
 			}
 		}
 		
+        /*
+         * 
+         */
 		foreach($storages as $class => $storage) {
 			$storage_fields = $fields; // id as id, 'id' as field_id, 'fe' as storage
 			array_unshift($storage_fields,

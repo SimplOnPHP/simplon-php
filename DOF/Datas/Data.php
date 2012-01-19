@@ -294,7 +294,15 @@ abstract class Data extends BaseObject {
 		));
 	}
 
+    
+    
+	public function clearValue($filterCriteria = null) {
+		if(isset($this->value)){
+            $this->value=null;
+        }
+	}
 
+    
 	
 	/**
 	 * Sets create, update, search, list, required and fetch flags according to the letters in $flags

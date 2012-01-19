@@ -427,12 +427,13 @@ class Element extends BaseObject {
 		else{
 			
             //REMOVED so it adapts on every run if necesary
-            //if(!isset($this->filterCriteria))
-			//	$this->filterCriteria = $this->defaultFilterCriteria();
+            if(!isset($this->filterCriteria))
+				$this->filterCriteria = $this->defaultFilterCriteria();
 			
 			//$filterCriteria = $this->filterCriteria;
             
-            $filterCriteria = $this->defaultFilterCriteria();
+
+           
             
             
 			$patterns = array();
@@ -446,6 +447,7 @@ class Element extends BaseObject {
                     }
 			}
 			
+            //$ret = preg_replace($patterns, $subs, $filterCriteria);
 			return preg_replace($patterns, $subs, $this->filterCriteria);
 		}
 	}
@@ -567,12 +569,31 @@ class Element extends BaseObject {
     public function addOnTheFlyAttributes()
 	{
         foreach ( Main::getOnTheFlyAttributes($this->getClass()) as  $attributeName=>$attribute ){
-            $this->$attributeName=$attribute;
+            $this->$attributeName = clone $attribute;
             if($attribute instanceof Data ){ 
-                if( is_array($this->dataAttributes)){ $this->dataAttributes[]=$attributeName; }else{ $this->dataAttributes = $this->attributesTypes(); }
+                if( is_array($this->dataAttributes)){
+                    $this->dataAttributes[]=$attributeName; 
+                }else{
+                    $this->dataAttributes = $this->attributesTypes();
+                }
             }           
         }
     }    
+    
+   
+    public function clearValues($clearID = false)
+	{
+        if(!$clearID){
+            $id = $this->getId();
+        }
+        
+        foreach($this->dataAttributes() as $dataName) {
+			$this->{'O'.$dataName}()->clearValue();
+		}
+        
+        $this->setId($id);
+    } 
+    
     
     
  	public function showSelect($template_file = null, $action = null, $previewTemplate = null, $sid = null) //@todo delete??????

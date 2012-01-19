@@ -143,7 +143,7 @@ class ElementContainer extends Data {
     
 	public function showInputView()
 	{
-        $nextStep = $this->parent->encodeURL(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection'));
+        $nextStep = $this->parent->encodeURL(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection', array ($this->element->getId()) ));
         return '
                 <div class="SimplOn actions">
                     <a class="SimplOn lightbox" href="'.$this->element->encodeURL(array(),'showUpdate',array('',$this->element->encodeURL(array(),'processUpdate',array($nextStep))  )).'">Edit</a>
@@ -156,22 +156,35 @@ class ElementContainer extends Data {
     
   	public function showSelect()
 	{
+        //@todo evaluate the change of $this->element to $element (new element) in order to avoid alteration of original element
+        
+        $this->element->clearValues();
+        
+        $this->element->fillFromRequest();
         
         $this->element->addOnTheFlyAttribute('parentClass' , new Hidden(null,'CUSf', $this->parent->getClassName(), '' )    );
         $this->element->addOnTheFlyAttribute('dataName' , new Hidden(null,'CUSf', $this->name(), '' )    );
         $this->element->addOnTheFlyAttribute('parentId' , new Hidden(null,'CUSf', $this->parent->getId(), '' )    );
         $this->element->addOnTheFlyAttribute('selectAction' , new SelectAction('', array('Select')) );
 
-
+        $tempSid = $this->element->sid(1);
+        $this->element->sid(1);
         // http://localhost/SimplON/sample_site/Fe         /2       |callDataMethod/"home    "/"makeSelection"
         // http://localhost/SimplON/sample_site/parentClass/parentId|callDataMethod/"dataName"/"makeSelection"
     
-        
-        return $this->element->obtainHtml(
+		/*$this->element->fillFromRequest();
+		$search = new Search(array($this->element->getClass()));
+		return $search->processSearch($this->element->toArray());
+        */
+        $ret = $this->element->obtainHtml(
                 "showSearch", 
                 $this->element->templateFilePath('Search'), 
-                $this->parent->encodeURL(array(),'callDataMethod',array($this->name(), 'processSelect') )
-        ) . $this->element->processSelect(null, 'multi');
+                $this->parent->encodeURL(array(),'callDataMethod',array($this->name(), 'showSelect') )
+        ) . $this->processSelect();
+        
+        $this->element->sid($tempSid);
+        
+        return $ret;
 	}   
     
     
