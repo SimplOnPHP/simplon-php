@@ -63,7 +63,15 @@ class Element extends BaseObject {
 	* @example (.Data1) AND (Data2 == "Hello")
 	* @var string
 	*/
-	protected $filterCriteria;	
+	protected $filterCriteria;
+	
+	/**
+     * Represents the nesting level of the element (1 is the ancestor element,
+     * greater values means deeper nesting).
+     * Used in the rendering process.
+     * @var integer
+     */
+    protected $nestingLevel = 1;
 
 	
 	
@@ -83,10 +91,6 @@ class Element extends BaseObject {
 	* @var array containing objects of type DOF\Datas\Data
 	*/
 	protected $dataAttributes;
-	
-	
-	
-    protected $sid;
 //-----------------------------------------------------------------------------------------	
 //------------------------------ METHODS --------------------------------------------------	
 //-----------------------------------------------------------------------------------------
@@ -104,10 +108,6 @@ class Element extends BaseObject {
 	 */
 	public function __construct($id_or_array = null, &$specialDataStorage=null)
 	{
-        $this->sid(Main::$globalSID++);
-        
-        
-        
         $this->construct($id_or_array, $specialDataStorage);
 		
 		//On heirs put here the asignation of DOFdata and attributes
@@ -207,19 +207,15 @@ class Element extends BaseObject {
 		}
 	}
 	
-	function htmlClasses($append = '', $sid = null) {
-        if(!$sid){
-            $sid = $this->sid();
-        }       
-        return 'SimplOn Element '.'sid'.$sid.' '.$this->getClassName().' '.$append;
+	function htmlClasses($append = '', $nestingLevel = null) {
+        if(!$nestingLevel) $nestingLevel = $this->nestingLevel();
+        return 'SimplOn Element '.'SNL-'.$nestingLevel.' '.$this->getClassName().' '.$append;
     }
 	
-	function cssSelector($append = '', $sid = null) {
-        if(!$sid){
-            $sid = $this->sid();
-        }
-        return '.SimplOn.Element.sid'.$sid.'.'.$this->getClassName().$append;
-    }    
+	function cssSelector($append = '', $nestingLevel = null) {
+        if(!$nestingLevel) $nestingLevel = $this->nestingLevel();
+        return '.SimplOn.Element.SNL-'.$nestingLevel.'.'.$this->getClassName().$append;
+    }
 	
 	// -- SimplON key methods	
 	/**
@@ -264,9 +260,9 @@ class Element extends BaseObject {
 	* @todo: in  arrays format ????
 	*/
 	public function fillFromDSById($id = null){
-		if(isset($id)) $this->id($id);
+		if(isset($id)) $this->setId($id);
 	
-		if($this->id()){
+		if($this->getId()){
 				
 			$dataArray = $this->dataStorage->readElement( $this );
 				
@@ -277,7 +273,7 @@ class Element extends BaseObject {
 	}	
 	
 	public function save() {
-    	return ($this->{$this->field_id()}())
+    	return $this->getId() !== false
     		? $this->update() 
 			: $this->create();
 	}
@@ -286,7 +282,7 @@ class Element extends BaseObject {
 		$this->processData('preCreate');
 		
 		$id = $this->dataStorage->createElement($this);
-		$this->{$this->field_id()}($id);
+		$this->setId($id);
 		
 		$this->processData('postCreate');
 		
@@ -313,17 +309,19 @@ class Element extends BaseObject {
 	 updateInDS // este debe ser automatico desde el save si se tiene id se genera
 	*/
 	
-	function processCreate($result = null){
+	function processCreate($nextStep = null){
 		$this->fillFromRequest();
-		if($this->create()) {
-			if(@$result == 'json') {
-				return json_encode(array('id' => $this->id(), 'preview' => $this->showView()->find('body')->html()));
-			} else {
-				header('Location: '.$this->encodeURL(array($this->id()), 'showUpdate'));
-			}
+        if($this->create()){
+
+            if(empty($nextStep)) {
+                header('Location: '.$this->encodeURL(array($this->getId()), 'showUpdate'));
+            } else {
+                header('Location: '.$nextStep . Main::encodeUrl(null,null,null, array(array($this->getId()))) );
+            }
+        
 		} else {
 			// @todo: error handling
-			user_error('Cannot create in DS!', E_USER_ERROR);
+			user_error('Cannot update in DS!', E_USER_ERROR);
 		}
 	}
 	
@@ -333,7 +331,7 @@ class Element extends BaseObject {
         if($this->update()){
 
             if(empty($nextStep)) {
-                header('Location: '.$this->encodeURL(array($this->id()), 'showAdmin'));
+                header('Location: '.$this->encodeURL(array($this->getId()), 'showAdmin'));
             } else {
                 header('Location: '.$nextStep);
                 //if($sid) $this->sid($sid);
@@ -549,11 +547,7 @@ class Element extends BaseObject {
     
 	public function showSearch($template_file = null, $action = null)
 	{
-		$add_html = array(
-			'header' => '<div class="DOF showSearch">',
-			'footer' => '<div class="DOF section list">'.$this->processSearch().'</div></div>',
-		);
-		return $this->obtainHtml(__FUNCTION__, $template_file, $action, $add_html);
+		return $this->obtainHtml(__FUNCTION__, $template_file, $this->encodeURL(array(),'showSearch'), array('footer' => $this->processAdmin(null, 'multi')));
 	}
 
     public function addOnTheFlyAttribute( $attributeName, $attribute = null)
@@ -564,6 +558,8 @@ class Element extends BaseObject {
             if( is_array($this->dataAttributes)){ $this->dataAttributes[]=$attributeName; }else{ $this->dataAttributes = $this->attributesTypes(); }
         }
         $this->$attributeName->parent($this);
+        
+        return $this;
     }
    
     public function addOnTheFlyAttributes()
@@ -611,15 +607,15 @@ class Element extends BaseObject {
         
         
         
-        return $this->obtainHtml("showSearch", $template_file, $this->encodeURL(array(),'showSelect')).$this->processSelect(null, 'multi');
+        return $this->obtainHtml("showSearch", $template_file, $this->encodeURL(array(),'showSelect'), array('footer' => $this->processSelect(null, 'multi')));
 	}       
            
   	public function showAdmin($template_file = null, $action = null)
 	{
-		return $this->obtainHtml("showSearch", $template_file, $this->encodeURL(array(),'showAdmin')).$this->processAdmin(null, 'multi');
+		return $this->obtainHtml("showSearch", $template_file, $this->encodeURL(array(),'showAdmin'), array('footer' => $this->processAdmin(null, 'multi')));
 	}       
         
-	// @todo: allow to obtain only the dom part inherent to the element (and not the whole web page)
+	
 	public function obtainHtml($caller_method, $template = null, $action = null, $add_html = array(), $elementOnly = false)
 	{
 		//$caller_method = end(// explode('::',$caller_method));
@@ -686,7 +682,6 @@ class Element extends BaseObject {
 						$dompart['.input']->attr('id', $data_id);
 						$html.= $dompart;
 					} else {
-                        $ee = $data->$caller_method();
 						$html.= $data->$caller_method();
 					}
 						
@@ -700,12 +695,12 @@ class Element extends BaseObject {
 			} else {
 				$html.= '</div>';
 			}
-			
-			$dom['body'] = @$add_html['header'] . $html . @$add_html['footer'];
-				
+            $dom['body'] = $html;
+            
 			// save file
 			if(!empty($template_file))
                 Main::createFile($template_file, $dom.'');
+				
 		} else {
 			// opens file
 			$dom = $template;
@@ -726,9 +721,7 @@ class Element extends BaseObject {
             if($with_form && $action) {
                 $dom['form.SimplOn.Element.'.$this->getClassName()]->attr('action', $action);
             }
-            foreach($dom['.SimplOn.Data.sid'.$this->sid()] as $node) {
-                //echo '<div>'.pq($DomElement)->attr('class').' -- sid'.$this->sid.' -- </div>';
-                
+            foreach($dom['.SimplOn.Data.SNL-'.$this->nestingLevel()] as $node) {
                 $domNode = pq($node);
                 $data = explode(' ', $domNode->attr('class'));
                 if($data[4]) {
@@ -751,8 +744,11 @@ class Element extends BaseObject {
 			}
   /**/
 		}
+		$dom['body']
+            ->prepend(@$add_html['header']?:'')
+            ->append(@$add_html['footer']?:'');
 	
-		return $elementOnly ? $dom['.SimplOn.Element.sid'.$this->sid()] : $dom;
+		return $elementOnly ? $dom[$this->cssSelector()] : $dom;
 	}
 	
 	public function getJS($method, $returnFormat = 'array', $compress = false) {

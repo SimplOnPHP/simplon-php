@@ -93,8 +93,7 @@ class Main {
 		$class,
 		$method,
 		$construct_params,
-		$method_params,
-        $globalSID = 1;
+		$method_params;
 	
 	/**
 	 * Loads all the parameters specific to a website and loads needed classes.
@@ -211,18 +210,16 @@ class Main {
 		self::$method_params = array_map($f_decode_param, @$GET_virtual_path ?: array());
 	}
 	
-	static function encodeURL($class, array $construct_params, $method, array $method_params = array()) {
+	static function encodeURL($class = null, $construct_params = null, $method = null, array $method_params = array()) {
 		$fencoder = function ($p) {
 			return urlencode(urlencode(json_encode($p)));
 		};
 		
-		$construct_params = array_map($fencoder, $construct_params);
-		$method_params = array_map($fencoder, $method_params);
-		
-		return self::$REMOTE_ROOT . '/'
-			. $class . (@$construct_params ? '/' . implode('/',$construct_params) : '/')
-			. '|' 
-			. $method . (@$method_params ? '/' . implode('/',$method_params) : '');
+		return
+            (isset($class) ? self::$REMOTE_ROOT . '/' . $class : '')
+            . (isset($construct_params) ? (!empty($construct_params) ? '/' . implode('/',array_map($fencoder, $construct_params)) : '/') : '')
+			. (isset($method) ? '|' . $method : '')
+            . (@$method_params ? '/' . implode('/',array_map($fencoder, $method_params)) : '');
 	}
 	
 	static function fromArray(array $ini) {

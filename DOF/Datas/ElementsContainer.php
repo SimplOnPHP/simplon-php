@@ -67,7 +67,7 @@ class ElementsContainer extends Data {
 	
 	public function padre(&$parent=null)
 	{
-		//check('Hola tu'.$padre->id() );
+		//check('Hola tu'.$padre->getId() );
 		if($this->element()->hasMethod('parent') ) {
 			if($parent) {
 				$this->element()->parent($parent);

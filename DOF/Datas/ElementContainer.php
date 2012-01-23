@@ -33,6 +33,7 @@ class ElementContainer extends Data {
 		 * @var DOF\Elements\Element
 		 */
 		$parent, 
+            
 		/**
 		 * Encapsulated element
 		 * @var DOF\Elements\Element
@@ -44,6 +45,7 @@ class ElementContainer extends Data {
 		$this->element($element);
         
 		parent::__construct($label,$flags,$element_id);
+        
 	}
 	
 	public function getJS($method) {
@@ -58,41 +60,34 @@ class ElementContainer extends Data {
     
     
     function parent(&$parent = null){
-        
-        
         if(!$parent){
             return $this->parent;
         } else {
-		
             $this->parent=$parent;
-
         
+            $this->element->nestingLevel($parent->nestingLevel()+1);
         }
     }
     
 	
 	function showView($template = null)
 	{
-		//return $this->parent()->getClass();
-		$id = $this->element()->{$this->element()->field_id()}();
-		//if($id !== null) {
-            if($template) {
-                $template = Main::loadDom($template);
-                $template = $template['.SimplOn.'.$this->element()->getClassName().'.sid'.$this->element()->sid()].'';
-            } else {
-                $tempSid = $this->element()->sid();
-                $this->element()->sid(1);
-            }
-			$dom = \phpQuery::newDocument($this->element()->showView($template));
-            
-            if(@$tempSid) {
-                $this->element()->sid($tempSid);
-                $this->sidFix($dom);
-            }
-			return $dom['.SimplOn.'.$this->element()->getClassName()].'';
-		//} else {
-		//	return '';
-		//}
+        if($template) {
+            $template = Main::loadDom($template);
+            $template = $this->element->showView($template[$this->element->cssSelector()]);
+        } else {
+           // creates a dummy template
+           $element = $this->element->getClass();
+           $element = new $element($this->element->getId());
+           $template = $element->showView(null, true);
+        }
+        $dom = \phpQuery::newDocument($template);
+
+        if(@$element) {
+            $this->nestingLevelFix($dom);
+        }
+        
+        return $dom[$this->element->cssSelector()].'';
 	}
 	
 	public function val($val = null) {
@@ -102,7 +97,7 @@ class ElementContainer extends Data {
 		} else	if($val !== null) {
 			$this->element->fillFromDSById($val);
 		} else {
-			return @$this->element->{$this->element->field_id()}();
+			return @$this->element->getId();
 		}
 
         $this->element->addOnTheFlyAttribute('parentClass' , new Hidden(null,'CUSf', $this->parent->getClassName(), '' )    );
@@ -122,18 +117,12 @@ class ElementContainer extends Data {
 	
 	function showInput($fill)
 	{
-        /*
-        session_start();
-        if(empty($_SESSION['nestedElements'])){
-            $_SESSION['nestedElements']=array();
-        }
-        
-        $_SESSION['nestedElements'][$this->sid()]=$this->parent()->templateFilePath('View');
-        */
+        $nextStep = $this->parent->encodeURL(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection'));
         
         return  '
+            <span class="SimplOn label">'.$this->label().'</span>:
 			<a class="SimplOn lightbox" href="'.$this->parent->encodeURL(array(),'callDataMethod',array($this->name(),'showSelect') ).'">List</a>
-			<a class="SimplOn lightbox" href="'.$this->element->encodeURL(array(),'showCreate').'">Add</a>
+            <a class="SimplOn lightbox" href="'.$this->element->encodeURL(array(),'showCreate',array('',$this->element->encodeURL(array(),'processCreate',array($nextStep))  )).'">Add</a>
             <div class="SimplOn preview">
                 '.$this->showInputView().'
             </div>
@@ -143,74 +132,53 @@ class ElementContainer extends Data {
     
 	public function showInputView()
 	{
-        $nextStep = $this->parent->encodeURL(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection', array ($this->element->getId()) ));
-        return '
-                <div class="SimplOn actions">
-                    <a class="SimplOn lightbox" href="'.$this->element->encodeURL(array(),'showUpdate',array('',$this->element->encodeURL(array(),'processUpdate',array($nextStep))  )).'">Edit</a>
-                    <a class="SimplOn delete" href="#">X</a>
-                </div>
-                <div class="SimplOn view">'.$this->element->showView($this->parent->templateFilePath('View'), true).'</div>
-        ';
+        if($this->element->getId()){
+            $nextStep = $this->parent->encodeURL(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection', array ($this->element->getId()) ));
+            return '<div class="SimplOn actions">
+                        <a class="SimplOn lightbox" href="'.$this->element->encodeURL(array(),'showUpdate',array('',$this->element->encodeURL(array(),'processUpdate',array($nextStep))  )).'">Edit</a>
+                        <a class="SimplOn delete" href="#">X</a>
+                    </div>
+                    <div class="SimplOn view">'.$this->element->showView($this->parent->showView(), true).'</div>
+            ';
+        }else{
+            return '';
+        }
 	}
 
     
   	public function showSelect()
 	{
-        //@todo evaluate the change of $this->element to $element (new element) in order to avoid alteration of original element
+        $element = $this->element->getClass();
+        $element = new $element();
+        $element->fillFromRequest();
         
-        $this->element->clearValues();
-        
-        $this->element->fillFromRequest();
-        
-        $this->element->addOnTheFlyAttribute('parentClass' , new Hidden(null,'CUSf', $this->parent->getClassName(), '' )    );
-        $this->element->addOnTheFlyAttribute('dataName' , new Hidden(null,'CUSf', $this->name(), '' )    );
-        $this->element->addOnTheFlyAttribute('parentId' , new Hidden(null,'CUSf', $this->parent->getId(), '' )    );
-        $this->element->addOnTheFlyAttribute('selectAction' , new SelectAction('', array('Select')) );
-
-        $tempSid = $this->element->sid(1);
-        $this->element->sid(1);
+        $element->addOnTheFlyAttribute('parentClass' , new Hidden(null,'CUSf', $this->parent->getClassName(), '' )    );
+        $element->addOnTheFlyAttribute('dataName' , new Hidden(null,'CUSf', $this->name(), '' )    );
+        $element->addOnTheFlyAttribute('parentId' , new Hidden(null,'CUSf', $this->parent->getId(), '' )    );
+        $element->addOnTheFlyAttribute('selectAction' , new SelectAction('', array('Select')) );
         // http://localhost/SimplON/sample_site/Fe         /2       |callDataMethod/"home    "/"makeSelection"
         // http://localhost/SimplON/sample_site/parentClass/parentId|callDataMethod/"dataName"/"makeSelection"
-    
-		/*$this->element->fillFromRequest();
-		$search = new Search(array($this->element->getClass()));
-		return $search->processSearch($this->element->toArray());
-        */
-        $ret = $this->element->obtainHtml(
+   
+        return $element->obtainHtml(
                 "showSearch", 
-                $this->element->templateFilePath('Search'), 
-                $this->parent->encodeURL(array(),'callDataMethod',array($this->name(), 'showSelect') )
-        ) . $this->processSelect();
-        
-        $this->element->sid($tempSid);
-        
-        return $ret;
-	}   
+                $element->templateFilePath('Search'), 
+                $this->parent->encodeURL(array(),'callDataMethod',array($this->name(), 'showSelect') ),
+                array('footer' => $element->processSelect())
+        );
+	}
     
-    
-    
-    function sidFix(&$dom, &$base = 1) {
-        $dom[$this->element->cssSelector('', $base)]->attr('class', $this->element->htmlClasses());
-        foreach($dom['.SimplOn.Data.sid'.$base] as $node) {
+    function nestingLevelFix(&$dom) {
+        $startingNestingLevel = $this->parent->nestingLevel();
+        foreach($dom['.SimplOn.Element, .SimplOn.Data'] as $node) {
             $domNode = pq($node);
-            $data = explode(' ', $domNode->attr('class'));
-            $data = $this->element->{'O'.$data[4]}();
-            
-            $domNode->attr('class',$data->htmlClasses());
-            if( $data instanceof \DOF\Datas\ElementContainer ){
-                $base++;
-                $domNode = $data->sidFix($domNode, $base);
+            $classes = explode(' ', $domNode->attr('class'));
+            if(substr($classes[2], 0, 4) == 'SNL-') {
+                $nestingLevel = substr($classes[2], 4) + $startingNestingLevel;
+                $classes[2] = 'SNL-' . $nestingLevel;
+                $domNode->attr('class', implode(' ', $classes));
             }
         }
     }
-
-    function processSelect(){
-        
-        
-        //$this->element->fillFromRequest();
-        return $this->element->processSelect();
-    }
-
 
     function makeSelection($id){ 
         /*@var parentElement /DOF/Elements/Element */
@@ -230,7 +198,7 @@ class ElementContainer extends Data {
 			'data' => array(
                 array(
                     'func' => 'changeValue',
-                    'args' => array($this->element->id())
+                    'args' => array($this->element->getId())
                 ),
                 array(
                     'func' => 'changePreview',
