@@ -781,7 +781,7 @@ class Element extends BaseObject {
 			case 'html':
 				$html_js = '';
 				foreach($a_js as $js) {
-					$html_js.= '<script type="text/javascript" src="'.$js.'" />'."\n";
+					$html_js.= '<script type="text/javascript" src="'.$js.'"></script>'."\n";
 				}
 				return $html_js;
 			default:

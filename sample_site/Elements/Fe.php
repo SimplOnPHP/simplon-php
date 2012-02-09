@@ -8,8 +8,8 @@ class Fe extends Element
 		$this->cabeza = new Datas\String('¿Cuando tendrás Fe?', 'S');
 		$this->contenido = new Datas\String('Contenido', 'S');
 		$this->home = new Datas\ElementContainer(new Home(), 'Home');
-        $this->home2 = new Datas\ElementContainer(new Home(), 'Home2');
-		//$this->homes = new Datas\ElementsContainer(array(new Home()), 'Homes');
+        //$this->home2 = new Datas\ElementContainer(new Home(), 'Home2');
+		$this->homes = new Datas\ElementsContainer(array(new Home()), 'Homes');
 		
 		$this->concat = new Datas\Concat("Concat test", array(' ','Cabeza:','cabeza',' contenido','contenido'),"L");
         $this->compose = new Datas\Compose("Compose test", array('%s concat %s','cabeza','concat'),"L");

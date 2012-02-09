@@ -160,7 +160,7 @@ abstract class SQL extends DataStorage
 	
 	//@todo: in  arrays format
 	public function isValidElementStorage(\DOF\Elements\Element &$element) {
-		
+        
 		// Verify that we have the same Datas in the element and in the DB
 		$dbColumns = $this->db->query('SHOW COLUMNS FROM '.$element->storage(), \PDO::FETCH_COLUMN,0)->fetchAll();
 		$elementData = $this->getDataTypes($element);

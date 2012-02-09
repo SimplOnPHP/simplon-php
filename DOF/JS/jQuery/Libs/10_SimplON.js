@@ -26,7 +26,10 @@ var SimplOn = new function() {
 			$.ajax({
 				dataType: 'json',
 				url: $this.attr('href'),
-				success: SimplOn.ajaxHandler
+				success: SimplOn.ajaxHandler,
+                error: function() {
+                    alert('Error en recibir los datos!');
+                }
 			});
 		});
         
@@ -43,7 +46,10 @@ var SimplOn = new function() {
 				$(this).ajaxForm({
 					url: $(this).attr('action'),
 					dataType: 'json',
-					success: SimplOn.ajaxHandler
+					success: SimplOn.ajaxHandler,
+                    error: function() {
+                        alert('Error en recibir los datos!');
+                    }
                         /*
                     function(data) {
 						$('[SimplOnReference='+window.location.hash.substring(1)+']', parent.document).val(data.id)
@@ -57,7 +63,10 @@ var SimplOn = new function() {
 				$(this).ajaxForm({
 					url: $(this).attr('action'),
 					dataType: 'json',
-					success:  SimplOn.ajaxHandler
+					success:  SimplOn.ajaxHandler,
+                    error: function() {
+                        alert('Error en recibir los datos!');
+                    }
                         /*function(data) {
 						$('[SimplOnReference='+window.location.hash.substring(1)+']', parent.document).val(data.id)
 							.siblings('.preview').html(data.preview);
@@ -75,7 +84,10 @@ var SimplOn = new function() {
 				context: $list,
 				success: function(data) {
 					$(this).html(data);
-				}
+				},
+                error: function() {
+                    alert('Error en recibir los datos!');
+                }
 			});
 		});
 	};
