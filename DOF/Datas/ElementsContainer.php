@@ -102,21 +102,29 @@ class ElementsContainer extends Data {
 	function showView($template = null)
 	{
         if($template) {
-            $template = Main::loadDom($template);
-            $template = $this->element->showView($template[$this->element->cssSelector()]);
+           
+           $dom = Main::loadDom($template);
+           $tempTemplate = $dom[$this->cssSelector()];
+           
+           $elementsViews = '';
+           foreach($this->elements as $element){
+               $elementsViews.= $element->showView($tempTemplate[$element->cssSelector()],true);
+           }
+           
+           $tempTemplate->html($elementsViews);
+        
+            return $dom[$this->cssSelector()].'';
         } else {
            // creates a dummy template
-           $element = $this->element->getClass();
-           $element = new $element($this->element->getId());
-           $template = $element->showView(null, true);
+            
+            foreach($this->allowedClassesInstances as $classInstance){
+               $template.= $classInstance->nestingLevel(1)->showView(null, true);
+           }
+           $dom = \phpQuery::newDocument($template);
+           $this->nestingLevelFix($dom);
+           
+           return $dom.'';
         }
-        $dom = \phpQuery::newDocument($template);
-
-        if($element) {
-            $this->nestingLevelFix($dom);
-        }
-        
-        return $dom[$this->element->cssSelector()].'';
 	}
 	
 	public function val($val = null) {
@@ -157,7 +165,7 @@ class ElementsContainer extends Data {
             ';
                 
         foreach($this->allowedClassesInstances as $classInstance){
-            $nextStep = $this->parent->encodeURL(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection', array( '', $classInstance->getClass() )));
+            $nextStep = $this->parent->encodeURL(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection'));
             $ret.='<a class="SimplOn lightbox" href="'.$classInstance->encodeURL(array(),'showCreate',array('',$classInstance->encodeURL(array(),'processCreate',array($nextStep))  )).'">'.$classInstance->getClassName().'</a> ';
         }
         
@@ -166,7 +174,7 @@ class ElementsContainer extends Data {
             $elementsInputViews[] = $this->showInputView($element);
         }
         $ret .=  '
-            <div class="SimplOn elements-box">
+            <div class="SimplOn Container elements-box">
                 '.implode("\n", $elementsInputViews).'
             </div>
 		';
@@ -232,23 +240,24 @@ class ElementsContainer extends Data {
 
     function makeSelection($id, $class){ 
         $element = new $class($id);
-        
-        header('Content-type: application/json');
-        echo json_encode(array(
+        $element->nestingLevel($this->parent->nestingLevel() + 1);
+        $return = array(
 			'status' => true,
 			'type' => 'commands',
 			'data' => array(
                 array(
-                    'func' => 'addContainedElement',
+                    //'func' => 'appendContainedElement',
+                    'func' => 'prependContainedElement',
                     'args' => array($this->showInputView($element))
                 ),
                 array(
                     'func' => 'closeLightbox'
                 ),
             )
-        ));
-
+        );
         
+        header('Content-type: application/json');
+        echo json_encode($return);
     }
     
 }

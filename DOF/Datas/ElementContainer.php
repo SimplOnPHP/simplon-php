@@ -191,8 +191,7 @@ class ElementContainer extends Data {
         
         //$template = $parentElement->templateFilePath('View');
         
-        header('Content-type: application/json');
-        echo json_encode(array(
+        $return = array(
 			'status' => true,
 			'type' => 'commands',
 			'data' => array(
@@ -209,7 +208,10 @@ class ElementContainer extends Data {
                     'func' => 'closeLightbox'
                 ),
             )
-        ));
+        );
+        
+        header('Content-type: application/json');
+        echo json_encode($return);
 
         
     }

@@ -11,7 +11,7 @@ var SimplOn = new function() {
 			e.preventDefault();
             $('.SimplOnLightbox').removeClass('SimplOnLightbox');
 			var $this = $(this);
-            $this.closest('.SimplOn.Data').find('.SimplOn.input').addClass('SimplOnLightbox');
+            $this.closest('.SimplOn.Data').find('.SimplOn.input,.SimplOn.Container').addClass('SimplOnLightbox');
 			$this.colorbox({
                 iframe: true, 
                 innerWidth: "80%", 
@@ -144,6 +144,20 @@ var SimplOn = new function() {
             else $element = $($element);
             
 			$element.val(content);
+		},
+		appendContainedElement: function (content, $element, context) {
+			if(!context) context = parent;
+            if(!$element) $element = $('.SimplOnLightbox', context.document);
+            else $element = $($element);
+            
+			$element.append(content);
+		},
+		prependContainedElement: function (content, $element, context) {
+			if(!context) context = parent;
+            if(!$element) $element = $('.SimplOnLightbox', context.document);
+            else $element = $($element);
+            
+			$element.prepend(content);
 		},
 		closeLightbox: function (context) {
 			if(!context) context = parent;

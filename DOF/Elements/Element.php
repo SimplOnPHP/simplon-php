@@ -316,7 +316,7 @@ class Element extends BaseObject {
             if(empty($nextStep)) {
                 header('Location: '.$this->encodeURL(array($this->getId()), 'showUpdate'));
             } else {
-                header('Location: '.$nextStep . Main::encodeUrl(null,null,null, array(array($this->getId()))) );
+                header('Location: '.$nextStep . Main::encodeUrl(null,null,null, array(array($this->getId(),$this->getClass()))) );
             }
         
 		} else {
@@ -702,48 +702,49 @@ class Element extends BaseObject {
                 Main::createFile($template_file, $dom.'');
 				
 		} else {
-			// opens file
-			$dom = $template;
-			
-            /**
-             * 
-             * @todo change the way HTL is filled instead of cicle triugh the datas 
-             * and filling the template cicle trough the template and run elment's 
-             * or data's methods as required.
-             * 
-             * 
-             */
-            
-            
-			// fill file with data
-      //*    
-            
-            if($with_form && $action) {
-                $dom['form.SimplOn.Element.'.$this->getClassName()]->attr('action', $action);
+            // opens file
+            $dom = $template;
+        }
+
+        /**
+         * 
+         * @todo change the way HTL is filled instead of cicle triugh the datas 
+         * and filling the template cicle trough the template and run elment's 
+         * or data's methods as required.
+         * 
+         * 
+         */
+
+
+        // fill file with data
+  //*    
+
+        if($with_form && $action) {
+            $dom['form.SimplOn.Element.'.$this->getClassName()]->attr('action', $action);
+        }
+        foreach($dom['.SimplOn.Data.SNL-'.$this->nestingLevel()] as $node) {
+            $domNode = pq($node);
+            $data = explode(' ', $domNode->attr('class'));
+            if($data[4]) {
+                $data = $this->{'O'.$data[4]}();
+                if( $data instanceof Data && $data->hasMethod($caller_method) )
+                    $domNode->html($data->$caller_method($domNode) ?: '');
             }
-            foreach($dom['.SimplOn.Data.SNL-'.$this->nestingLevel()] as $node) {
-                $domNode = pq($node);
-                $data = explode(' ', $domNode->attr('class'));
-                if($data[4]) {
-                    $data = $this->{'O'.$data[4]}();
-                    if( $data instanceof Data && $data->hasMethod($caller_method) )
-                        $domNode->html($data->$caller_method($domNode) ?: '');
+        }
+
+  /*/  
+
+
+        if($vcsl != 'create') {
+            foreach($this as $keydata=>$data) {
+                if( $data instanceof Data && $data->hasMethod($vcsl) && $data->$vcsl() )
+                {
+                    $dom['.SimplOn.'.$this->getClass().' .SimplOn.'.$keydata] = $data->$caller_method($dom['.SimplOn.'.$this->getClass().' .SimplOn.'.$keydata]);
                 }
             }
-            
-      /*/  
-            
-          
-			if($vcsl != 'create') {
-				foreach($this as $keydata=>$data) {
-					if( $data instanceof Data && $data->hasMethod($vcsl) && $data->$vcsl() )
-					{
-						$dom['.SimplOn.'.$this->getClass().' .SimplOn.'.$keydata] = $data->$caller_method($dom['.SimplOn.'.$this->getClass().' .SimplOn.'.$keydata]);
-					}
-				}
-			}
-  /**/
-		}
+        }
+/**/
+        
 		$dom['body']
             ->prepend(@$add_html['header']?:'')
             ->append(@$add_html['footer']?:'');
@@ -892,7 +893,19 @@ class Element extends BaseObject {
 	
 		// @todo: verify if it can stay this way
 		return $return;
-	}	
+	}
+    
+    public function nestingLevel($nestingLevel = null) {
+        if(isset($nestingLevel)) {
+            $this->nestingLevel = $nestingLevel;
+            foreach($this->datasWith('parent') as $container) {
+                $this->{'O'.$container}()->parent($this);
+            }
+            return $this;
+        } else {
+            return $this->nestingLevel;
+        }
+    }
 	
 	
 	
