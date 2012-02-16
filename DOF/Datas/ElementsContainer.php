@@ -108,12 +108,13 @@ class ElementsContainer extends Data {
            
            $elementsViews = '';
            foreach($this->elements as $element){
-               $elementsViews.= $element->showView($tempTemplate[$element->cssSelector()],true);
+               $elementTemplate=$tempTemplate[$element->cssSelector()];
+               $elementsViews.= $element->showView($elementTemplate,true);
            }
            
            $tempTemplate->html($elementsViews);
         
-            return $dom[$this->cssSelector()].'';
+            return $dom[$this->cssSelector()]->html();
         } else {
            // creates a dummy template
             
@@ -186,13 +187,21 @@ class ElementsContainer extends Data {
 	{
         if($element->getId()){
             $nextStep = $this->parent->encodeURL(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection', array ($element->getId()) ));
+            
+            $this->elements[] = $element;
+            $this->elements[] = $element;
+            $this->elements[] = $element;
+            $elementTemplate = \phpQuery::newDocument($this->parent->showView());
+            $elate = $this->parent->showView().'';
+            $elementTemplate = $elementTemplate[$this->cssSelector().' '.$element->cssSelector().':first'].'';
+            
             return '
                     <div class="SimplOn element-box">
                         <div class="SimplOn actions">
                             <a class="SimplOn lightbox" href="'.$element->encodeURL(array(),'showUpdate',array('',$element->encodeURL(array(),'processUpdate',array($nextStep))  )).'">Edit</a>
                             <a class="SimplOn delete" href="#">X</a>
                         </div>
-                        <div class="SimplOn view">'.$element->showView($this->parent->showView(), true).'</div>
+                        <div class="SimplOn view">'.$element->showView($elementTemplate, true).'</div>
                         <input class="SimplOn input" name="'.$this->name().'[]" type="hidden" value="'.htmlentities($element->getId().'|'.$element->getClass()).'" />
                     </div>
             ';
