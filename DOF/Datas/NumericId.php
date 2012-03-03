@@ -20,6 +20,20 @@ namespace DOF\Datas;
 
 class NumericId extends Id
 {
+	
+	public function showInput($fill)
+	{
+		if($this->val())
+		{
+			return '<input class="'. $this->htmlClasses('input') .'" name="'. $this->name() .'" '.(($fill)?' value="'.$this->val() .'"':'').' type="hidden" />';
+		} else {
+			throw new \DOF\Exception('Cannot show this field with empty value!');
+		}
+	}	
+
+	public function label() {}
+	
+	
 	function val($val = null) {
 		if(isset($val)) {
 			if( is_numeric($val) && is_int($val*1) ) 

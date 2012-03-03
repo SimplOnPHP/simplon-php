@@ -45,7 +45,7 @@ class Element extends BaseObject {
      * detected, as those should be all instances of \DOF\Data\Id).
 	 * @var string
 	 */
-	protected $field_id = 'id';
+	protected $field_id;
 
 	/**
 	 * What DataStorage to use.
@@ -141,9 +141,16 @@ class Element extends BaseObject {
         $this->addOnTheFlyAttributes();
 		
 		$this->assignDatasName();
-        
+		
+		//var_dump($this->{$this->field_id()}());
+
 		// Tells the DOFdata whose thier "container" in case any of it has context dependent info or functions.
 		$this->assignAsDatasParent();
+		
+		
+	
+		
+		
 		
 		//checking if there is already a dataStorage and storage for this element
 		$this->dataStorage->ensureElementStorage($this);
@@ -165,8 +172,43 @@ class Element extends BaseObject {
 	 * @param DOF\DataStorages\DataStorage $specialDataStorage DataStorage to use in uncommon cases.
 	 */
 	public function construct($id_or_array = null, &$specialDataStorage=null) {}
-    
-    function parent(&$parent = null){
+ 
+	
+	
+	/**
+	 *@todo
+	 * 
+	 * check why this can't be changed by 
+	 * $this->field_id = $this->attributesTypes('\\DOF\\Datas\\Id');
+	 * $this->field_id = $this->field_id[0];
+	 * at the _construct Method
+	 * 
+	 * Change the hole field_id concept from string to array
+	 * 
+	 * @param type $val
+	 * @return type 
+	 */
+	public function field_id($val=null){
+		if(!$this->field_id){
+			$this->field_id = $this->attributesTypes('\\DOF\\Datas\\Id');
+			$this->field_id = $this->field_id[0];		
+		}
+		
+		if($val){
+			$this->field_id=$val;
+		}else{
+			return $this->field_id;
+		}
+	}
+
+
+
+
+
+
+
+
+	function parent(&$parent = null){
         if(!$parent){
             return $this->parent;
         } else {
@@ -873,7 +915,8 @@ class Element extends BaseObject {
 	
 	
 	function getId(){
-        return $this->{$this->field_id()}();
+        //var_dump($this->field_id());
+		return $this->{$this->field_id()}();
     }
 	
 	function setId($id){
