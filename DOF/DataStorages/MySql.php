@@ -21,20 +21,66 @@ namespace DOF\DataStorages;
 class MySql extends SQL
 {
 	/*@var db MySqlDataBase */
-
+    
 	public function __construct($host = 'localhost', $dataBase = 'sample_site', $user = 'root',$password = '') {
-		$this->db = new \PDO(
-			'mysql:dbname='.$dataBase.';host='.$host,
-			$user,
-			$password,
-			array(
-				\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES \'UTF8\'',
-				\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-				\PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
-		));
+                    
+//             
+//            
+//try {
+//    $dbh = new \PDO('mysql:host=localhost;dbname=test', $user, $pass);
+//    foreach($dbh->query('SELECT * from FOO') as $row) {
+//        print_r($row);
+//    }
+//    $dbh = null;
+//} catch (PDOException $e) {
+//    print "Error!: " . $e->getMessage() . "<br/>";
+//    die();
+//}           
+//            
+            
+//    die('jaja');        
+            
+            
+            
+            try {   
+                 
+                $this->db = new \PDO(
+                        'mysql:dbname='.$dataBase.';host='.$host,
+                        $user,
+                        $password,
+                        array(
+                                \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES \'UTF8\'',
+                                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                ));
+                
+            } catch (\PDOException $e) {
+                
+                if($e->getCode()==1049){
+                
+                    try {
+                        $this->db = new \PDO("mysql:host=$host", $user, $password);
+
+                        $this->db->exec("CREATE DATABASE `$dataBase`;
+                                CREATE USER '$user'@'localhost' IDENTIFIED BY '$password';
+                                GRANT ALL ON `$dataBase`.* TO '$user'@'localhost';
+                                FLUSH PRIVILEGES;")
+                        or die(print_r($this->db->errorInfo(), true));
+                        
+                        $this->db->exec("use $dataBase")
+                        or die(print_r($this->db->errorInfo(), true));
+
+                    } catch (\PDOException $e) {
+                        throw $e;
+                    }
+                }else{
+                    throw $e;
+                }
+            }
 	}
 	
 	function createDB($db_name) {
-		// CREATES A MYSQL TABLE
+            // CREATES A MYSQL TABLE
+            
 	}
 }
