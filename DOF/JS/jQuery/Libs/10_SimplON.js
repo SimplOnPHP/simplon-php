@@ -10,35 +10,30 @@ var SimplOn = new function() {
 		$('.SimplOn.Data a.SimplOn.lightbox', context.document).click(function(e) {
 			e.preventDefault();
             $('.SimplOnLightbox').removeClass('SimplOnLightbox');
-			var $this = $(this);
-            $this.closest('.SimplOn.Data').find('.SimplOn.input,.SimplOn.Container').addClass('SimplOnLightbox');
-			$this.colorbox({
+			$(this).colorbox({
                 iframe: true, 
                 innerWidth: "80%", 
                 innerHeight: "80%", 
-                href: $this.attr('href')
-            });
+                href: $(this).attr('href')
+            }).closest('.SimplOn.Data').find('.SimplOn.input,.SimplOn.Container').addClass('SimplOnLightbox');
 		});
-        
-		$('a.SimplOn.Data.lightbox', context.document).click(function(e) {
+		
+		$('table.SimplOn a.SimplOn.Action.lightbox', context.document).click(function(e) {
 			e.preventDefault();
             $('.SimplOnLightbox').removeClass('SimplOnLightbox');
-			var $this = $(this);
-            $this.closest('.SimplOn.Data').find('.SimplOn.input,.SimplOn.Container').addClass('SimplOnLightbox');
-			$this.colorbox({
+			$(this).colorbox({
                 iframe: true, 
                 innerWidth: "80%", 
                 innerHeight: "80%", 
-                href: $this.attr('href')
-            });
+                href: $(this).attr('href')
+            }).closest('.SimplOn.tableRow').addClass('SimplOnLightbox');
 		});
 		
 		$('.SimplOn.SelectAction', context.document).click(function(e) {
 			e.preventDefault();
-			var $this = $(this);
 			$.ajax({
 				dataType: 'json',
-				url: $this.attr('href'),
+				url: $(this).attr('href'),
 				success: SimplOn.ajaxHandler,
                 error: function() {
                     alert('Error en recibir los datos!');
@@ -63,12 +58,6 @@ var SimplOn = new function() {
                     error: function() {
                         alert('Error en recibir los datos!');
                     }
-                        /*
-                    function(data) {
-						$('[SimplOnReference='+window.location.hash.substring(1)+']', parent.document).val(data.id)
-							.siblings('.preview').html(data.preview);
-						parent.$.colorbox.close();
-					}*/
 				});
 			});
 
@@ -154,6 +143,18 @@ var SimplOn = new function() {
 			$($element).html(content);
             context.SimplOn.initActions(context);
 		},
+		removeHtml: function (content, $element, context) {
+			if(!context) context = parent;
+            $element = !$element
+				? $element = $('.SimplOnLightbox', context.document)
+				: $($element);
+			$element.remove();
+		},
+		closeLightbox: function (context) {
+			if(!context) context = parent;
+            context.$.colorbox.close();
+		},
+		
 		changePreview: function (content, $element, context) {
 			if(!context) context = parent;
             if(!$element) $element = $('.SimplOnLightbox', context.document).closest('.SimplOn.ElementContainer').find('.preview');
@@ -181,10 +182,6 @@ var SimplOn = new function() {
             else $element = $($element);
             
 			$element.prepend(content);
-		},
-		closeLightbox: function (context) {
-			if(!context) context = parent;
-            context.$.colorbox.close();
 		}
 	};
 	

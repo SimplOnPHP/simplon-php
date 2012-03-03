@@ -25,7 +25,6 @@ class SelectAction extends ElementLink {
 		parent::__construct($label,$sources, 'makeSelection', array(), $flags,null,$searchOp);
 	}
 
-    
 	public function val($sources = null){
 		if(!is_array($sources)) $sources = $this->sources;
         
@@ -35,20 +34,5 @@ class SelectAction extends ElementLink {
 		$content = vsprintf(array_shift($sources), $this->sourcesToValues($sources));
 		
 		return Main::$DEFAULT_RENDERER->link($content, $href, array('class'=>$this->htmlClasses()));
-	} 
-    
-    /*
-
-        $this->element->addOnTheFlyAttribute('parentClass' , new Datas\Hidden(null,'CUSf', $this->parent->getClassName(), '' )    );
-        $this->element->addOnTheFlyAttribute('dataName' , new Datas\Hidden(null,'CUSf', $this->name(), '' )    );
-        $this->element->addOnTheFlyAttribute('parentId' , new Datas\Hidden(null,'CUSf', $this->parent->getId(), '' )    );
-        
-        
-        // http://localhost/SimplON/sample_site/Fe         /2       |callDataMethod/"home    "/"makeSelection"
-        // http://localhost/SimplON/sample_site/parentClass/parentId|callDataMethod/"dataName"/"makeSelection"
-
-     */
-    
-    
-    
+	}
 }

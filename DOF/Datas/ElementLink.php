@@ -44,4 +44,12 @@ class ElementLink extends ComplexData {
 		
 		return Main::$DEFAULT_RENDERER->link($content, $href, array('class'=>$this->htmlClasses()));
 	}
+	
+	function htmlClasses($append = '', $nestingLevel = null) {
+        return parent::htmlClasses('Action '.$append, $nestingLevel);
+    }
+	
+	function cssSelector($append = '', $nestingLevel = null) {
+        return parent::cssSelector('.Action'.$append, $nestingLevel);
+    }
 }

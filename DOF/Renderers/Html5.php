@@ -21,31 +21,27 @@ namespace DOF\Renderers;
 class Html5 {
     
 	static function table_from_elements($elements, $columns = null) {
-		$html = '<table class="SimplOn Elements-Table">';
+		$tbody_html = '<tbody>';
 		foreach($elements as $elementIndex => $element) {
-			if(is_array($columns)){
-				$html .= '<thead>';
-				$html .= '<tr class="SimplOn">';
-				foreach($columns as $column){
-					$data = $element->{'O'.$column}();
-					//@todo: this need to be improved in order to evetuly suport list Datas that are not common to all Elements
-					$html .= '<th class="SimplOn">'.$data->label().'</th>';
-				}
-				$html .= '</tr>';	
-				$html .= '</thead>';
-			}else{
-				$html .= '<tbody>';
-				$html .= '<tr class="'.$element->htmlClasses().'">';	
-			   foreach($element->dataAttributes() as $dataIndex => $dataName) {
-					$data = $element->{'O'.$dataName}();
-					if($data->list()) {
-						$html .= '<td class="'.$data->htmlClasses().'">'.$data->label().'</td>';
-					}
-				}
-				$html .= '</tr>';
-				$html .= '</tbody>';
+			$thead_html = '<thead><tr class="SimplOn">';
+			$tbody_html .= '<tr class="SimplOn tableRow '.$element->getClassName().'">';
+			
+			$columns = is_array($columns) ? $columns : $element->datasWith('list');
+			foreach($columns as $column){
+				$data = $element->{'O'.$column}();
+				//@todo: this need to be improved in order to evetuly suport list Datas that are not common to all Elements
+				$thead_html .= '<th class="SimplOn">'.$data->label().'</th>';
+				$tbody_html.= '<td class="SimplOn tableData '.$data->getClassName().'">'.$data->val().'</td>';
 			}
+			
+			$tbody_html .= '</tr>';
+			$thead_html .= '</tr></thead>';
 		}
+		$tbody_html .= '</tbody>';
+		
+		$html = '<table class="SimplOn Elements-Table">';
+		$html.= $thead_html;
+		$html.= $tbody_html;
 		$html.= '</table>';
 
 		return $html;

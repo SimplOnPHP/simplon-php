@@ -558,7 +558,7 @@ class Element extends BaseObject {
 	public function index() {
 		$footer = '<h1>'.$this->getClass().'</h1>'
 			.'<div id="DOF-create-new" class="DOF section">'.$this->createAction('', array('Create new %s','getClassName')).'</div>'
-			.'<div id="DOF-list" class="DOF section">'.$this->showAdmin().'</div>'
+			.'<div id="DOF-list" class="DOF section">'.$this->showAdmin(null, array(), 'body').'</div>'
 		;
 		return $this->obtainHtml(__FUNCTION__, null, null, array('footer' => $footer));
 	}
@@ -574,9 +574,13 @@ class Element extends BaseObject {
 		return $this->obtainHtml(__FUNCTION__, $template_file, $action);
 	}
 	
-	public function showView($template_file = null, $elementOnly = false)
+	public function showView($template_file = null, $partOnly = false)
 	{
-        return $this->obtainHtml(__FUNCTION__, $template_file, null, null, $elementOnly );
+        return $this->obtainHtml(__FUNCTION__, $template_file, null, null, $partOnly);
+	}
+	
+	public function showDelete($template_file = null, $action = null) {
+		return $this->obtainHtml(__FUNCTION__, $template_file, $action);
 	}
 		
     public function callDataMethod($dataName, $method, array $params = array()){
@@ -641,13 +645,19 @@ class Element extends BaseObject {
         return $this->obtainHtml("showSearch", $template_file, $this->encodeURL(array(),'showSelect'), array('footer' => $this->processSelect(null, 'multi')));
 	}       
            
-  	public function showAdmin($template_file = null, $action = null)
+  	public function showAdmin($template_file = null, $add_html = array(), $partOnly = false)
 	{
-		return $this->obtainHtml("showSearch", $template_file, $this->encodeURL(array(),'showAdmin'), array('footer' => $this->processAdmin(null, 'multi')));
+		return $this->obtainHtml(
+				"showSearch", 
+				$template_file, 
+				$this->encodeURL(array(),'showAdmin'), 
+				array_merge($add_html, array('footer' => $this->processAdmin(null, 'multi'))), 
+				$partOnly
+		);
 	}       
         
 	
-	public function obtainHtml($caller_method, $template = null, $action = null, $add_html = array(), $elementOnly = false)
+	public function obtainHtml($caller_method, $template = null, $action = null, $add_html = array(), $partOnly = false)
 	{
 		//$caller_method = end(// explode('::',$caller_method));
 		if(strpos($caller_method, 'show') === false) {
@@ -683,7 +693,10 @@ class Element extends BaseObject {
             if(empty($template_file)) $template_file = $this->templateFilePath($VCSL);
             
 			$dom = \phpQuery::newDocumentFileHTML(Main::$MASTER_TEMPLATE);
-            $dom['head']->append($this->getCSS($caller_method, 'html') . $this->getJS($caller_method, 'html'));
+            $dom['head']->append(
+					$this->getCSS($caller_method, 'html') .
+					$this->getJS($caller_method, 'html')
+			);
             
 			foreach($this->attributesTypes('\\DOF\\Datas\\File') as $fileData){
 				if( $fileData->$vcsl() ){
@@ -749,10 +762,6 @@ class Element extends BaseObject {
          * 
          */
 
-
-        // fill file with data
-  //*    
-
         if($with_form && $action) {
             $dom['form.SimplOn.Element.'.$this->getClassName()]->attr('action', $action);
         }
@@ -765,25 +774,32 @@ class Element extends BaseObject {
                     $domNode->html($data->$caller_method($domNode) ?: '');
             }
         }
-
-  /*/  
-
-
-        if($vcsl != 'create') {
-            foreach($this as $keydata=>$data) {
-                if( $data instanceof Data && $data->hasMethod($vcsl) && $data->$vcsl() )
-                {
-                    $dom['.SimplOn.'.$this->getClass().' .SimplOn.'.$keydata] = $data->$caller_method($dom['.SimplOn.'.$this->getClass().' .SimplOn.'.$keydata]);
-                }
-            }
-        }
-/**/
         
 		$dom['body']
             ->prepend(@$add_html['header']?:'')
             ->append(@$add_html['footer']?:'');
-	
-		return $elementOnly ? $dom[$this->cssSelector()] : $dom;
+		
+		/*
+		switch($partOnly) {
+			case 0:
+			case false:
+				return $dom;
+				
+			case 1:
+			case true:
+			case 'element':
+				return $dom[$this->cssSelector()];
+				
+			default:
+				return $dom[$partOnly];
+		}*/
+		if(!$partOnly) {
+			return $dom;
+		} else if($partOnly === true OR $partOnly == 'element') {
+			return $dom[$this->cssSelector()];
+		} else {
+			return $dom[$partOnly];
+		}
 	}
 	
 	public function getJS($method, $returnFormat = 'array', $compress = false) {
