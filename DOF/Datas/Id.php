@@ -34,15 +34,7 @@ abstract class Id extends Data
 		$update = true,
 		$required = true;
 	
-	public function showInput($fill)
-	{
-		if($this->val())
-		{
-			return '<input class="'. $this->htmlClasses('input') .'" name="'. $this->name() .'" '.(($fill)?' value="'.$this->val() .'"':'').' type="hidden" />';
-		} else {
-			throw new \DOF\Exception('Cannot show this field with empty value!');
-		}
-	}
+
 	
         /**
          *This needs to be redefined to enshure that REQURED can not be unset since this is an ID
@@ -54,5 +46,5 @@ abstract class Id extends Data
 		$this->required = true;
 	}
 	
-	public function label() {}
+	
 }
