@@ -26,7 +26,7 @@ namespace DOF\Datas;
 * @author	Ruben Schaffer
 * @todo fix so val retuns the value and only the inputmethod retuns the hidden inpunt
 */
-class Id extends Integer
+abstract class Id extends Data
 {
 	protected
 		$view = false,

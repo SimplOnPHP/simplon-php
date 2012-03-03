@@ -41,6 +41,8 @@ class Element extends BaseObject {
 	 * Name of the Data attribute that represents 
 	 * the ID field of the Element
 	 * (ie. SQL primary key's column name). 
+     * @todo enable handle of multiple id fields, that should be automatically
+     * detected, as those should be all instances of \DOF\Data\Id).
 	 * @var string
 	 */
 	protected $field_id = 'id';
@@ -64,6 +66,8 @@ class Element extends BaseObject {
 	* @var string
 	*/
 	protected $filterCriteria;
+    
+	protected $deleteCriteria;
 	
 	/**
      * Represents the nesting level of the element (1 is the ancestor element,
@@ -72,6 +76,8 @@ class Element extends BaseObject {
      * @var integer
      */
     protected $nestingLevel = 1;
+    
+    protected $parent;
 
 	
 	
@@ -106,13 +112,16 @@ class Element extends BaseObject {
 	 * @param mixed $id_or_array ID of the Element or array of Element's Datas values.  
 	 * @param DataStorage $specialDataStorage DataStorage to use in uncommon cases.
 	 */
-	public function __construct($id_or_array = null, &$specialDataStorage=null)
+	public function __construct($id_or_array = null, $storage=null, $specialDataStorage=null)
 	{
-        $this->construct($id_or_array, $specialDataStorage);
+        $this->construct($id_or_array, $storage, $specialDataStorage);
 		
 		//On heirs put here the asignation of DOFdata and attributes
 		
-		if(!$this->storage()) $this->storage(end(explode('::',$this->getClass())));
+		if($storage) 
+            $this->storage($storage);
+        else
+            $this->storage(strtr($this->getClass(), '\\', '_'));
 		
 		//Asings the storage element for the DOFelement. (a global one : or a particular one)
 		if(!$specialDataStorage){
@@ -130,11 +139,11 @@ class Element extends BaseObject {
  
         //Load the attributes on the fly
         $this->addOnTheFlyAttributes();
+		
+		$this->assignDatasName();
         
 		// Tells the DOFdata whose thier "container" in case any of it has context dependent info or functions.
 		$this->assignAsDatasParent();
-		
-		$this->assignDatasName();
 		
 		//checking if there is already a dataStorage and storage for this element
 		$this->dataStorage->ensureElementStorage($this);
@@ -156,6 +165,15 @@ class Element extends BaseObject {
 	 * @param DOF\DataStorages\DataStorage $specialDataStorage DataStorage to use in uncommon cases.
 	 */
 	public function construct($id_or_array = null, &$specialDataStorage=null) {}
+    
+    function parent(&$parent = null){
+        if(!$parent){
+            return $this->parent;
+        } else {
+            $this->parent = $parent;
+            $this->nestingLevel($parent->nestingLevel()+1);
+        }
+    }
 	
 	/**
 	 * Allows some simplicity for coding and declarations, auto makes getters and setters 
@@ -430,10 +448,6 @@ class Element extends BaseObject {
 			
 			//$filterCriteria = $this->filterCriteria;
             
-
-           
-            
-            
 			$patterns = array();
 			$subs = array();
 			foreach( $this->dataAttributes() as $dataName){
@@ -452,6 +466,42 @@ class Element extends BaseObject {
 	
 	
 	
+    
+	public function deleteCriteria($deleteCriteria = null) {
+		if(isset($deleteCriteria)) $this->deleteCriteria = $deleteCriteria;
+		else{
+			
+            //REMOVED so it adapts on every run if necesary
+            if(!isset($this->deleteCriteria))
+				$this->deleteCriteria = $this->defaultDeleteCriteria();
+			
+			//$filterCriteria = $this->filterCriteria;
+            
+			$patterns = array();
+			$subs = array();
+			foreach( $this->dataAttributes() as $dataName){
+				// Regexp thanks to Jens: http://stackoverflow.com/questions/6462578/alternative-to-regex-match-all-instances-not-inside-quotes/6464500#6464500
+				$fc = $this->{'O'.$dataName}()->filterCriteria();
+                if( !empty($fc) ){ 
+                        $patterns[] = '/(\.'.$dataName.')(?=([^"\\\\]*(\\\\.|"([^"\\\\]*\\\\.)*[^"\\\\]*"))*[^"]*$)/';
+                        $subs[] = $fc;
+                    }
+			}
+			
+            //$ret = preg_replace($patterns, $subs, $filterCriteria);
+			return preg_replace($patterns, $subs, $this->deleteCriteria);
+		}
+	}
+	public function defaultDeleteCriteria($operator = 'AND') {
+		//@todo: make a function that returns the data with a specific VCRSL flag ON or OFF
+		$searchables = array();
+		foreach ($this->dataAttributes() as $dataName){
+			if($this->{'O'.$dataName}()->fetch() && ($this->$dataName() !== null && $this->$dataName() !== '') ){
+				$searchables[]=' (.'.$dataName.') ';
+			}
+		}
+		return implode($operator, $searchables);
+	}
 	
 
 
@@ -528,18 +578,7 @@ class Element extends BaseObject {
 	{
         return $this->obtainHtml(__FUNCTION__, $template_file, null, null, $elementOnly );
 	}
-	
-	public function showInputView($template_file = null, $elementOnly = true) // @todo delete
-	{
-        return '
-                <div class="actions">
-                    <a class="lightbox" href="'.$this->encodeURL(array(),'showUpdate',array('',$this->encodeURL(array(),'processUpdate',array($template_file , $this->sid()))  )).'">Edit</a>
-                    <a href="" onclick="">Xyyyy</a>
-                </div>
-                <div class="view">'.$this->showView(Main::$GENERIC_TEMPLATES_PATH . $template_file, $elementOnly).'</div>
-        ';
-	}
-	
+		
     public function callDataMethod($dataName, $method, array $params = array()){
         return call_user_func_array(array($this->{'O'.$dataName}(), $method), $params);
     }
@@ -595,17 +634,9 @@ class Element extends BaseObject {
  	public function showSelect($template_file = null, $action = null, $previewTemplate = null, $sid = null) //@todo delete??????
 	{
         if( $previewTemplate && $sid ){ 
-            
-            //$this->addOnTheFlyAttribute('parentClass' , new Datas\Hidden(null,'CUSf', $parentClass, '' )    );
-            //$this->addOnTheFlyAttribute('attributeElementName' , new Datas\Hidden(null,'CUSf', $attributeElementName, '' )    ); 
-            //$this->addOnTheFlyAttribute('parentSid' , new Datas\Hidden(null,'CUSf', $parentSid, '' )    );
-            
             $this->addOnTheFlyAttribute('previewTemplate' , new Datas\Hidden(null,'CUSf', $previewTemplate, '' )    );
             $this->addOnTheFlyAttribute('sid' , new Datas\Hidden(null,'CUSf', $sid, '' )    );
-            
         }
-        
-        
         
         return $this->obtainHtml("showSearch", $template_file, $this->encodeURL(array(),'showSelect'), array('footer' => $this->processSelect(null, 'multi')));
 	}       
@@ -639,6 +670,9 @@ class Element extends BaseObject {
 		} else if(file_exists($template)){
             $template_file = $template;
             $template = \phpQuery::newDocumentFileHTML($template);
+		} else if(Main::hasNoHtmlTags($template)){
+            $template_file = $template;
+            $template = '';
         } else {
             // is an html snippet
             $template = \phpQuery::newDocument($template);
@@ -662,7 +696,7 @@ class Element extends BaseObject {
 			$html = '';
 			if($with_form) {
 				$html.= '<form class="'.$this->htmlClasses($vcsl).'" '
-				. ' action="'. (@$action ?: $this->encodeURL(Main::$construct_params, 'process'.$VCSL) ) .'" '
+				. ' action="'. htmlentities(@$action ?: $this->encodeURL(Main::$construct_params, 'process'.$VCSL) ) .'" '
 				. ' method="post" '
 				. @$enctype
 				.'>';
@@ -690,7 +724,7 @@ class Element extends BaseObject {
 			}
 			if($with_form) {
 				$html.= '<button name="commit" type="submit">'.($vcsl == 'search' ? 'Search' : 'Save').'</button>'
-				.'<button name="cancel" onclick="javascript:history.back()">Cancel</button>'
+				.'<button class="SimplOn cancel-form" name="cancel">Cancel</button>'
 				.'</div></form>';
 			} else {
 				$html.= '</div>';
@@ -859,8 +893,10 @@ class Element extends BaseObject {
 	}
 	
 	public function templateFilePath($show_type, $alternative = '', $short = false, $template_type = 'html') {
-		return ($short?'':Main::$GENERIC_TEMPLATES_PATH) . '/' . $show_type . '/' .$this->getClass() . $alternative . '.' .$template_type;
-	}	
+        return ($this->parent)
+            ? $this->parent->templateFilePath($show_type, $alternative, $short, $template_type)
+            : ($short?'':Main::$GENERIC_TEMPLATES_PATH) . '/' . $show_type . '/' .$this->getClassName() . $alternative . '.' .$template_type;;
+    }	
 	
 	/**
 	* Returns an array representation of the Element assigning each Data's name

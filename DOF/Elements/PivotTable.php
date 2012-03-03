@@ -16,19 +16,13 @@
 	You should have received a copy of the GNU General Public License
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
-namespace DOF\Datas;
+namespace DOF\Elements;
 
-class DeleteAction extends ElementLink {
-
-	public function __construct($label, array $sources, $flags=null, $searchOp=null){
-		parent::__construct($label, $sources, 'showDelete', array(), $flags,null,$searchOp);
+class PivotTable extends Element {
+	public function construct($id = null, $storage=null, &$specialDataStorage = null) {
+	    $this->id = new \DOF\Datas\NumericId();
+	    $this->parentId = new \DOF\Datas\Integer('','S');
+		$this->childId = new \DOF\Datas\Integer('','S');
+		$this->childClass = new \DOF\Datas\String('','S');
 	}
-	
-	function htmlClasses($append = '', $nestingLevel = null) {
-        return parent::htmlClasses('lightbox '.$append, $nestingLevel);
-    }
-	
-	function cssSelector($append = '', $nestingLevel = null) {
-        return parent::cssSelector('.lightbox'.$append, $nestingLevel);
-    }
 }

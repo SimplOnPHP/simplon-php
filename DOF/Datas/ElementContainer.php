@@ -56,16 +56,13 @@ class ElementContainer extends Data {
 			$this->element->getJS($method)
 		);
 	}
-	
-    
     
     function parent(&$parent = null){
         if(!$parent){
             return $this->parent;
         } else {
-            $this->parent=$parent;
-        
-            $this->element->nestingLevel($parent->nestingLevel()+1);
+            $this->parent = $parent;
+            $this->element->parent($parent);
         }
     }
     
@@ -74,20 +71,21 @@ class ElementContainer extends Data {
 	{
         if($template) {
             $template = Main::loadDom($template);
-            $template = $this->element->showView($template[$this->element->cssSelector()]);
+            $template = $this->element->showView($template[$this->cssSelector().' '.$this->element->cssSelector()],true);
         } else {
            // creates a dummy template
            $element = $this->element->getClass();
            $element = new $element($this->element->getId());
            $template = $element->showView(null, true);
         }
+        $template=$template.'';
         $dom = \phpQuery::newDocument($template);
 
         if(@$element) {
             $this->nestingLevelFix($dom);
         }
         
-        return $dom[$this->element->cssSelector()].'';
+        return $dom.'';
 	}
 	
 	public function val($val = null) {
@@ -121,8 +119,8 @@ class ElementContainer extends Data {
         
         return  '
             <span class="SimplOn label">'.$this->label().'</span>:
-			<a class="SimplOn lightbox" href="'.$this->parent->encodeURL(array(),'callDataMethod',array($this->name(),'showSelect') ).'">List</a>
-            <a class="SimplOn lightbox" href="'.$this->element->encodeURL(array(),'showCreate',array('',$this->element->encodeURL(array(),'processCreate',array($nextStep))  )).'">Add</a>
+			<a class="SimplOn lightbox" href="'.htmlentities($this->parent->encodeURL(array(),'callDataMethod',array($this->name(),'showSelect') )).'">List</a>
+            <a class="SimplOn lightbox" href="'.htmlentities($this->element->encodeURL(array(),'showCreate',array('',$this->element->encodeURL(array(),'processCreate',array($nextStep))  ))).'">Add</a>
             <div class="SimplOn preview">
                 '.$this->showInputView().'
             </div>
@@ -132,13 +130,18 @@ class ElementContainer extends Data {
     
 	public function showInputView()
 	{
+        $template=$this->parent->templateFilePath('View');
+        if( !file_exists($template) ){
+            $this->parent->showView();
+        }
+        
         if($this->element->getId()){
             $nextStep = $this->parent->encodeURL(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection', array ($this->element->getId()) ));
             return '<div class="SimplOn actions">
-                        <a class="SimplOn lightbox" href="'.$this->element->encodeURL(array(),'showUpdate',array('',$this->element->encodeURL(array(),'processUpdate',array($nextStep))  )).'">Edit</a>
+                        <a class="SimplOn lightbox" href="'.htmlentities($this->element->encodeURL(array(),'showUpdate',array('',$this->element->encodeURL(array(),'processUpdate',array($nextStep))  ))).'">Edit</a>
                         <a class="SimplOn delete" href="#">X</a>
                     </div>
-                    <div class="SimplOn view">'.$this->element->showView($this->parent->showView(), true).'</div>
+                    <div class="SimplOn view">'.$this->element->showView($template, true).'</div>
             ';
         }else{
             return '';

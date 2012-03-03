@@ -18,17 +18,16 @@
 */
 namespace DOF\Datas;
 
-class DeleteAction extends ElementLink {
-
-	public function __construct($label, array $sources, $flags=null, $searchOp=null){
-		parent::__construct($label, $sources, 'showDelete', array(), $flags,null,$searchOp);
+class NumericId extends Id
+{
+	function val($val = null) {
+		if(isset($val)) {
+			if( is_numeric($val) && is_int($val*1) ) 
+				$this->val = intval($val);
+			else
+				user_error('Non-numeric value received.');
+		} else {
+			return $this->val;
+		}
 	}
-	
-	function htmlClasses($append = '', $nestingLevel = null) {
-        return parent::htmlClasses('lightbox '.$append, $nestingLevel);
-    }
-	
-	function cssSelector($append = '', $nestingLevel = null) {
-        return parent::cssSelector('.lightbox'.$append, $nestingLevel);
-    }
 }

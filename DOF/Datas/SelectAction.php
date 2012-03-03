@@ -30,7 +30,7 @@ class SelectAction extends ElementLink {
 		if(!is_array($sources)) $sources = $this->sources;
         
 		//$href = $this->parent->encodeURL($id ? array($id) : array(), $this->method,   array( $this->parent->parentClass() )      );
-        $params =  array( $this->parent->dataName(), 'makeSelection', array($this->parent->getId()) ) ;
+        $params =  array( $this->parent->dataName(), 'makeSelection', array($this->parent->getId(), $this->parent->getClass()) ) ;
         $href = Main::encodeURL($this->parent->parentClass(), array($this->parent->parentId()), 'callDataMethod', $params);
 		$content = vsprintf(array_shift($sources), $this->sourcesToValues($sources));
 		

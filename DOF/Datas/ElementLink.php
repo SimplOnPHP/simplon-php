@@ -42,6 +42,6 @@ class ElementLink extends ComplexData {
 		$href = $this->parent->encodeURL($id ? array($id) : array(), $this->method, $this->method_params);
 		$content = vsprintf(array_shift($sources), $this->sourcesToValues($sources));
 		
-		return Main::$DEFAULT_RENDERER->link($content, $href, array('class'=>'DOF '.$this->getClassName()));
+		return Main::$DEFAULT_RENDERER->link($content, $href, array('class'=>$this->htmlClasses()));
 	}
 }

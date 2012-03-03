@@ -110,6 +110,7 @@ class Main {
 		self::setup($ini);
 		
 		if(class_exists(self::$class) || class_exists('\\DOF\\Elements\\'.self::$class)) {
+            $cp = self::$construct_params;
 			$rc = new \ReflectionClass(class_exists(self::$class) ? self::$class : '\\DOF\\Elements\\'.self::$class);
 			if( 
 				isset(self::$method)
@@ -171,28 +172,23 @@ class Main {
 	}
 	
 	static function decodeURL() {
-			
-		/*
-		$basePath = substr($_SERVER['PHP_SELF'], 0, -9);
-		$parts = explode('?',$_SERVER['REQUEST_URI']);
-		
-		$construct_params = explode('/', substr($parts[0], strlen($basePath)) );
-		$class = array_shift($construct_params);
-		
-		$me thod_params = explode('/',$parts[1]);
-		$method = array_shift($method_params);
-		*/		
 		
 		// Parses the URL
 		$f_decode_param = function($p) {
 			$url_decoded = urldecode(urldecode($p));
-			$json_decoded = json_decode($url_decoded);
+            if($url_decoded == 'null') return null;
+			
+            $json_decoded = json_decode($url_decoded);
+			//return $json_decoded;
 			return isset($json_decoded) ? $json_decoded : $url_decoded;
 		};
 		
 		$server_request = $_SERVER['REQUEST_URI'];
 		$query_string = '';
-        $query_separator = '%7C';
+        $query_separator = '|';
+		if(strpos($server_request, $query_separator) === false) {
+            $query_separator = urlencode($query_separator);
+        }
 		if(strpos($server_request, $query_separator) !== false) {
 			$query_string = substr($server_request, strpos($server_request, $query_separator)+strlen($query_separator));
 			$server_request = substr($server_request, 0, strpos($server_request, $query_separator));
@@ -307,5 +303,9 @@ class Main {
     
     static function loadDom($template) {
         return is_file($template) ? \phpQuery::newDocumentFile($template) : \phpQuery::newDocument($template);
+    }
+    
+    static function hasNoHtmlTags($string) {
+        return strpos($string, '<') === false;
     }
 }
