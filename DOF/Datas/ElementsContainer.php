@@ -41,14 +41,17 @@ class ElementsContainer extends Data {
 		 * @var array of DOF\Elements\Element
 		 */
 		$elements = array(),
-            
+        
+		/**
+		 * Pivot element (for pivot tables)
+		 * @var DOF\Elements\Element
+		 */
+		$pivot, 
         
         $allowedClassesInstances = array();
 	
 	public function __construct( array $allowedClassesInstances, $label=null, $flags=null, $element_id=null) {
 		
-        
-            
         if( is_string($allowedClassesInstances[0]) ){
             foreach($allowedClassesInstances as $class){
                 $this->allowedClassesInstances[$class] = new $class;
@@ -61,10 +64,7 @@ class ElementsContainer extends Data {
              // error elements must be an array of valid classes names or Elements
         }
 
-
-        
 		parent::__construct($label,$flags,$element_id);
-        
 	}
 	
 	public function getJS($method) {
@@ -87,9 +87,13 @@ class ElementsContainer extends Data {
             return $this->parent;
         } else {
             $this->parent=$parent;
-        
+            
+            if(!$this->pivot){
+               $this->pivot = new \DOF\Elements\PivotTable(null, 'Pivot_'.$this->parent->getClass().'_'.$this->name); 
+            }
+            
             foreach($this->elements as $element){
-                $element->nestingLevel($parent->nestingLevel()+1);
+                $element->parent($parent);
             }
         
             foreach($this->allowedClassesInstances as $classInstance){
@@ -108,17 +112,19 @@ class ElementsContainer extends Data {
            
            $elementsViews = '';
            foreach($this->elements as $element){
+               $selector = $element->cssSelector();
+               $tmp = $tempTemplate.'';
                $elementTemplate=$tempTemplate[$element->cssSelector()];
                $elementsViews.= $element->showView($elementTemplate,true);
            }
            
            $tempTemplate->html($elementsViews);
         
-            return $dom[$this->cssSelector()]->html();
+            return $tempTemplate->html();
         } else {
            // creates a dummy template
             
-            foreach($this->allowedClassesInstances as $classInstance){
+           foreach($this->allowedClassesInstances as $classInstance){
                $template.= $classInstance->nestingLevel(1)->showView(null, true);
            }
            $dom = \phpQuery::newDocument($template);
@@ -129,46 +135,43 @@ class ElementsContainer extends Data {
 	}
 	
 	public function val($val = null) {
-        /*
 		if($val === '') {
-			$class = $this->element->getClass();
-			$this->element = new $class;
-		} else	if($val !== null) {
-			$this->element->fillFromDSById($val);
+			$this->elements = array();
+            return $this;
+		} else	if(is_array($val)) {
+            $this->elements = array();
+            foreach($val as $str_or_elm) {
+                if(is_string($str_or_elm)) {
+                    list($id, $class) = explode('|', $str_or_elm);
+                    // @todo: understand why the client sends an array with weirdly repeated elements
+                    $this->elements[$str_or_elm] = new $class($id);
+                    $this->elements[$str_or_elm]->parent($this->parent);
+                } else if($str_or_elm instanceof \DOF\Elements\Element) {
+                    $str_or_elm->parent($this->parent);
+                    $this->elements[] = $str_or_elm;
+                }
+            }
+            return $this;
 		} else {
-			return $this->element->getId();
+			return $this->elements;
 		}
-
-        $this->element->addOnTheFlyAttribute('parentClass' , new Hidden(null,'CUSf', $this->parent->getClassName(), '' )    );
-        $this->element->addOnTheFlyAttribute('dataName' , new Hidden(null,'CUSf', $this->name(), '' )    );
-        $this->element->addOnTheFlyAttribute('parentId' , new Hidden(null,'CUSf', $this->parent->getId(), '' )    );
-
-        $this->element->addOnTheFlyAttribute('selectAction' , new SelectAction('', array('Select')) );
-
-
-        // http://localhost/SimplON/sample_site/Fe         /2       |callDataMethod/"home    "/"makeSelection"
-        // http://localhost/SimplON/sample_site/parentClass/parentId|callDataMethod/"dataName"/"makeSelection"
-         * 
-         */
-    
 	}
-	
-	
 
 	
 	function showInput($fill)
 	{
         
-        $ret =  '
-            <span class="SimplOn label">'.$this->label().'</span>:
-			<a class="SimplOn lightbox" href="'.$this->parent->encodeURL(array(),'callDataMethod',array($this->name(),'showSelect') ).'">List</a>
-            Add:     
-            ';
+        $ret =  ' <span class="SimplOn label">'.$this->label().'</span>: <ul>';
                 
         foreach($this->allowedClassesInstances as $classInstance){
             $nextStep = $this->parent->encodeURL(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection'));
-            $ret.='<a class="SimplOn lightbox" href="'.$classInstance->encodeURL(array(),'showCreate',array('',$classInstance->encodeURL(array(),'processCreate',array($nextStep))  )).'">'.$classInstance->getClassName().'</a> ';
+            $ret.='<li>'.$classInstance->getClassName()
+                .' <a class="SimplOn lightbox" href="'.htmlentities($this->parent->encodeURL(array(),'callDataMethod',array($this->name(),'showSelect',array($classInstance->getClass())) )).'">List</a> '
+                .' <a class="SimplOn lightbox" href="'.htmlentities($classInstance->encodeURL(array(),'showCreate',array('',$classInstance->encodeURL(array(),'processCreate',array($nextStep))  ))).'">Add</a> '
+                .'</li>'
+            ;
         }
+        $ret.=  '</ul> ';
         
         $elementsInputViews = array();
         foreach($this->elements as $element) {
@@ -188,17 +191,13 @@ class ElementsContainer extends Data {
         if($element->getId()){
             $nextStep = $this->parent->encodeURL(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection', array ($element->getId()) ));
             
-            $this->elements[] = $element;
-            $this->elements[] = $element;
-            $this->elements[] = $element;
             $elementTemplate = \phpQuery::newDocument($this->parent->showView());
-            $elate = $this->parent->showView().'';
             $elementTemplate = $elementTemplate[$this->cssSelector().' '.$element->cssSelector().':first'].'';
             
             return '
                     <div class="SimplOn element-box">
                         <div class="SimplOn actions">
-                            <a class="SimplOn lightbox" href="'.$element->encodeURL(array(),'showUpdate',array('',$element->encodeURL(array(),'processUpdate',array($nextStep))  )).'">Edit</a>
+                            <a class="SimplOn lightbox" href="'.htmlentities($element->encodeURL(array(),'showUpdate',array('',$element->encodeURL(array(),'processUpdate',array($nextStep))  ))).'">Edit</a>
                             <a class="SimplOn delete" href="#">X</a>
                         </div>
                         <div class="SimplOn view">'.$element->showView($elementTemplate, true).'</div>
@@ -213,23 +212,20 @@ class ElementsContainer extends Data {
     
     
     /// use a search element and add the onthefly params to the search element
-  	public function showSelect()
-	{
-        $element = $this->element->getClass();
-        $element = new $element();
+  	public function showSelect($class) {
+        $element = new $class();
         $element->fillFromRequest();
+        $element->parent($this->parent());
         
         $element->addOnTheFlyAttribute('parentClass' , new Hidden(null,'CUSf', $this->parent->getClassName(), '' )    );
         $element->addOnTheFlyAttribute('dataName' , new Hidden(null,'CUSf', $this->name(), '' )    );
         $element->addOnTheFlyAttribute('parentId' , new Hidden(null,'CUSf', $this->parent->getId(), '' )    );
         $element->addOnTheFlyAttribute('selectAction' , new SelectAction('', array('Select')) );
-        // http://localhost/SimplON/sample_site/Fe         /2       |callDataMethod/"home    "/"makeSelection"
-        // http://localhost/SimplON/sample_site/parentClass/parentId|callDataMethod/"dataName"/"makeSelection"
    
         return $element->obtainHtml(
                 "showSearch", 
                 $element->templateFilePath('Search'), 
-                $this->parent->encodeURL(array(),'callDataMethod',array($this->name(), 'showSelect') ),
+                $this->parent->encodeURL(array(),'callDataMethod',array($this->name(), 'showSelect', array($class)) ),
                 array('footer' => $element->processSelect())
         );
 	}
@@ -268,5 +264,47 @@ class ElementsContainer extends Data {
         header('Content-type: application/json');
         echo json_encode($return);
     }
+    
+    
+    
+	
+
+	public function doRead(){}
+	public function postRead(){
+        // loads up
+        $this->pivot->parentId($this->parent->getId());
+        
+        //delete all elements in the table
+        $array_elements = $this->pivot->dataStorage()->readElements($this->pivot);
+        
+        $this->elements = array();
+        foreach($array_elements as $data) {
+            $element = new $data['childClass']($data['childId']);
+            $element->parent($this->parent);
+            $this->elements[] = $element;
+        }
+	}
+	
+	public function doCreate(){}
+	public function postCreate(){
+        $this->pivot->parentId($this->parent->getId());
+        
+        //delete all elements in the table
+        $this->pivot->dataStorage()->delete($this->pivot);
+        
+        // create
+        foreach($this->elements as $element) {
+            $this->pivot->childId($element->getId());
+            $this->pivot->childClass($element->getClass());
+            $this->pivot->create();
+        }
+    }
+		
+	public function doUpdate(){
+        // update
+        $this->postCreate();
+	}
+
+	public function doSearch(){}
     
 }

@@ -19,6 +19,19 @@ var SimplOn = new function() {
                 href: $this.attr('href')
             });
 		});
+        
+		$('a.SimplOn.Data.lightbox', context.document).click(function(e) {
+			e.preventDefault();
+            $('.SimplOnLightbox').removeClass('SimplOnLightbox');
+			var $this = $(this);
+            $this.closest('.SimplOn.Data').find('.SimplOn.input,.SimplOn.Container').addClass('SimplOnLightbox');
+			$this.colorbox({
+                iframe: true, 
+                innerWidth: "80%", 
+                innerHeight: "80%", 
+                href: $this.attr('href')
+            });
+		});
 		
 		$('.SimplOn.SelectAction', context.document).click(function(e) {
 			e.preventDefault();
@@ -74,7 +87,17 @@ var SimplOn = new function() {
 					}*/
 				});
 			});
-		}
+            
+            $('button.SimplOn.cancel-form').click(function(e){
+               e.preventDefault();
+               SimplOn.commands.closeLightbox();
+            });
+		} else {
+            $('button.SimplOn.cancel-form').click(function(e){
+               e.preventDefault();
+               window.history.back();
+            });
+        }
 
 		$('.SimplOn.showSearch form.SimplOn.search').each(function() {
 			var $list = $(this).siblings('.SimplOn.list');

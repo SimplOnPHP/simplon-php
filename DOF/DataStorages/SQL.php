@@ -24,15 +24,17 @@ abstract class SQL extends DataStorage
 	public $db;
 	
 	static $typesMap = array(
-		'Id'		=> 'int(11) auto_increment',
-		'Integer'	=> 'int(11)',
-		'Float'  	=> 'float',
+		'NumericId'		=> 'int(11) auto_increment',
+		'StringId'    	=> 'varchar(240)',
+        
+		'Integer'   	=> 'int(11)',
+		'Float'         => 'float',
 		
-		'String'	=> 'varchar(240)',
+		'String'    	=> 'varchar(240)',
 		
-		'Date'		=> 'date',
+		'Date'          => 'date',
 				
-		'HTMLText'	=> 'text',
+		'HTMLText'      => 'text',
 		'ElementContainer' => '_ForeignKey_',
 	);
 	
@@ -115,7 +117,7 @@ abstract class SQL extends DataStorage
 		
 		$alters = array();
 		
-		foreach($this->db->query('SHOW COLUMNS FROM '.$element->storage())->fetchAll() as $dbColumn){
+		foreach($this->db->query('SHOW COLUMNS FROM `'.$element->storage().'`')->fetchAll() as $dbColumn){
 			if(!in_array($dbColumn['Field'], $elementDataKeys)) {
 				// DROP COLUMN
 				$alters[] = 'DROP COLUMN `'.$dbColumn['Field'].'`';
@@ -124,7 +126,7 @@ abstract class SQL extends DataStorage
 			}
 		}
 		
-		foreach($this->db->query('SHOW INDEXES FROM '.$element->storage())->fetchAll() as $dbIndex){
+		foreach($this->db->query('SHOW INDEXES FROM `'.$element->storage().'`')->fetchAll() as $dbIndex){
 			//if( $dbIndex['Column_name']!=$element->field_id() && !$element->{'O'.$dbIndex['Column_name']}()->search() ) {
 				// DROP INDEX
 				$alters[] = 'DROP INDEX `'.$dbIndex['Key_name'].'`';
@@ -162,7 +164,7 @@ abstract class SQL extends DataStorage
 	public function isValidElementStorage(\DOF\Elements\Element &$element) {
         
 		// Verify that we have the same Datas in the element and in the DB
-		$dbColumns = $this->db->query('SHOW COLUMNS FROM '.$element->storage(), \PDO::FETCH_COLUMN,0)->fetchAll();
+		$dbColumns = $this->db->query('SHOW COLUMNS FROM `'.$element->storage().'`', \PDO::FETCH_COLUMN,0)->fetchAll();
 		$elementData = $this->getDataTypes($element);
 		$return = true;
 		
@@ -170,7 +172,7 @@ abstract class SQL extends DataStorage
 		if( count($dbColumns) == count($elementData) && !array_diff($dbColumns, array_keys($elementData)) )
 		{
 			
-			foreach($this->db->query('SHOW COLUMNS FROM '.$element->storage())->fetchAll() as $dbColumn){
+			foreach($this->db->query('SHOW COLUMNS FROM `'.$element->storage().'`')->fetchAll() as $dbColumn){
 				
 				//Check Auto-increment
 				if( (
@@ -241,32 +243,23 @@ abstract class SQL extends DataStorage
 	}
 
 	public function createTable($element) {
-		// $this->db->query('CREATE SCHEMA `'.$element->storage().'`');
-		/* *
-		foreach($this->getDataTypes($element) as $data => $type) {
-			$q_data_part[]= "`$data` $type";
-		}
-		foreach($element->dataAttributes() as $dataName) {
-			if($element->{'O'.$dataName}()->search()) {
-				$q_index_part[]= "`Index$dataName` (`$dataName` ASC)";
-			}
-		}
-		if(isset($q_index_part)) {
-			$q_index_part = ',INDEX '.implode(', ',$q_index_part);
-		}
-		/*/
+		
+        /**
+         * At this point the table is created with the minimum columns (primary keys)
+         * and the rest of the columns are added later with alterTable method
+         */
+        
 		$dataType=$this->getDataTypes($element);
 		$dataType=$dataType[$element->field_id()];
 		
 		$q_data_part[]= ' `'.$element->field_id().'` '.$dataType.' NOT NULL';
-			 
-		/* */
+		
 		$q = 'CREATE TABLE `'.$element->storage().'` (
 			'.implode(', ',$q_data_part).',
 			PRIMARY KEY (`'. $element->field_id() .'`)
 			'.@$q_index_part.'
 		)';
-		
+        
 		if($this->db->query($q)) {
 			return $this->alterTable($element);
 		} else {
@@ -322,6 +315,11 @@ abstract class SQL extends DataStorage
 		}
 		
 		return $result;
+	}
+	
+	public function delete(\DOF\Elements\Element &$element) {
+        $query_string = 'DELETE FROM '.$element->storage().' WHERE '.$this->filterCriteria($element->deleteCriteria());
+		return $this->db->prepare($query_string)->execute($this->obtainValues($element, $query_string));
 	}
 	
 	public function deleteElement(\DOF\Elements\Element &$element) {
@@ -437,21 +435,7 @@ abstract class SQL extends DataStorage
 		$query = $this->db->prepare($query_string);
 		
 		// Obtains values
-		$values = array();
-		foreach($element->processData('doSearch') as $dataInfo){
-			foreach($dataInfo as $fieldInfo){
-				$bindable_values = array(
-					':'.$fieldInfo[0]		 => $fieldInfo[2],
-					':RLLIKE__'.$fieldInfo[0]	 => '%'.$fieldInfo[2].'%',
-					':LLIKE__'.$fieldInfo[0]	 => '%'.$fieldInfo[2],
-					':RLIKE__'.$fieldInfo[0]	 => $fieldInfo[2].'%',
-				);
-				foreach($bindable_values as $label => $value) {
-					if(strpos($query_string, $label) !== false)
-						$values[$label] = $value;
-				}
-			}
-		}
+		$values = $this->obtainValues($element, $query_string);
 		
 		// Executes the query and returns the results
 		$query->execute($values);
@@ -490,8 +474,10 @@ abstract class SQL extends DataStorage
 		return $return;
 	}
 
-	public function filterCriteria(\DOF\Elements\Element &$element){
-		$filterCriteria = $element->filterCriteria();
+	public function filterCriteria($element_or_criteria){
+        $filterCriteria = is_string($element_or_criteria)
+            ? $element_or_criteria
+            : $element_or_criteria->filterCriteria();
 		
 		$patterns = array();
 		$subs = array();
@@ -520,7 +506,24 @@ abstract class SQL extends DataStorage
 		return preg_replace($patterns, $subs, $filterCriteria);
 	}
 
-
+    function obtainValues(\DOF\Elements\Element &$element, $query_string) {
+        $values = array();
+		foreach($element->processData('doSearch') as $dataInfo){
+			foreach($dataInfo as $fieldInfo){
+				$bindable_values = array(
+					':'.$fieldInfo[0]		 => $fieldInfo[2],
+					':RLLIKE__'.$fieldInfo[0]	 => '%'.$fieldInfo[2].'%',
+					':LLIKE__'.$fieldInfo[0]	 => '%'.$fieldInfo[2],
+					':RLIKE__'.$fieldInfo[0]	 => $fieldInfo[2].'%',
+				);
+				foreach($bindable_values as $label => $value) {
+					if(strpos($query_string, $label) !== false)
+						$values[$label] = $value;
+				}
+			}
+		}
+        return $values;
+    }
 
 
 

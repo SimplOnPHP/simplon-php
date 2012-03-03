@@ -20,47 +20,47 @@ namespace DOF\Renderers;
 
 class Html5 {
     
-        static function table_from_elements($elements, $columns = null) {
-            $headers = array();
-            $contents = array();
-            foreach($elements as $element) {
-                $datas = array();
-                
-                
-                if(is_array($columns) ){
-                   foreach($columns as $column){
-                       $data = $element->{'O'.$column}();
-                       
-                       //@todo: this need to be improved in order to evetuly suport list Datas that are not common to all Elements
-                       $headers[$column] = $data->label();
-                       $datas[$column] = $data->val();                      
-                   }
-                }else{
-                   foreach($element->dataAttributes() as $dataName) {
-                        $data = $element->{'O'.$dataName}();
-                        if($data->list()) {
-                            $headers[$dataName] = $data->label();
-                            $datas[$dataName] = $data->val();
-                        }
-                    }                 
-                }
-                
-                $contents[] = $datas;
-            }
-            
-            return self::table($contents, array($headers));
-        }
+	static function table_from_elements($elements, $columns = null) {
+		$html = '<table class="SimplOn Elements-Table">';
+		foreach($elements as $elementIndex => $element) {
+			if(is_array($columns)){
+				$html .= '<thead>';
+				$html .= '<tr class="SimplOn">';
+				foreach($columns as $column){
+					$data = $element->{'O'.$column}();
+					//@todo: this need to be improved in order to evetuly suport list Datas that are not common to all Elements
+					$html .= '<th class="SimplOn">'.$data->label().'</th>';
+				}
+				$html .= '</tr>';	
+				$html .= '</thead>';
+			}else{
+				$html .= '<tbody>';
+				$html .= '<tr class="'.$element->htmlClasses().'">';	
+			   foreach($element->dataAttributes() as $dataIndex => $dataName) {
+					$data = $element->{'O'.$dataName}();
+					if($data->list()) {
+						$html .= '<td class="'.$data->htmlClasses().'">'.$data->label().'</td>';
+					}
+				}
+				$html .= '</tr>';
+				$html .= '</tbody>';
+			}
+		}
+		$html.= '</table>';
+
+		return $html;
+	}
     
 	static function table(array $contents, array $headers = array(), array $footers = array(), array $extra = array()) {
-		$table_classes = array_merge(array('SimplOn', 'table'), @$extra['table_classes'] ?: array());
-		$html = '<table class="'.implode(' ',$table_classes).'">';
+        $html = '<table class="SimplOn table '.@$extra['table_classes'].'">';
+        
 		foreach(array('headers' => 'thead', 'contents' => 'tbody', 'footers' => 'tfoot') as $dataVar => $tag) {
 			$html .= '<'.$tag.'>';
                         $cell_tag = $tag == 'thead' ? 'th' : 'td';
-			foreach($$dataVar as $row){
-				$html .= '<tr>';	
-				foreach($row as $class => $cell){
-					$html .= '<'.$cell_tag.' class="SimplOn-td-'.$class.'">'.$cell.'</td>';
+			foreach($$dataVar as $ri => $row){
+				$html .= '<tr class="'.@$extra['tr_classes'][$ri].'">';	
+				foreach($row as $di => $cell){
+					$html .= '<'.$cell_tag.' class="'.@$extra['td_classes'][$ri][$di].'">'.$cell.'</td>';
 				}
 				$html .= '</tr>';
 			}

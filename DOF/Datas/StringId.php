@@ -18,17 +18,14 @@
 */
 namespace DOF\Datas;
 
-class DeleteAction extends ElementLink {
-
-	public function __construct($label, array $sources, $flags=null, $searchOp=null){
-		parent::__construct($label, $sources, 'showDelete', array(), $flags,null,$searchOp);
-	}
-	
-	function htmlClasses($append = '', $nestingLevel = null) {
-        return parent::htmlClasses('lightbox '.$append, $nestingLevel);
-    }
-	
-	function cssSelector($append = '', $nestingLevel = null) {
-        return parent::cssSelector('.lightbox'.$append, $nestingLevel);
-    }
+/**
+* ID para las tablas
+* --- No imprime un label y manda un input hidden.
+*
+* @version	1.0
+* @author	Ruben Schaffer
+* @todo fix so val retuns the value and only the inputmethod retuns the hidden inpunt
+*/
+class StringId extends Id
+{
 }

@@ -47,7 +47,7 @@ class Search extends Element
 
 
 
-	public function __construct($id_or_elementsTypes = null, &$specialDataStorage=null)
+	public function __construct($id_or_elementsTypes = null, $storage=null, &$specialDataStorage=null)
 	{
 		$this->construct($id_or_elementsTypes, $specialDataStorage);
 		
