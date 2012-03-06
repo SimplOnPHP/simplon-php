@@ -115,12 +115,25 @@ class ElementContainer extends Data {
 	
 	function showInput($fill)
 	{
-        $nextStep = $this->parent->encodeURL(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection'));
-        
+        $nextStep = $this->parent->encodeURLfragment(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection'));
+        $addHref = htmlentities(
+			$this->element->encodeURL(
+				array(),
+				'showCreate',
+				array(
+					'',
+					$this->element->encodeURLfragment(
+						array(),
+						'processCreate',
+						array($nextStep)
+					)
+				)
+			)
+		);
         return  '
             <span class="SimplOn label">'.$this->label().'</span>:
 			<a class="SimplOn lightbox" href="'.htmlentities($this->parent->encodeURL(array(),'callDataMethod',array($this->name(),'showSelect') )).'">List</a>
-            <a class="SimplOn lightbox" href="'.htmlentities($this->element->encodeURL(array(),'showCreate',array('',$this->element->encodeURL(array(),'processCreate',array($nextStep))  ))).'">Add</a>
+            <a class="SimplOn lightbox" href="'.$addHref.'">Add</a>
             <div class="SimplOn preview">
                 '.$this->showInputView().'
             </div>
@@ -136,9 +149,23 @@ class ElementContainer extends Data {
         }
         
         if($this->element->getId()){
-            $nextStep = $this->parent->encodeURL(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection', array ($this->element->getId()) ));
-            return '<div class="SimplOn actions">
-                        <a class="SimplOn lightbox" href="'.htmlentities($this->element->encodeURL(array(),'showUpdate',array('',$this->element->encodeURL(array(),'processUpdate',array($nextStep))  ))).'">Edit</a>
+            $nextStep = $this->parent->encodeURLfragment(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection', array ($this->element->getId()) ));
+            $href = htmlentities(
+					$this->element->encodeURL(
+							array(),
+							'showUpdate',
+							array(
+								'',
+								$this->element->encodeURLfragment(
+										array(),
+										'processUpdate',
+										array($nextStep)
+								)
+							)
+					)
+			);
+			return '<div class="SimplOn actions">
+                        <a class="SimplOn lightbox" href="'.$href.'">Edit</a>
                         <a class="SimplOn delete" href="#">X</a>
                     </div>
                     <div class="SimplOn view">'.$this->element->showView($template, true).'</div>
@@ -218,5 +245,4 @@ class ElementContainer extends Data {
 
         
     }
-    
 }

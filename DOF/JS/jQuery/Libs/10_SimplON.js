@@ -1,8 +1,10 @@
 var SimplOn = new function() {
 	this.init = function() {
-        this.context = window.document;
+		this.context = window.document;
 		this.initActions();
 		this.initForms();
+		
+		$('input,button',this.context).first().focus();
 	};
 	
 	this.initActions = function (context) {
@@ -29,7 +31,21 @@ var SimplOn = new function() {
             }).closest('.SimplOn.tableRow').addClass('SimplOnLightbox');
 		});
 		
-		$('.SimplOn.SelectAction', context.document).click(function(e) {
+		$('a.SimplOn.ajax', context.document).click(function(e) {
+            e.preventDefault();
+            $('.SimplOnLightbox').removeClass('SimplOnLightbox');
+			$.ajax({
+				url: $(this).attr('href'),
+				dataType: 'json',
+				success: SimplOn.ajaxHandler,
+				error: function() {
+					alert('Error en recibir los datos!');
+				}
+			});
+			$(this).closest('.SimplOn.tableRow').addClass('SimplOnLightbox');
+		});
+		
+		$('a.SimplOn.SelectAction', context.document).click(function(e) {
 			e.preventDefault();
 			$.ajax({
 				dataType: 'json',
@@ -41,7 +57,7 @@ var SimplOn = new function() {
 			});
 		});
         
-        $('.SimplOn.delete', context.document).click(function(e) {
+        $('a.SimplOn.delete', context.document).click(function(e) {
             e.preventDefault();
             SimplOn.commands.changeValue('', $(this).closest('.SimplOn.Data').find('.SimplOn.input'));
             SimplOn.commands.changeHtml('', $(this).closest('.SimplOn.preview'));
@@ -50,7 +66,7 @@ var SimplOn = new function() {
 	
 	this.initForms = function () {
 		if(parent !== window) {
-			$('form.SimplOn.create, form.SimplOn.update').each(function() {
+			$('form.SimplOn.create, form.SimplOn.update, form.SimplOn.delete').each(function() {
 				$(this).ajaxForm({
 					url: $(this).attr('action'),
 					dataType: 'json',
@@ -143,7 +159,7 @@ var SimplOn = new function() {
 			$($element).html(content);
             context.SimplOn.initActions(context);
 		},
-		removeHtml: function (content, $element, context) {
+		removeHtml: function ($element, context) {
 			if(!context) context = parent;
             $element = !$element
 				? $element = $('.SimplOnLightbox', context.document)

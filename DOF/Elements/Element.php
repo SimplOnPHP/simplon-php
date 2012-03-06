@@ -87,7 +87,9 @@ class Element extends BaseObject {
 	* DataStorage more than once.
 	* @var boolean
 	*/
-	protected $storageChecked;	
+	protected $storageChecked;
+	
+	var $quickDelete;
 	
 	
 //------------------------------------------Performance	
@@ -129,6 +131,8 @@ class Element extends BaseObject {
 		}else{
 			$this->dataStorage=&$specialDataStorage;
 		}
+		
+		if(!$this->quickDelete) $this->quickDelete = Main::$QUICK_DELETE;
 		
 		if( !isset($this->viewAction) )$this->viewAction = new Datas\ViewAction('', array('View'));
 		if( !isset($this->createAction) )$this->createAction = new Datas\CreateAction('', array('Create'));
@@ -357,12 +361,10 @@ class Element extends BaseObject {
 	}
 	
 	public function delete() {
-		return 
-			$this->processData('preDelete') 
-			&& 
-			$this->dataStorage->deleteElement($this)
-			&& 
-			$this->processData('postDelete');
+		$this->processData('preDelete');
+		$return = $this->dataStorage->deleteElement($this);
+		$this->processData('postDelete');
+		return $return;
 	}
 	
 	/*@todo determina if this method is neceary or not
@@ -404,9 +406,35 @@ class Element extends BaseObject {
 		}
 	}
 
-	function processDelete() {
+	function processDelete($nextStep = null, $format = 'json') {
 		if($this->delete()) {
-			header('Location: '.$this->encodeURL(array(), 'showCreate'));
+			switch($format) {
+				case 'json':
+					$return = array(
+						'status' => true,
+						'type' => 'commands',
+						'data' => array(
+							array(
+								'func' => 'removeHtml',
+							),
+							array(
+								'func' => 'closeLightbox',
+							),
+						)
+					);
+
+					header('Content-type: application/json');
+					echo json_encode($return);
+					exit;
+					
+				case 'html':
+					if(empty($nextStep)) {
+						header('Location: '.Main::encodeURL($this->getClass()));
+					} else {
+						header('Location: '.$nextStep);
+					}
+					exit;
+			}
 		} else {
 			// @todo: error handling
 			user_error('Cannot delete in DS!', E_USER_ERROR);
@@ -622,7 +650,10 @@ class Element extends BaseObject {
 	}
 	
 	public function showDelete($template_file = null, $action = null) {
-		return $this->obtainHtml(__FUNCTION__, $template_file, $action);
+		return $this->obtainHtml(__FUNCTION__, $template_file, $action, array(
+			'header' => '<p>Following element is going to be removed:'.$this->showView(null,true).'</p>',
+			'footer' => '<p class="warning">This operation cannot be undone!</p>',
+		));
 	}
 		
     public function callDataMethod($dataName, $method, array $params = array()){
@@ -708,7 +739,7 @@ class Element extends BaseObject {
 		} else {
 			$VCSL = substr($caller_method, strlen('show'));
 			$vcsl = strtolower($VCSL);
-			$with_form = in_array($vcsl, array('create', 'update', 'search'));
+			$with_form = in_array($vcsl, array('create', 'update', 'delete', 'search'));
 		}
         
 		$overwrite_template = Main::$OVERWRITE_LAYOUT_TEMPLATES;
@@ -778,7 +809,7 @@ class Element extends BaseObject {
 				}
 			}
 			if($with_form) {
-				$html.= '<button name="commit" type="submit">'.($vcsl == 'search' ? 'Search' : 'Save').'</button>'
+				$html.= '<button name="commit" type="submit">'.$VCSL.'</button>'
 				.'<button class="SimplOn cancel-form" name="cancel">Cancel</button>'
 				.'</div></form>';
 			} else {
@@ -796,12 +827,9 @@ class Element extends BaseObject {
         }
 
         /**
-         * 
          * @todo change the way HTL is filled instead of cicle triugh the datas 
          * and filling the template cicle trough the template and run elment's 
          * or data's methods as required.
-         * 
-         * 
          */
 
         if($with_form && $action) {
@@ -944,6 +972,12 @@ class Element extends BaseObject {
 	
 //------------------------------- ????	
 
+	function encodeURLfragment(array $construct_params = array(), $method = null, array $method_params = array()) {
+        if( empty($construct_params) && $this->getId() ) {
+            $construct_params = array( $this->getId() );
+        }
+		return Main::encodeURLfragment($this->getClass(), $construct_params, $method, $method_params);
+	}
 	function encodeURL(array $construct_params = array(), $method = null, array $method_params = array()) {
         if( empty($construct_params) && $this->getId() ) {
             $construct_params = array( $this->getId() );

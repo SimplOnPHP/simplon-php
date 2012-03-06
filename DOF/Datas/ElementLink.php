@@ -35,11 +35,7 @@ class ElementLink extends ComplexData {
 	public function val($sources = null){
 		if(!is_array($sources)) $sources = $this->sources;
 		
-		$id = $this->parent->hasMethod($this->parent->field_id())
-			? $this->parent->{$this->parent->field_id()}()
-			: null;
-		
-		$href = $this->parent->encodeURL($id ? array($id) : array(), $this->method, $this->method_params);
+		$href = $this->parent->encodeURL(array(@$this->parent->getId()), $this->method, $this->method_params);
 		$content = vsprintf(array_shift($sources), $this->sourcesToValues($sources));
 		
 		return Main::$DEFAULT_RENDERER->link($content, $href, array('class'=>$this->htmlClasses()));
