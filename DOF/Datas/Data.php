@@ -148,6 +148,10 @@ abstract class Data extends BaseObject {
 	
 	
 	
+	public $tip;
+	public $tipInline;
+	public $validationRequired = 'This field is required';
+	
 	/**
 	 * search operands:
 	 * >
@@ -373,8 +377,14 @@ abstract class Data extends BaseObject {
 	 * @param $prefijoNombre =null valor que se puede usar para distinguir los diversos de dos elementos
 	 * @return ing
 	 */
-	public function inputName(){
-		return @$this->inputName ?: $this->name();
+	public function inputName($inputName=null){
+		if($inputName){
+			$this->inputName = $inputName;
+		}else{
+			return @$this->inputName ?: $this->name();
+		}
+		
+		
 	}
 	
 	function showView($template = null){
@@ -407,5 +417,14 @@ abstract class Data extends BaseObject {
 	 */
 	public function label(){
 		return isset($this->label) ? $this->label : $this->getClassName();
+	}
+		
+	public function validationMessages(){
+
+		if( empty ($this->val) && ($this->required && !@$this->autoIncrement) ) {
+			$ret[]=$this->validationRequired;
+		}
+		
+		return $ret;
 	}
 }

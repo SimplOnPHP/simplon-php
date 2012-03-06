@@ -28,18 +28,19 @@ namespace DOF\Datas;
 */
 abstract class Id extends Data
 {
+	
+	
 	protected
 		$view = false,
 		$create = false,
 		$update = true,
 		$required = true;
-	
 
 	
-        /**
-         *This needs to be redefined to enshure that REQURED can not be unset since this is an ID
-         * @param type $flags 
-         */
+	/**
+	 *This needs to be redefined to enshure that REQURED can not be unset since this is an ID
+	 * @param type $flags 
+	 */
 	function dataFlags($flags)
 	{
 		parent::dataFlags($flags);

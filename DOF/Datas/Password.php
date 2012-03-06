@@ -25,13 +25,69 @@ class Password extends String {
 			
 		
 		$view = False,
+		$list = False,
+		$required = True,
 		$search = False;
 	
-	public function showInput($fill) {
+	public function showInput($fill=false) {
         $data_id = 'DOF_'.$this->instanceId();
 		return 
             ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
-            '<input id="'.$data_id.'" class="'.$this->htmlClasses('input').'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="password" />';
+            '<input id="'.$data_id.'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="password" />';
+	}
+	
+	
+	function showUpdate(){
+		$name=$this->inputName();
+		$ret = '';
+		
+		$this->inputName($name.'[current]');
+		$ret .= $this->showInput();
+		
+		$this->inputName($name.'[new]');
+		$ret .= $this->showInput();
+		
+		$this->inputName($name.'[confirm]');
+		$ret .= $this->showInput();
+		
+		$this->inputName($name);
+		
+		return $ret;
+		
+	}	
+
+	function showCreate(){
+		$name=$this->inputName();
+		$ret = '';
+		
+		$this->inputName($name.'[new]');
+		$ret .= $this->showInput();
+		
+		$this->inputName($name.'[confirm]');
+		$ret .= $this->showInput();
+		
+		$this->inputName($name);
+		
+		return $ret;
+		
+	}	
+	
+	
+	
+	function val($val = null){
+		if( !$val ){
+			return $this->val;
+		}else{
+			if(is_array($val)){
+				$this->current=@$val['current'];
+				$this->val=@$val['new'];
+				$this->confirm=@$val['confirm'];
+				
+				$this->encriptedFlag=False;
+			}else{
+				$this->val=$val;
+			}
+		}
 	}
 	
 	
@@ -43,7 +99,6 @@ class Password extends String {
 	 * When reading from the DB, the encriptedFlag will be set to true, 
 	 * other interactions will have to check and set the flag.
 	 */
-	
 	
 	public function doRead()
 	{

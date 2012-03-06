@@ -32,6 +32,6 @@ class Float extends Data {
 	
 	public function showInput($fill)
 	{
-		return '<input class="'.$this->htmlClasses('input').'" name="'.$this->field().'" '.(($fill)?'value="'.$this->val().'"':'').' />';
+		return '<input name="'.$this->field().'" '.(($fill)?'value="'.$this->val().'"':'').' />';
 	}
 }

@@ -97,6 +97,13 @@ class Element extends BaseObject {
 	* @var array containing objects of type DOF\Datas\Data
 	*/
 	protected $dataAttributes;
+	
+	
+	
+	
+	
+	protected $validationMessages = array();
+	
 //-----------------------------------------------------------------------------------------	
 //------------------------------ METHODS --------------------------------------------------	
 //-----------------------------------------------------------------------------------------
@@ -203,9 +210,26 @@ class Element extends BaseObject {
 
 
 
+	
+	function validateRequiredDatas(){
+		$requiredDatas = $this->datasWith('required');
+		foreach($requiredDatas as $requiredData){
+			if( !$this->$requiredData() && !@$this->$requiredData->autoIncrement()  ){
+				$this->validationMessages[$requiredData][] = $this->$requiredData->validationRequired();
+			}
 
+		}
+	}
+	
 
+	function addValidationMessage($dataname,$message){
+		$this->validationMessages[$dataname][]=$message;
+		
+	}
 
+	function clearValidationMessages($dataname){
+		$this->validationMessages[$dataname]=array();
+	}
 
 
 	function parent(&$parent = null){
@@ -291,6 +315,7 @@ class Element extends BaseObject {
 				$this->$dataName($value);
 			}
 		}
+		
 	}
 	
 	/**
@@ -302,8 +327,8 @@ class Element extends BaseObject {
 	*/
 	public function fillFromRequest()
 	{
-		return $this->fillFromArray($_REQUEST);
-		
+		$this->fillFromArray($_REQUEST);
+		$this->validateRequiredDatas();
 		/**
 		 * COMPLETE THE PART TO HANDLE FILES
 		 */
@@ -371,17 +396,21 @@ class Element extends BaseObject {
 	
 	function processCreate($nextStep = null){
 		$this->fillFromRequest();
-        if($this->create()){
+		
+		if(empty($this->validationMessages)){
+			if($this->create()){
+				if(empty($nextStep)) {
+					header('Location: '.$this->encodeURL(array($this->getId()), 'showUpdate'));
+				} else {
+					header('Location: '.$nextStep . Main::encodeUrl(null,null,null, array(array($this->getId(),$this->getClass()))) );
+				}
 
-            if(empty($nextStep)) {
-                header('Location: '.$this->encodeURL(array($this->getId()), 'showUpdate'));
-            } else {
-                header('Location: '.$nextStep . Main::encodeUrl(null,null,null, array(array($this->getId(),$this->getClass()))) );
-            }
-        
-		} else {
-			// @todo: error handling
-			user_error('Cannot update in DS!', E_USER_ERROR);
+			} else {
+				// @todo: error handling
+				user_error('Cannot update in DS!', E_USER_ERROR);
+			}
+		}else{
+			var_dump($this->validationMessages);
 		}
 	}
 	
@@ -810,6 +839,9 @@ class Element extends BaseObject {
         foreach($dom['.SimplOn.Data.SNL-'.$this->nestingLevel()] as $node) {
             $domNode = pq($node);
             $data = explode(' ', $domNode->attr('class'));
+			if(!isset($data[4])){
+				$vladu = $domNode.'';
+			}
             if($data[4]) {
                 $data = $this->{'O'.$data[4]}();
                 if( $data instanceof Data && $data->hasMethod($caller_method) )

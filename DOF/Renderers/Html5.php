@@ -40,7 +40,7 @@ class Html5 {
 		$tbody_html .= '</tbody>';
 		
 		$html = '<table class="SimplOn Elements-Table">';
-		$html.= $thead_html;
+		$html.= @$thead_html;
 		$html.= $tbody_html;
 		$html.= '</table>';
 
