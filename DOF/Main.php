@@ -65,6 +65,7 @@ class Main {
 		
 		$DEFAULT_ELEMENT,
 		$DEFAULT_METHOD = 'index',
+		$URL_METHOD_SEPARATOR = '!',
 
 		$CREATE_FROM_TEMPLATES,
 		$OVERWRITE_FROM_TEMPLATES,
@@ -76,6 +77,8 @@ class Main {
 		$DEV_MODE = false,
 
 		$DATA_STORAGE,
+			
+		$QUICK_DELETE = false,
         
         //super array to alter classes atributes on the fly nus bee in the format "class" -> array("data1name"=>$data1)
         $onTheFlyAttributes = array();
@@ -175,7 +178,10 @@ class Main {
 		
 		// Parses the URL
 		$f_decode_param = function($p) {
-			$url_decoded = urldecode(urldecode($p));
+			//$url_decoded = urldecode(urldecode($p));
+			$url_decoded = urldecode($p);
+			//$url_decoded = str_replace('%255C','\\', str_replace('%25255C','%255C', $p));
+			//$url_decoded = $p;
             if($url_decoded == 'null') return null;
 			
             $json_decoded = json_decode($url_decoded);
@@ -185,7 +191,7 @@ class Main {
 		
 		$server_request = $_SERVER['REQUEST_URI'];
 		$query_string = '';
-        $query_separator = '|';
+        $query_separator = self::$URL_METHOD_SEPARATOR;
 		if(strpos($server_request, $query_separator) === false) {
             $query_separator = urlencode($query_separator);
         }
@@ -206,15 +212,25 @@ class Main {
 		self::$method_params = array_map($f_decode_param, @$GET_virtual_path ?: array());
 	}
 	
+	static function encodeURLfragment($class = null, $construct_params = null, $method = null, array $method_params = array()) {
+		return
+            (isset($class) ? self::$REMOTE_ROOT . '/' . $class : '')
+            . (isset($construct_params) ? (!empty($construct_params) ? '/' . implode('/',array_map('json_encode', $construct_params)) : '/') : '')
+			. (isset($method) ? self::$URL_METHOD_SEPARATOR . $method : '')
+            . (@$method_params ? '/' . implode('/',array_map('json_encode', $method_params)) : '');
+	}
 	static function encodeURL($class = null, $construct_params = null, $method = null, array $method_params = array()) {
 		$fencoder = function ($p) {
-			return urlencode(urlencode(json_encode($p)));
+			//return urlencode(urlencode(json_encode($p)));
+			//return str_replace('/','%2F', json_encode($p));
+			return str_replace('\\','%255C',json_encode($p));
+			//return json_encode($p);
 		};
 		
 		return
             (isset($class) ? self::$REMOTE_ROOT . '/' . $class : '')
             . (isset($construct_params) ? (!empty($construct_params) ? '/' . implode('/',array_map($fencoder, $construct_params)) : '/') : '')
-			. (isset($method) ? '|' . $method : '')
+			. (isset($method) ? self::$URL_METHOD_SEPARATOR . $method : '')
             . (@$method_params ? '/' . implode('/',array_map($fencoder, $method_params)) : '');
 	}
 	

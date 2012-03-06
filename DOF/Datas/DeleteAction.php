@@ -24,11 +24,19 @@ class DeleteAction extends ElementLink {
 		parent::__construct($label, $sources, 'showDelete', array(), $flags,null,$searchOp);
 	}
 	
+	function parent($parent = null) {
+		if($parent) {
+			$this->parent = $parent;
+			$this->method = $parent->quickDelete ? 'processDelete' : 'showDelete';
+		}
+		return $parent;
+	}
+	
 	function htmlClasses($append = '', $nestingLevel = null) {
-        return parent::htmlClasses('lightbox '.$append, $nestingLevel);
+        return parent::htmlClasses(($this->parent->quickDelete?'ajax ':'lightbox ').$append, $nestingLevel);
     }
 	
 	function cssSelector($append = '', $nestingLevel = null) {
-        return parent::cssSelector('.lightbox'.$append, $nestingLevel);
+        return parent::cssSelector(($this->parent->quickDelete?'.ajax':'.lightbox').$append, $nestingLevel);
     }
 }

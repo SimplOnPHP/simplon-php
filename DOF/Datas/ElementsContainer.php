@@ -167,7 +167,7 @@ class ElementsContainer extends Data {
             $nextStep = $this->parent->encodeURL(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection'));
             $ret.='<li>'.$classInstance->getClassName()
                 .' <a class="SimplOn lightbox" href="'.htmlentities($this->parent->encodeURL(array(),'callDataMethod',array($this->name(),'showSelect',array($classInstance->getClass())) )).'">List</a> '
-                .' <a class="SimplOn lightbox" href="'.htmlentities($classInstance->encodeURL(array(),'showCreate',array('',$classInstance->encodeURL(array(),'processCreate',array($nextStep))  ))).'">Add</a> '
+                .' <a class="SimplOn lightbox" href="'.htmlentities($classInstance->encodeURL(array(),'showCreate',array('',$classInstance->encodeURLfragment(array(),'processCreate',array($nextStep))  ))).'">Add</a> '
                 .'</li>'
             ;
         }
@@ -197,7 +197,7 @@ class ElementsContainer extends Data {
             return '
                     <div class="SimplOn element-box">
                         <div class="SimplOn actions">
-                            <a class="SimplOn lightbox" href="'.htmlentities($element->encodeURL(array(),'showUpdate',array('',$element->encodeURL(array(),'processUpdate',array($nextStep))  ))).'">Edit</a>
+                            <a class="SimplOn lightbox" href="'.htmlentities($element->encodeURL(array(),'showUpdate',array('',$element->encodeURLfragment(array(),'processUpdate',array($nextStep))  ))).'">Edit</a>
                             <a class="SimplOn delete" href="#">X</a>
                         </div>
                         <div class="SimplOn view">'.$element->showView($elementTemplate, true).'</div>

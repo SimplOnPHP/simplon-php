@@ -35,4 +35,6 @@ DOF\Main::run(array(
 		'user' => 'root',
 		'pass' => ''
 	),
+	
+	'QUICK_DELETE' => true,
 ));
