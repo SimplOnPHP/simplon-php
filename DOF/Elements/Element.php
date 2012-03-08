@@ -17,6 +17,7 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace DOF\Elements;
+
 use DOF\Datas\ComplexData;
 
 use DOF\DataStorages\DataStorage;
@@ -100,11 +101,6 @@ class Element extends BaseObject {
 	*/
 	protected $dataAttributes;
 	
-	
-	
-	
-	
-	protected $validationMessages = array();
 	
 //-----------------------------------------------------------------------------------------	
 //------------------------------ METHODS --------------------------------------------------	
@@ -212,28 +208,7 @@ class Element extends BaseObject {
 		}
 	}
 
-
-
 	
-	function validateRequiredDatas(){
-		$requiredDatas = $this->datasWith('required');
-		foreach($requiredDatas as $requiredData){
-			if( !$this->$requiredData() && !@$this->$requiredData->autoIncrement()  ){
-				$this->validationMessages[$requiredData][] = $this->$requiredData->validationRequired();
-			}
-
-		}
-	}
-	
-
-	function addValidationMessage($dataname,$message){
-		$this->validationMessages[$dataname][]=$message;
-		
-	}
-
-	function clearValidationMessages($dataname){
-		$this->validationMessages[$dataname]=array();
-	}
 
 
 	function parent(&$parent = null){
@@ -316,11 +291,34 @@ class Element extends BaseObject {
 	{
 		foreach($array_of_data as $dataName=>$value){
 			if(isset($this->$dataName) && ($this->$dataName instanceof Data)){
-				$this->$dataName($value);
+				try{
+					$this->$dataName($value);
+				}catch(\DOF\DataValidationException $ve){
+					$excetionsMessages[$dataName] = array($ve->getMessage());
+				}
 			}
 		}
+		@$excetionsMessages=$this->requiredCheck($excetionsMessages);
+		if(!empty($excetionsMessages)){
+			throw new \DOF\ElementValidationException($excetionsMessages);
+		}
+	}
+	
+	public function requiredCheck($array=array()){
+		
+		$requiredDatas = $this->datasWith('required');
+		foreach($requiredDatas as $requiredData){
+			if( !$this->$requiredData->val() && ($this->$requiredData->required() && !@$this->$requiredData->autoIncrement) ) {
+				$array[$requiredData][] = $this->$requiredData->validationRequired();
+			}			
+		}
+		
+		return $array;
 		
 	}
+
+
+	
 	
 	/**
 	*
@@ -332,7 +330,6 @@ class Element extends BaseObject {
 	public function fillFromRequest()
 	{
 		$this->fillFromArray($_REQUEST);
-		$this->validateRequiredDatas();
 		/**
 		 * COMPLETE THE PART TO HANDLE FILES
 		 */
@@ -397,9 +394,10 @@ class Element extends BaseObject {
 	*/
 	
 	function processCreate($nextStep = null){
-		$this->fillFromRequest();
 		
-		if(empty($this->validationMessages)){
+		try{
+			$this->fillFromRequest();
+
 			if($this->create()){
 				if(empty($nextStep)) {
 					header('Location: '.$this->encodeURL(array($this->getId()), 'showUpdate'));
@@ -411,27 +409,33 @@ class Element extends BaseObject {
 				// @todo: error handling
 				user_error('Cannot update in DS!', E_USER_ERROR);
 			}
-		}else{
-			var_dump($this->validationMessages);
+		}catch( \DOF\ElementValidationException $ev ){
+			var_dump($ev->datasValidationMessages());
 		}
 	}
 	
 	//function processUpdate($short_template=null, $sid=null){
 	function processUpdate($nextStep = null){
-		$this->fillFromRequest();
-        if($this->update()){
+		
+		try{
+			$this->fillFromRequest();
 
-            if(empty($nextStep)) {
-                header('Location: '.$this->encodeURL(array($this->getId()), 'showAdmin'));
-            } else {
-                header('Location: '.$nextStep);
-                //if($sid) $this->sid($sid);
-                //return $this->makeSelection($short_template, $sid);
-            }
-        
-		} else {
-			// @todo: error handling
-			user_error('Cannot update in DS!', E_USER_ERROR);
+			if($this->update()){
+
+				if(empty($nextStep)) {
+					header('Location: '.$this->encodeURL(array($this->getId()), 'showAdmin'));
+				} else {
+					header('Location: '.$nextStep);
+					//if($sid) $this->sid($sid);
+					//return $this->makeSelection($short_template, $sid);
+				}
+
+			} else {
+				// @todo: error handling
+				user_error('Cannot update in DS!', E_USER_ERROR);
+			}
+		}catch( \DOF\ElementValidationException $ev ){
+			var_dump($ev->datasValidationMessages());
 		}
 	}
 
@@ -471,9 +475,13 @@ class Element extends BaseObject {
 	}
 		
 	function processSearch(){
-		$this->fillFromRequest();
-		$search = new Search(array($this->getClass()));
-		return $search->processSearch($this->toArray());
+		try{
+			$this->fillFromRequest();
+			$search = new Search(array($this->getClass()));
+			return $search->processSearch($this->toArray());
+		}catch( \DOF\ElementValidationException $ev ){
+			var_dump($ev->datasValidationMessages());
+		}
 	}
     
     

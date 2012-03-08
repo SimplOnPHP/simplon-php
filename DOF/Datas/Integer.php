@@ -19,11 +19,15 @@
 namespace DOF\Datas;
 
 class Integer extends Data {
-	public $valudationNaN = 'This field must be a number.';
+	public $valudationNaN = 'This field must be an integer number.';
 	
 	function val($val = null) {
 		if(isset($val)) {
-			$this->val = intval($val);
+			if( is_numeric($val) && is_int($val*1)  ) {
+				$this->val = intval($val);
+			}else{
+				throw new \DOF\DataValidationException($this->valudationNaN.': '.$val);
+			}
 		} else {
 			return $this->val;
 		}
@@ -31,22 +35,20 @@ class Integer extends Data {
     
 	public function showInput($fill) {
         $data_id = 'DOF_'.$this->instanceId();
-		
-		if($this->validationMessage){$fill=false;}
-		
+
 		return 
             ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
             '<input id="'.$data_id.'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
 	}
 	
-	public function validationMessages(){
-		
-		$ret = parent::validationMessages();
-		
-		if( !(is_numeric($this->val) && is_int($this->val*1)) ) {
-			$ret[]=$this->valudationNaN;
-		}
-		
-		return $ret;
-	}
+//	public function validationMessages(){
+//		
+//		$ret = parent::validationMessages();
+//		
+//		if( !(is_numeric($this->val) && is_int($this->val*1)) ) {
+//			$ret[]=$this->valudationNaN;
+//		}
+//		
+//		return $ret;
+//	}
 }

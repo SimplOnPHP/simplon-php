@@ -16,32 +16,23 @@
 	You should have received a copy of the GNU General Public License
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
-namespace DOF\Datas;
+namespace DOF;
 
-class NumericId extends Id
-{
-	public $autoIncrement = true;
+class ElementValidationException extends \Exception {
 	
-	public function showInput($fill)
-	{
-		if($this->val())
-		{
-		} else {
-			throw new \DOF\Exception('Cannot show this field with empty value!');
-		}
-	}	
-
-	public function label() {}
+	protected $datasValidationMessages = array();
 	
+	public function __construct(){
+		$args = func_get_args();
+		$this->datasValidationMessages(array_shift($args));
+		call_user_func_array(array('parent', '__construct'), $args);
+	}
 	
-	function val($val = null) {
-		if(isset($val)) {
-			if( is_numeric($val) && is_int($val*1) ) 
-				$this->val = intval($val);
-			else
-				user_error('Non-numeric value received.');
-		} else {
-			return $this->val;
+	public function datasValidationMessages($array = array()){
+		if(empty($array)){
+			return $this->datasValidationMessages;
+		}else{
+			$this->datasValidationMessages = $array;
 		}
 	}
 }

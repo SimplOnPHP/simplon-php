@@ -151,7 +151,6 @@ abstract class Data extends BaseObject {
 	public $tip;
 	public $tipInline;
 	public $validationRequired = 'This field is required';
-	
 	/**
 	 * search operands:
 	 * >
@@ -419,12 +418,12 @@ abstract class Data extends BaseObject {
 		return isset($this->label) ? $this->label : $this->getClassName();
 	}
 		
-	public function validationMessages(){
-
-		if( empty ($this->val) && ($this->required && !@$this->autoIncrement) ) {
-			$ret[]=$this->validationRequired;
-		}
-		
-		return $ret;
-	}
+//	public function validationMessages(){
+//
+//		if( empty ($this->val) && ($this->required && !@$this->autoIncrement) ) {
+//			$ret[]=$this->validationRequired;
+//		}
+//		
+//		return $ret;
+//	}
 }
