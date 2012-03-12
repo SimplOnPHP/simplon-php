@@ -22,14 +22,46 @@ class Password extends String {
 
 	protected 
 		$encriptedFlag = False,
-			
+		
+		$valudationCurrent = 'The current password is incorrect',
+		$validationMatch = "The new password and the validation doesn't matct",	
 		
 		$view = False,
 		$list = False,
 		$required = True,
 		$search = False;
 	
+	
+	
+	function val($val = null) {
+		
+		if(isset($val)) {
+			
+			if(is_string($val)){
+				$this->val=$val;
+			}else if(is_array($val)){
+				//NOTE: Validation if 'current' is requered must be done in parrent according to the sitiation (Update, Create, etc)
+				if(trim(@$val['current'])){if($this->readFromDB()!=md5($val['current'])){throw new \DOF\DataValidationException($this->valudationCurrent);}}
+				//if(!trim($val['new'])){throw new \DOF\DataValidationException($this->validationRequired); return;}
+				if($val['new']!=$val['confirm']){throw new \DOF\DataValidationException($this->validationMatch); return;}
+				
+				$this->val=$val['new'];
+				$this->encriptedFlag = False;
+			}
+			
+		} else {
+			return $this->val;
+		}
+	}
+	
+	public function readFromDB(){
+
+		$dataArray = $this->parent()->dataStorage()->readElement( $this->parent() );
+		return $dataArray[$this->name];
+	}
+	
 	public function showInput($fill=false) {
+		if($this->encriptedFlag){ $fill=false; }
         $data_id = 'DOF_'.$this->instanceId();
 		return 
             ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
@@ -39,17 +71,22 @@ class Password extends String {
 	
 	function showUpdate(){
 		$name=$this->inputName();
+		$Label=$this->label();
 		$ret = '';
 		
+		$this->label($Label.' (current)');
 		$this->inputName($name.'[current]');
 		$ret .= $this->showInput();
 		
+		$this->label($Label.' (new)');
 		$this->inputName($name.'[new]');
 		$ret .= $this->showInput();
 		
+		$this->label($Label.' (confirm)');
 		$this->inputName($name.'[confirm]');
 		$ret .= $this->showInput();
 		
+		$this->label($Label);
 		$this->inputName($name);
 		
 		return $ret;
@@ -58,38 +95,24 @@ class Password extends String {
 
 	function showCreate(){
 		$name=$this->inputName();
+		$Label=$this->label();
 		$ret = '';
 		
+		//$this->label($Label.' (current)');
 		$this->inputName($name.'[new]');
 		$ret .= $this->showInput();
 		
+		$this->label($Label.' (confirm)');
 		$this->inputName($name.'[confirm]');
 		$ret .= $this->showInput();
 		
+		$this->label($Label);
 		$this->inputName($name);
 		
 		return $ret;
 		
 	}	
-	
-	
-	
-	function val($val = null){
-		if( !$val ){
-			return $this->val;
-		}else{
-			if(is_array($val)){
-				$this->current=@$val['current'];
-				$this->val=@$val['new'];
-				$this->confirm=@$val['confirm'];
-				
-				$this->encriptedFlag=False;
-			}else{
-				$this->val=$val;
-			}
-		}
-	}
-	
+
 	
 	/**
 	 * It's important to distinguish between encrypted (from DB) and unencrypted
@@ -118,7 +141,7 @@ class Password extends String {
 	{
 		if(!$this->encriptedFlag){ $this->val(md5($this->val)); }
 		
-		return parrent::doUpdate();
+		return parent::doUpdate();
 	}
 
 	public function doSearch()

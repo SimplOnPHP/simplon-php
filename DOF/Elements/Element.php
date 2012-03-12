@@ -90,6 +90,8 @@ class Element extends BaseObject {
 	*/
 	protected $storageChecked;
 	
+	protected $excetionsMessages = array();
+	
 	var $quickDelete;
 	
 	
@@ -294,13 +296,9 @@ class Element extends BaseObject {
 				try{
 					$this->$dataName($value);
 				}catch(\DOF\DataValidationException $ve){
-					$excetionsMessages[$dataName] = array($ve->getMessage());
+					$this->excetionsMessages[$dataName] = array($ve->getMessage());
 				}
 			}
-		}
-		@$excetionsMessages=$this->requiredCheck($excetionsMessages);
-		if(!empty($excetionsMessages)){
-			throw new \DOF\ElementValidationException($excetionsMessages);
 		}
 	}
 	
@@ -329,7 +327,9 @@ class Element extends BaseObject {
 	*/
 	public function fillFromRequest()
 	{
-		$this->fillFromArray($_REQUEST);
+		//try{
+			$this->fillFromArray($_REQUEST);
+		//}catch(\DOF\ElementValidationException $ev){}
 		/**
 		 * COMPLETE THE PART TO HANDLE FILES
 		 */
@@ -393,11 +393,23 @@ class Element extends BaseObject {
 	 updateInDS // este debe ser automatico desde el save si se tiene id se genera
 	*/
 	
+	function validateForDB(){
+		@$excetionsMessages=$this->requiredCheck($this->excetionsMessages);
+		if(!empty($excetionsMessages)){
+			throw new \DOF\ElementValidationException($excetionsMessages);
+		}
+	}
+	
 	function processCreate($nextStep = null){
-		
+
 		try{
 			$this->fillFromRequest();
-
+			$this->validateForDB();
+		}catch( \DOF\ElementValidationException $ev ){
+			var_dump($ev->datasValidationMessages());
+			return;
+		}
+		try{
 			if($this->create()){
 				if(empty($nextStep)) {
 					header('Location: '.$this->encodeURL(array($this->getId()), 'showUpdate'));
@@ -409,8 +421,8 @@ class Element extends BaseObject {
 				// @todo: error handling
 				user_error('Cannot update in DS!', E_USER_ERROR);
 			}
-		}catch( \DOF\ElementValidationException $ev ){
-			var_dump($ev->datasValidationMessages());
+		}catch(\PDOException $ev ){
+			var_dump($ev->errorInfo[1]);
 		}
 	}
 	
@@ -419,7 +431,12 @@ class Element extends BaseObject {
 		
 		try{
 			$this->fillFromRequest();
-
+			$this->validateForDB();
+		}catch( \DOF\ElementValidationException $ev ){
+			var_dump($ev->datasValidationMessages());
+			return;
+		}
+		try{
 			if($this->update()){
 
 				if(empty($nextStep)) {
@@ -434,8 +451,8 @@ class Element extends BaseObject {
 				// @todo: error handling
 				user_error('Cannot update in DS!', E_USER_ERROR);
 			}
-		}catch( \DOF\ElementValidationException $ev ){
-			var_dump($ev->datasValidationMessages());
+		}catch(\PDOException $ev ){
+			var_dump($ev->errorInfo[1]); //duplicated primary key (Possibel with stringID)
 		}
 	}
 

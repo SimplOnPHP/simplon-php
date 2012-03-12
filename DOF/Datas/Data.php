@@ -414,8 +414,12 @@ abstract class Data extends BaseObject {
 	 *
 	 * @return ing
 	 */
-	public function label(){
-		return isset($this->label) ? $this->label : $this->getClassName();
+	public function label($label=null){
+		if($label){
+			$this->label = $label;
+		}else{
+			return isset($this->label) ? $this->label : $this->name();
+		}
 	}
 		
 //	public function validationMessages(){

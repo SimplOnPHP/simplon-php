@@ -26,7 +26,7 @@ class Integer extends Data {
 			if( is_numeric($val) && is_int($val*1)  ) {
 				$this->val = intval($val);
 			}else{
-				throw new \DOF\DataValidationException($this->valudationNaN.': '.$val);
+				throw new \DOF\DataValidationException($this->valudationNaN);
 			}
 		} else {
 			return $this->val;

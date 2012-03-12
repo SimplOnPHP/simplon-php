@@ -30,6 +30,18 @@ class StringId extends Id
 {
 	protected $required = true;
 	
+	
+	
+	public function checkUnique(){
+		$dataArray = $this->parent()->dataStorage()->readElement( $this->parent() );
+		if(empty ($dataArray)){
+			return false;
+		}else{
+			return true;
+		}
+	}
+	
+	
 	public function showInput($fill) {
         $data_id = 'DOF_'.$this->instanceId();
 		return 
