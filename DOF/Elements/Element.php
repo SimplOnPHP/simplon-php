@@ -104,10 +104,19 @@ class Element extends BaseObject {
 	protected $dataAttributes;
 	
 	
+	
+	
+	protected $formMethods = array('create', 'update', 'delete', 'search');
 //-----------------------------------------------------------------------------------------	
 //------------------------------ METHODS --------------------------------------------------	
 //-----------------------------------------------------------------------------------------
 	
+	protected $allowAll = false; // true = AllowAll, false = DenyAll
+	
+	protected $permissions = array(
+		'aa'=>array(),
+		
+	);
 	
 	
 	/**
@@ -121,7 +130,10 @@ class Element extends BaseObject {
 	 */
 	public function __construct($id_or_array = null, $storage=null, $specialDataStorage=null)
 	{
-        $this->construct($id_or_array, $storage, $specialDataStorage);
+        $this->sonMessage = new \DOF\Datas\Message();
+		$this->construct($id_or_array, $storage, $specialDataStorage);
+		
+		
 		
 		//On heirs put here the asignation of DOFdata and attributes
 		
@@ -289,8 +301,9 @@ class Element extends BaseObject {
 	 * 
 	 * @param array $array_of_data
 	 */
-	public function fillFromArray(array &$array_of_data)
+	public function fillFromArray(&$array_of_data)
 	{
+		if(!is_array($array_of_data)){$array_of_data = array();}
 		foreach($array_of_data as $dataName=>$value){
 			if(isset($this->$dataName) && ($this->$dataName instanceof Data)){
 				try{
@@ -422,7 +435,9 @@ class Element extends BaseObject {
 				user_error('Cannot update in DS!', E_USER_ERROR);
 			}
 		}catch(\PDOException $ev ){
-			var_dump($ev->errorInfo[1]);
+			//var_dump($ev->errorInfo[1]);
+			//@todo handdle the exising ID (stirngID) in the DS
+			var_dump($ev);
 		}
 	}
 	
@@ -793,7 +808,7 @@ class Element extends BaseObject {
 		} else {
 			$VCSL = substr($caller_method, strlen('show'));
 			$vcsl = strtolower($VCSL);
-			$with_form = in_array($vcsl, array('create', 'update', 'delete', 'search'));
+			$with_form = in_array($vcsl, $this->formMethods);
 		}
         
 		$overwrite_template = Main::$OVERWRITE_LAYOUT_TEMPLATES;
@@ -1124,4 +1139,23 @@ class Element extends BaseObject {
 		}
         return $output;
 	}
+	
+	
+	
+	static function allow($user, $method){
+		
+	}
+	
+	
+	
+//Allow - Deny
+//
+//static [group][method,method, method]
+//static functon (User, Method)
+//
+//return boolean	
+	
+	
+	
+	
 }

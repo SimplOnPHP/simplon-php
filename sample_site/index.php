@@ -26,6 +26,9 @@ DOF\Main::run(array(
 
 	'JS_FLAVOUR' => 'jQuery',
 	
+	//'PERMISSIONS' => 'User',
+	'PERMISSIONS' => false,
+	
 	'DEV_MODE' => true,
 	
 	'DATA_STORAGE' => array(

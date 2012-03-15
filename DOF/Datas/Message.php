@@ -18,15 +18,42 @@
 */
 namespace DOF\Datas;
 
-class HTMLText extends Text
+class Message extends Data
 {
-//	protected $list = false;
-//	
-//	function showInput($fill)
-//	{
-//		$data_id = 'DOF_'.$this->instanceId();		
-//		//@todo: display a RichText editor instead of Textarea
-//		return  ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
-//				'<textarea id="'.$this->inputName().'" name="'.$this->inputName().'">'.(($fill)? $this->val :'').'</textarea>';
-//	}
+	protected
+	
+		$view = true,
+
+		$create = true,
+
+		$update = true,
+
+		$search = true,
+
+		$list = false,
+
+		$required = false,
+
+		$fetch = false;
+	
+	
+	
+	
+	function showInput($fill)
+	{ return $this->showView(); }
+	
+	
+	public function doRead()
+	{}
+	
+	public function doCreate()
+	{}
+		
+	public function doUpdate()
+	{}
+
+	public function doSearch()
+	{}	
+	
+	
 }

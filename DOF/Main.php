@@ -73,6 +73,8 @@ class Main {
 		
 		$JS_FLAVOUR = 'jQuery',
 		$CSS_FLAVOUR = 'jQuery',
+			
+		$PERMISSIONS = false,
 	
 		$DEV_MODE = false,
 
@@ -122,7 +124,21 @@ class Main {
 				&&
 				($obj instanceof Elements\Element)
 			){
-				echo call_user_func_array(array($obj, self::$method), self::$method_params);
+				if(self::$PERMISSIONS && (self::$class !='JS' && self::$class!='CSS')   ){
+					session_start();
+					if(!@$_SESSION['simplonUser'] && !(self::$class == self::$PERMISSIONS && self::$method =='processValidation')  ){
+						//ask for credentials
+						$class = '\\'.self::$PERMISSIONS;
+						$user = new $class();
+						$_SESSION['url']=$_SERVER['REQUEST_URI'];
+						echo $user->showValidation();
+					}else{
+						//Validate user's permissions
+						echo call_user_func_array(array($obj, self::$method), self::$method_params);
+					}
+				}else{			
+					echo call_user_func_array(array($obj, self::$method), self::$method_params);
+				}
 			} else {
 				header('HTTP/1.1 403 Access forbidden');
 				return;

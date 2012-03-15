@@ -34,7 +34,7 @@ abstract class SQL extends DataStorage
 		
 		'Date'          => 'date',
 				
-		'HTMLText'      => 'text',
+		'Text'      => 'text',
 		'ElementContainer' => '_ForeignKey_',
 	);
 	

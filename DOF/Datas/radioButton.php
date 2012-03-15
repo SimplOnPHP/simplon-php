@@ -19,36 +19,28 @@
 namespace DOF\Datas;
 
 /**
-* ID para las tablas
+* Hidden para las tablas
 * --- No imprime un label y manda un input hidden.
 *
 * @version	1.0
 * @author	Ruben Schaffer
 * @todo fix so val retuns the value and only the inputmethod retuns the hidden inpunt
 */
-class StringId extends Id
+class radioButton extends Data
 {
-	protected $view = true;
-	protected $create = true;
-	protected $update = true;
-	protected $required = true;
+	protected
+		$view = false,
+		$create = false,
+		$update = true,
+		$required = false;
 	
-	
-	
-	public function checkUnique(){
-		$dataArray = $this->parent()->dataStorage()->readElement( $this->parent() );
-		if(empty ($dataArray)){
-			return false;
-		}else{
-			return true;
-		}
+	public function showInput($fill)
+	{
+		if($this->val())
+		{
+			return '<input class="DOF input '. $this->getClass() .'" name="'. $this->name() .'" '.(($fill)?' value="'.$this->val() .'"':'').' type="hidden" />';
+		} 
 	}
-	
-	
-	public function showInput($fill) {
-        $data_id = 'DOF_'.$this->instanceId();
-		return 
-            ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
-            '<input id="'.$data_id.'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
-	}
+		
+	public function label() {}
 }
