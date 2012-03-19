@@ -28,60 +28,49 @@ use \DOF\Main;
  */
 class ElementContainerDropBox extends ElementContainer {
 
-	function showInput($fill)
-	{
-        $nextStep = $this->parent->encodeURLfragment(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection'));
-        $addHref = htmlentities(
-			$this->element->encodeURL(
-				array(),
-				'showCreate',
-				array(
-					'',
-					$this->element->encodeURLfragment(
-						array(),
-						'processCreate',
-						array($nextStep)
-					)
-				)
-			)
-		);
-        return  '
-            <span class="SimplOn label">'.$this->label().'</span>:
-			<a class="SimplOn lightbox" href="'.htmlentities($this->parent->encodeURL(array(),'callDataMethod',array($this->name(),'showSelect') )).'">List</a>
-            <a class="SimplOn lightbox" href="'.$addHref.'">Add</a>
-            <div class="SimplOn preview">
-                '.$this->showInputView().'
-            </div>
-            <input class="SimplOn input" name="'.$this->name().'" type="hidden" value="'.($fill?$this->val():'').'" />
-		';
-		
-		
-		
-        $element = $this->element->getClass();
-        $element = new $element();
-        $element->fillFromRequest();
-        
-        $element->addOnTheFlyAttribute('parentClass' , new Hidden(null,'CUSf', $this->parent->getClassName(), '' )    );
-        $element->addOnTheFlyAttribute('dataName' , new Hidden(null,'CUSf', $this->name(), '' )    );
-        $element->addOnTheFlyAttribute('parentId' , new Hidden(null,'CUSf', $this->parent->getId(), '' )    );
-        $element->addOnTheFlyAttribute('selectAction' , new SelectAction('', array('Select')) );
-        // http://localhost/SimplON/sample_site/Fe         /2       |callDataMethod/"home    "/"makeSelection"
-        // http://localhost/SimplON/sample_site/parentClass/parentId|callDataMethod/"dataName"/"makeSelection"
-   
-        return $element->processSelect()
-        );		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-	}
+	
+//	public function val($val = null) {
+//		if($val === '') {
+//			$class = $this->element->getClass();
+//			$this->element = new $class;
+//		} else	if($val !== null) {
+//			$this->element->fillFromDSById($val);
+//		} else {
+//			return @$this->element->getId();
+//		}
+//
+//        $this->element->addOnTheFlyAttribute('parentClass' , new Hidden(null,'CUSf', $this->parent->getClassName(), '' )    );
+//        $this->element->addOnTheFlyAttribute('dataName' , new Hidden(null,'CUSf', $this->name(), '' )    );
+//        $this->element->addOnTheFlyAttribute('parentId' , new Hidden(null,'CUSf', $this->parent->getId(), '' )    );
+//
+//        $this->element->addOnTheFlyAttribute('selectAction' , new RadioButtonSelfId(null,'CUSf')    );
+//
+//
+//        // http://localhost/SimplON/sample_site/Fe         /2       |callDataMethod/"home    "/"makeSelection"
+//        // http://localhost/SimplON/sample_site/parentClass/parentId|callDataMethod/"dataName"/"makeSelection"
+//    
+//	}	
+	
+	
+	
+	
+//	function showInput($fill)
+//	{
+//        $element = $this->element->getClass();
+//        $element = new $element();
+//		
+////		  $element->addOnTheFlyAttribute('parentClass' , new Hidden(null,'CUSf', $this->parent->getClassName(), '' )    );
+////        $element->addOnTheFlyAttribute('dataName' , new Hidden(null,'CUSf', $this->name(), '' )    );
+////        $element->addOnTheFlyAttribute('parentId' , new Hidden(null,'CUSf', $this->parent->getId(), '' )    );
+////        $element->addOnTheFlyAttribute('select' , new RadioButtonSelfId(null,'CUSf')    );
+//
+//        // http://localhost/SimplON/sample_site/Fe         /2       |callDataMethod/"home    "/"makeSelection"
+//        // http://localhost/SimplON/sample_site/parentClass/parentId|callDataMethod/"dataName"/"makeSelection"
+//   
+//        
+//		//return 'ggggg  '.$this->element->getClassName();
+//		//var_dump($element->processSelect());
+//		return $element->processSelect();
+//		
+//	}
 }

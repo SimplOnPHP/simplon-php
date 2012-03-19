@@ -76,7 +76,7 @@ abstract class SQL extends DataStorage
 		}
 		
 		$query = $this->db->prepare('
-			SELECT '.implode(', ',$fields).' 
+			SELECT `'.implode('`, `',$fields).'` 
 			FROM '.$element->storage().' 
 			WHERE '. $element->field_id().'=:'.$element->field_id() .'
 			LIMIT 1
@@ -416,15 +416,13 @@ abstract class SQL extends DataStorage
          */
 		foreach($storages as $class => $storage) {
 			$storage_fields = $fields; // id as id, 'id' as field_id, 'fe' as storage
-			array_unshift($storage_fields,
-				//'"'.$storage.'" as DOF_storage', 
-				'"'.$class.'" as DOF_class', 
-				'"'.$element->field_id().'" as DOF_field_id', 
-				$element->field_id().' as DOF_id', // mandatory (ej. to make it possible to order on a UNION)
-				$element->field_id()
-			);
+			$addFields =
+				'"'.$class.'" as `DOF_class`, '. 
+				'"'.$element->field_id().'" as `DOF_field_id`, '.
+				'"'.$element->field_id().'" as `DOF_id`, '. // mandatory (ej. to make it possible to order on a UNION)
+				'"'.$element->field_id().'", `';
 			$where = $this->filterCriteria($element);
-			$selects[] = '(SELECT '.implode(', ', $storage_fields).' FROM '.$storage.' '. ($where ? 'WHERE '.$where : '') .')';
+			$selects[] = '(SELECT '.$addFields.implode('`, `', $storage_fields).'` FROM '.$storage.' '. ($where ? 'WHERE '.$where : '') .')';
 		}
 		
 		

@@ -31,6 +31,8 @@ class StringId extends Id
 	protected $view = true;
 	protected $create = true;
 	protected $update = true;
+	protected $list = true;
+	protected $search = true;
 	protected $required = true;
 	
 	

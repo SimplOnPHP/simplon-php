@@ -6,7 +6,7 @@ class Person extends \DOF\Elements\Element
 	    $this->id = new \DOF\Datas\NumericId('CURP');
 		$this->firstname = new \DOF\Datas\String('Name','VCUSL');
 		$this->lastname = new \DOF\Datas\String('Last Name', 'RsL');
-        $this->number = new \DOF\Datas\Integer('Numerico','R');
+        $this->radioButton = new \DOF\Datas\RadioButtonText('Numerico', array('a','b','c'));
 		
 	}
 }

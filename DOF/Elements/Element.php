@@ -212,7 +212,7 @@ class Element extends BaseObject {
 	public function field_id($val=null){
 		if(!$this->field_id){
 			$this->field_id = $this->attributesTypes('\\DOF\\Datas\\Id');
-			$this->field_id = $this->field_id[0];		
+			$this->field_id = $this->field_id[0];	
 		}
 		
 		if($val){
@@ -1132,6 +1132,7 @@ class Element extends BaseObject {
 
 	//vcsrl
 	public function datasWith($what){
+		$output=array();
 		foreach($this->dataAttributes() as $data) {
 			if( $this->$data->$what() ) {
 				$output[] = $data;

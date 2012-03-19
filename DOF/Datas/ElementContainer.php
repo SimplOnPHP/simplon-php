@@ -110,9 +110,6 @@ class ElementContainer extends Data {
     
 	}
 	
-	
-
-	
 	function showInput($fill)
 	{
         $nextStep = $this->parent->encodeURLfragment(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection'));
