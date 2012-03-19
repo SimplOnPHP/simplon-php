@@ -16,36 +16,8 @@
 	You should have received a copy of the GNU General Public License
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
-namespace DOF\Datas;
+namespace DOF;
 
-/**
-* ID para las tablas
-* --- No imprime un label y manda un input hidden.
-*
-* @version	1.0
-* @author	Ruben Schaffer
-* @todo fix so val retuns the value and only the inputmethod retuns the hidden inpunt
-*/
-abstract class Id extends Data
-{
-	
-	
-	protected
-		$view = false,
-		$create = false,
-		$update = true,
-		$required = true;
-
-	
-	/**
-	 *This needs to be redefined to enshure that REQURED can not be unset since this is an ID
-	 * @param type $flags 
-	 */
-	function dataFlags($flags)
-	{
-		parent::dataFlags($flags);
-		$this->required = true;
-	}
-	
+class DataValidationException extends \Exception {
 	
 }

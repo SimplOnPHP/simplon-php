@@ -165,10 +165,14 @@ class Search extends Element
         
 	function processSearch($params = null, $columns = null){
 		if(is_array($params))
-			$this->fillFromArray($params);
+			try{
+				$this->fillFromArray($params);
+			}catch(\DOF\ElementValidationException $ev){}
 		else
-			$this->fillFromRequest();
-		
+			try{
+				$this->fillFromRequest();
+			}catch(\DOF\ElementValidationException $ev){}			
+
 		// mutilation
 		if(is_array($this->dataAttributes)) 
 				$this->dataAttributes = array_diff($this->dataAttributes, array('elementsTypes'));

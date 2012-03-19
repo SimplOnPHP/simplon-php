@@ -20,12 +20,12 @@ namespace DOF\Datas;
 
 class NumericId extends Id
 {
+	public $autoIncrement = true;
 	
 	public function showInput($fill)
 	{
 		if($this->val())
 		{
-			return '<input class="'. $this->htmlClasses('input') .'" name="'. $this->name() .'" '.(($fill)?' value="'.$this->val() .'"':'').' type="hidden" />';
 		} else {
 			throw new \DOF\Exception('Cannot show this field with empty value!');
 		}

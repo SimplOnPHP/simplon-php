@@ -18,34 +18,15 @@
 */
 namespace DOF\Datas;
 
-/**
-* ID para las tablas
-* --- No imprime un label y manda un input hidden.
-*
-* @version	1.0
-* @author	Ruben Schaffer
-* @todo fix so val retuns the value and only the inputmethod retuns the hidden inpunt
-*/
-abstract class Id extends Data
+class Text extends Data
 {
+	protected $list = false;
 	
-	
-	protected
-		$view = false,
-		$create = false,
-		$update = true,
-		$required = true;
-
-	
-	/**
-	 *This needs to be redefined to enshure that REQURED can not be unset since this is an ID
-	 * @param type $flags 
-	 */
-	function dataFlags($flags)
+	function showInput($fill)
 	{
-		parent::dataFlags($flags);
-		$this->required = true;
+		$data_id = 'DOF_'.$this->instanceId();
+		//@todo: display a RichText editor instead of Textarea
+		return  ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
+				'<textarea id="'.$this->inputName().'" name="'.$this->inputName().'">'.(($fill)? $this->val :'').'</textarea>';
 	}
-	
-	
 }

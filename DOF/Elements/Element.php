@@ -17,6 +17,7 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace DOF\Elements;
+
 use DOF\Datas\ComplexData;
 
 use DOF\DataStorages\DataStorage;
@@ -89,6 +90,8 @@ class Element extends BaseObject {
 	*/
 	protected $storageChecked;
 	
+	protected $excetionsMessages = array();
+	
 	var $quickDelete;
 	
 	
@@ -99,10 +102,21 @@ class Element extends BaseObject {
 	* @var array containing objects of type DOF\Datas\Data
 	*/
 	protected $dataAttributes;
+	
+	
+	
+	
+	protected $formMethods = array('create', 'update', 'delete', 'search');
 //-----------------------------------------------------------------------------------------	
 //------------------------------ METHODS --------------------------------------------------	
 //-----------------------------------------------------------------------------------------
 	
+	protected $allowAll = false; // true = AllowAll, false = DenyAll
+	
+	protected $permissions = array(
+		'aa'=>array(),
+		
+	);
 	
 	
 	/**
@@ -116,7 +130,10 @@ class Element extends BaseObject {
 	 */
 	public function __construct($id_or_array = null, $storage=null, $specialDataStorage=null)
 	{
-        $this->construct($id_or_array, $storage, $specialDataStorage);
+        $this->sonMessage = new \DOF\Datas\Message();
+		$this->construct($id_or_array, $storage, $specialDataStorage);
+		
+		
 		
 		//On heirs put here the asignation of DOFdata and attributes
 		
@@ -205,11 +222,7 @@ class Element extends BaseObject {
 		}
 	}
 
-
-
-
-
-
+	
 
 
 	function parent(&$parent = null){
@@ -288,14 +301,35 @@ class Element extends BaseObject {
 	 * 
 	 * @param array $array_of_data
 	 */
-	public function fillFromArray(array &$array_of_data)
+	public function fillFromArray(&$array_of_data)
 	{
+		if(!is_array($array_of_data)){$array_of_data = array();}
 		foreach($array_of_data as $dataName=>$value){
 			if(isset($this->$dataName) && ($this->$dataName instanceof Data)){
-				$this->$dataName($value);
+				try{
+					$this->$dataName($value);
+				}catch(\DOF\DataValidationException $ve){
+					$this->excetionsMessages[$dataName] = array($ve->getMessage());
+				}
 			}
 		}
 	}
+	
+	public function requiredCheck($array=array()){
+		
+		$requiredDatas = $this->datasWith('required');
+		foreach($requiredDatas as $requiredData){
+			if( !$this->$requiredData->val() && ($this->$requiredData->required() && !@$this->$requiredData->autoIncrement) ) {
+				$array[$requiredData][] = $this->$requiredData->validationRequired();
+			}			
+		}
+		
+		return $array;
+		
+	}
+
+
+	
 	
 	/**
 	*
@@ -306,8 +340,9 @@ class Element extends BaseObject {
 	*/
 	public function fillFromRequest()
 	{
-		return $this->fillFromArray($_REQUEST);
-		
+		//try{
+			$this->fillFromArray($_REQUEST);
+		//}catch(\DOF\ElementValidationException $ev){}
 		/**
 		 * COMPLETE THE PART TO HANDLE FILES
 		 */
@@ -371,40 +406,70 @@ class Element extends BaseObject {
 	 updateInDS // este debe ser automatico desde el save si se tiene id se genera
 	*/
 	
+	function validateForDB(){
+		@$excetionsMessages=$this->requiredCheck($this->excetionsMessages);
+		if(!empty($excetionsMessages)){
+			throw new \DOF\ElementValidationException($excetionsMessages);
+		}
+	}
+	
 	function processCreate($nextStep = null){
-		$this->fillFromRequest();
-        if($this->create()){
 
-            if(empty($nextStep)) {
-                header('Location: '.$this->encodeURL(array($this->getId()), 'showUpdate'));
-            } else if(substr($nextStep,-1*strlen('makeSelection')) == 'makeSelection') {
-                header('Location: '.$nextStep . '/' . $this->getId());
-            } else {
-				header('Location: '.$nextStep);
+		try{
+			$this->fillFromRequest();
+			$this->validateForDB();
+		}catch( \DOF\ElementValidationException $ev ){
+			var_dump($ev->datasValidationMessages());
+			return;
+		}
+		try{
+			if($this->create()){
+				if(empty($nextStep)) {
+					header('Location: '.$this->encodeURL(array($this->getId()), 'showUpdate'));
+				} else if(substr($nextStep,-1*strlen('makeSelection')) == 'makeSelection') {
+					header('Location: '.$nextStep . '/' . $this->getId());
+				} else {
+					header('Location: '.$nextStep);
+				}
+
+			} else {
+				// @todo: error handling
+				user_error('Cannot update in DS!', E_USER_ERROR);
 			}
-        
-		} else {
-			// @todo: error handling
-			user_error('Cannot update in DS!', E_USER_ERROR);
+		}catch(\PDOException $ev ){
+			//var_dump($ev->errorInfo[1]);
+			//@todo handdle the exising ID (stirngID) in the DS
+			var_dump($ev);
 		}
 	}
 	
 	//function processUpdate($short_template=null, $sid=null){
 	function processUpdate($nextStep = null){
-		$this->fillFromRequest();
-        if($this->update()){
+		
+		try{
+			$this->fillFromRequest();
+			$this->validateForDB();
+		}catch( \DOF\ElementValidationException $ev ){
+			var_dump($ev->datasValidationMessages());
+			return;
+		}
+		try{
+			if($this->update()){
 
-            if(empty($nextStep)) {
-                header('Location: '.$this->encodeURL(array($this->getId()), 'showAdmin'));
-            } else {
-                header('Location: '.$nextStep);
-                //if($sid) $this->sid($sid);
-                //return $this->makeSelection($short_template, $sid);
-            }
-        
-		} else {
-			// @todo: error handling
-			user_error('Cannot update in DS!', E_USER_ERROR);
+				if(empty($nextStep)) {
+					header('Location: '.$this->encodeURL(array($this->getId()), 'showAdmin'));
+				} else {
+					header('Location: '.$nextStep);
+					//if($sid) $this->sid($sid);
+					//return $this->makeSelection($short_template, $sid);
+				}
+
+			} else {
+				// @todo: error handling
+				user_error('Cannot update in DS!', E_USER_ERROR);
+			}
+		}catch(\PDOException $ev ){
+			var_dump($ev->errorInfo[1]); //duplicated primary key (Possibel with stringID)
 		}
 	}
 
@@ -444,9 +509,13 @@ class Element extends BaseObject {
 	}
 		
 	function processSearch(){
-		$this->fillFromRequest();
-		$search = new Search(array($this->getClass()));
-		return $search->processSearch($this->toArray());
+		try{
+			$this->fillFromRequest();
+			$search = new Search(array($this->getClass()));
+			return $search->processSearch($this->toArray());
+		}catch( \DOF\ElementValidationException $ev ){
+			var_dump($ev->datasValidationMessages());
+		}
 	}
     
     
@@ -741,7 +810,7 @@ class Element extends BaseObject {
 		} else {
 			$VCSL = substr($caller_method, strlen('show'));
 			$vcsl = strtolower($VCSL);
-			$with_form = in_array($vcsl, array('create', 'update', 'delete', 'search'));
+			$with_form = in_array($vcsl, $this->formMethods);
 		}
         
 		$overwrite_template = Main::$OVERWRITE_LAYOUT_TEMPLATES;
@@ -840,6 +909,9 @@ class Element extends BaseObject {
         foreach($dom['.SimplOn.Data.SNL-'.$this->nestingLevel()] as $node) {
             $domNode = pq($node);
             $data = explode(' ', $domNode->attr('class'));
+			if(!isset($data[4])){
+				$vladu = $domNode.'';
+			}
             if($data[4]) {
                 $data = $this->{'O'.$data[4]}();
                 if( $data instanceof Data && $data->hasMethod($caller_method) )
@@ -1063,4 +1135,23 @@ class Element extends BaseObject {
 		}
         return $output;
 	}
+	
+	
+	
+	static function allow($user, $method){
+		
+	}
+	
+	
+	
+//Allow - Deny
+//
+//static [group][method,method, method]
+//static functon (User, Method)
+//
+//return boolean	
+	
+	
+	
+	
 }

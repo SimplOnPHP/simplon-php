@@ -19,33 +19,28 @@
 namespace DOF\Datas;
 
 /**
-* ID para las tablas
+* Hidden para las tablas
 * --- No imprime un label y manda un input hidden.
 *
 * @version	1.0
 * @author	Ruben Schaffer
 * @todo fix so val retuns the value and only the inputmethod retuns the hidden inpunt
 */
-abstract class Id extends Data
+class radioButton extends Data
 {
-	
-	
 	protected
 		$view = false,
 		$create = false,
 		$update = true,
-		$required = true;
-
+		$required = false;
 	
-	/**
-	 *This needs to be redefined to enshure that REQURED can not be unset since this is an ID
-	 * @param type $flags 
-	 */
-	function dataFlags($flags)
+	public function showInput($fill)
 	{
-		parent::dataFlags($flags);
-		$this->required = true;
+		if($this->val())
+		{
+			return '<input class="DOF input '. $this->getClass() .'" name="'. $this->name() .'" '.(($fill)?' value="'.$this->val() .'"':'').' type="hidden" />';
+		} 
 	}
-	
-	
+		
+	public function label() {}
 }

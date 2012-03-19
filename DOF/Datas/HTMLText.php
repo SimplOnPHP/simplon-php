@@ -18,13 +18,15 @@
 */
 namespace DOF\Datas;
 
-class HTMLText extends Data
+class HTMLText extends Text
 {
-	private $list = false;
-	
-	function showInput($fill)
-	{
-		//@todo: display a RichText editor instead of Textarea
-		return  '<textarea class="'.$this->htmlClasses('input editor').'" id="'.$this->inputName().'" name="'.$this->inputName().'">'.(($fill)? $this->val :'').'</textarea>';
-	}
+//	protected $list = false;
+//	
+//	function showInput($fill)
+//	{
+//		$data_id = 'DOF_'.$this->instanceId();		
+//		//@todo: display a RichText editor instead of Textarea
+//		return  ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
+//				'<textarea id="'.$this->inputName().'" name="'.$this->inputName().'">'.(($fill)? $this->val :'').'</textarea>';
+//	}
 }

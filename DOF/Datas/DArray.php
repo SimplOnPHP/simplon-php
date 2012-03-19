@@ -27,7 +27,7 @@ class DArray extends Data {
 	//@todo determine the proper input for the array
 	function showInput($fill)
 	{
-		return '<input class="'.$this->htmlClasses('input').'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
+		return '<input name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
 	}
 
 

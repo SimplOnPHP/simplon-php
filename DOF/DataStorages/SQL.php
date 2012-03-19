@@ -34,7 +34,7 @@ abstract class SQL extends DataStorage
 		
 		'Date'          => 'date',
 				
-		'HTMLText'      => 'text',
+		'Text'      => 'text',
 		'ElementContainer' => '_ForeignKey_',
 	);
 	
@@ -359,10 +359,11 @@ abstract class SQL extends DataStorage
 		
 		$this->db->beginTransaction();
 		$prepared->execute($values);
-		
+
 		// @todo: place an alternative for MSSQL
-		$id = $this->db->lastInsertId();
-			
+		$id = $element->getId() ?: $this->db->lastInsertId();
+		
+		
 		if($this->db->commit()) {
 			return $id;
 		} else {

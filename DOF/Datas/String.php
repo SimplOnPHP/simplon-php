@@ -31,6 +31,6 @@ class String extends Data {
         $data_id = 'DOF_'.$this->instanceId();
 		return 
             ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
-            '<input id="'.$data_id.'" class="'.$this->htmlClasses('input').'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
+            '<input id="'.$data_id.'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
 	}
 }

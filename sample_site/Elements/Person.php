@@ -5,7 +5,8 @@ class Person extends \DOF\Elements\Element
 	{
 	    $this->id = new \DOF\Datas\NumericId('CURP');
 		$this->firstname = new \DOF\Datas\String('Name','VCUSL');
-		$this->lastname = new \DOF\Datas\String('Last Name', 'sL');
-        //$this->cabeza = new \DOF\Datas\String('Cabeza','VCUSL');
+		$this->lastname = new \DOF\Datas\String('Last Name', 'RsL');
+        $this->number = new \DOF\Datas\Integer('Numerico','R');
+		
 	}
 }

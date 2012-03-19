@@ -18,34 +18,42 @@
 */
 namespace DOF\Datas;
 
-/**
-* ID para las tablas
-* --- No imprime un label y manda un input hidden.
-*
-* @version	1.0
-* @author	Ruben Schaffer
-* @todo fix so val retuns the value and only the inputmethod retuns the hidden inpunt
-*/
-abstract class Id extends Data
+class Message extends Data
 {
-	
-	
 	protected
-		$view = false,
-		$create = false,
-		$update = true,
-		$required = true;
-
 	
-	/**
-	 *This needs to be redefined to enshure that REQURED can not be unset since this is an ID
-	 * @param type $flags 
-	 */
-	function dataFlags($flags)
-	{
-		parent::dataFlags($flags);
-		$this->required = true;
-	}
+		$view = true,
+
+		$create = true,
+
+		$update = true,
+
+		$search = true,
+
+		$list = false,
+
+		$required = false,
+
+		$fetch = false;
+	
+	
+	
+	
+	function showInput($fill)
+	{ return $this->showView(); }
+	
+	
+	public function doRead()
+	{}
+	
+	public function doCreate()
+	{}
+		
+	public function doUpdate()
+	{}
+
+	public function doSearch()
+	{}	
 	
 	
 }
