@@ -164,10 +164,10 @@ class ElementsContainer extends Data {
         $ret =  ' <span class="SimplOn label">'.$this->label().'</span>: <ul>';
                 
         foreach($this->allowedClassesInstances as $classInstance){
-            $nextStep = $this->parent->encodeURL(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection'));
+            $nextStep = $this->encodeURL('makeSelection');
             $ret.='<li>'.$classInstance->getClassName()
-                .' <a class="SimplOn lightbox" href="'.htmlentities($this->parent->encodeURL(array(),'callDataMethod',array($this->name(),'showSelect',array($classInstance->getClass())) )).'">List</a> '
-                .' <a class="SimplOn lightbox" href="'.htmlentities($classInstance->encodeURL(array(),'showCreate',array('',$classInstance->encodeURLfragment(array(),'processCreate',array($nextStep))  ))).'">Add</a> '
+                .' <a class="SimplOn lightbox" href="'.htmlentities($this->encodeURL('showSelect',array($classInstance->getClass()) )).'">List</a> '
+                .' <a class="SimplOn lightbox" href="'.htmlentities($classInstance->encodeURL(array(),'showCreate',array(null, $classInstance->encodeURL(array(), 'processCreate', array($nextStep))  ))).'">Add</a> '
                 .'</li>'
             ;
         }
@@ -189,7 +189,7 @@ class ElementsContainer extends Data {
 	public function showInputView($element)
 	{
         if($element->getId()){
-            $nextStep = $this->parent->encodeURL(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection', array ($element->getId()) ));
+            $nextStep = $this->encodeURL('makeSelection', array ($element->getId()) );
             
             $elementTemplate = \phpQuery::newDocument($this->parent->showView());
             $elementTemplate = $elementTemplate[$this->cssSelector().' '.$element->cssSelector().':first'].'';
@@ -197,7 +197,7 @@ class ElementsContainer extends Data {
             return '
                     <div class="SimplOn element-box">
                         <div class="SimplOn actions">
-                            <a class="SimplOn lightbox" href="'.htmlentities($element->encodeURL(array(),'showUpdate',array('',$element->encodeURLfragment(array(),'processUpdate',array($nextStep))  ))).'">Edit</a>
+                            <a class="SimplOn lightbox" href="'.htmlentities($element->encodeURL(array(),'showUpdate',array('',$element->encodeURL(array(),'processUpdate',array($nextStep))  ))).'">Edit</a>
                             <a class="SimplOn delete" href="#">X</a>
                         </div>
                         <div class="SimplOn view">'.$element->showView($elementTemplate, true).'</div>
@@ -225,7 +225,7 @@ class ElementsContainer extends Data {
         return $element->obtainHtml(
                 "showSearch", 
                 $element->templateFilePath('Search'), 
-                $this->parent->encodeURL(array(),'callDataMethod',array($this->name(), 'showSelect', array($class)) ),
+                $this->encodeURL('showSelect', array($class) ),
                 array('footer' => $element->processSelect())
         );
 	}

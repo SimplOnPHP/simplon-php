@@ -421,13 +421,8 @@ abstract class Data extends BaseObject {
 			return isset($this->label) ? $this->label : $this->name();
 		}
 	}
-		
-//	public function validationMessages(){
-//
-//		if( empty ($this->val) && ($this->required && !@$this->autoIncrement) ) {
-//			$ret[]=$this->validationRequired;
-//		}
-//		
-//		return $ret;
-//	}
+	
+	function encodeURL($method = null, array $method_params = array()) {
+		return Main::encodeURL($this->parent->getClass(), array($this->parent->getId()), $method, $method_params, $this->name());
+	}
 }

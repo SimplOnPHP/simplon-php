@@ -103,23 +103,19 @@ class ElementContainer extends Data {
         $this->element->addOnTheFlyAttribute('parentId' , new Hidden(null,'CUSf', $this->parent->getId(), '' )    );
 
         $this->element->addOnTheFlyAttribute('selectAction' , new SelectAction('', array('Select')) );
-
-
-        // http://localhost/SimplON/sample_site/Fe         /2       |callDataMethod/"home    "/"makeSelection"
-        // http://localhost/SimplON/sample_site/parentClass/parentId|callDataMethod/"dataName"/"makeSelection"
     
 	}
 	
 	function showInput($fill)
 	{
-        $nextStep = $this->parent->encodeURLfragment(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection'));
+        $nextStep = $this->encodeURL('makeSelection');
         $addHref = htmlentities(
 			$this->element->encodeURL(
 				array(),
 				'showCreate',
 				array(
 					'',
-					$this->element->encodeURLfragment(
+					$this->element->encodeURL(
 						array(),
 						'processCreate',
 						array($nextStep)
@@ -129,7 +125,7 @@ class ElementContainer extends Data {
 		);
         return  '
             <span class="SimplOn label">'.$this->label().'</span>:
-			<a class="SimplOn lightbox" href="'.htmlentities($this->parent->encodeURL(array(),'callDataMethod',array($this->name(),'showSelect') )).'">List</a>
+			<a class="SimplOn lightbox" href="'.htmlentities($this->encodeURL('showSelect')).'">List</a>
             <a class="SimplOn lightbox" href="'.$addHref.'">Add</a>
             <div class="SimplOn preview">
                 '.$this->showInputView().'
@@ -146,14 +142,14 @@ class ElementContainer extends Data {
         }
         
         if($this->element->getId()){
-            $nextStep = $this->parent->encodeURLfragment(array($this->parent->getId()),'callDataMethod', array($this->name(), 'makeSelection', array ($this->element->getId()) ));
+            $nextStep = $this->encodeURL('makeSelection', array($this->element->getId()));
             $href = htmlentities(
 					$this->element->encodeURL(
 							array(),
 							'showUpdate',
 							array(
 								'',
-								$this->element->encodeURLfragment(
+								$this->element->encodeURL(
 										array(),
 										'processUpdate',
 										array($nextStep)
@@ -189,7 +185,7 @@ class ElementContainer extends Data {
         return $element->obtainHtml(
                 "showSearch", 
                 $element->templateFilePath('Search'), 
-                $this->parent->encodeURL(array(),'callDataMethod',array($this->name(), 'showSelect') ),
+                $this->encodeURL('showSelect'),
                 array('footer' => $element->processSelect())
         );
 	}

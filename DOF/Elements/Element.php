@@ -426,8 +426,10 @@ class Element extends BaseObject {
 			if($this->create()){
 				if(empty($nextStep)) {
 					header('Location: '.$this->encodeURL(array($this->getId()), 'showUpdate'));
+				} else if(substr($nextStep,-1*strlen('makeSelection')) == 'makeSelection') {
+					header('Location: '.$nextStep . '/' . $this->getId());
 				} else {
-					header('Location: '.$nextStep . Main::encodeUrl(null,null,null, array(array($this->getId(),$this->getClass()))) );
+					header('Location: '.$nextStep);
 				}
 
 			} else {
@@ -1044,12 +1046,6 @@ class Element extends BaseObject {
 	
 //------------------------------- ????	
 
-	function encodeURLfragment(array $construct_params = array(), $method = null, array $method_params = array()) {
-        if( empty($construct_params) && $this->getId() ) {
-            $construct_params = array( $this->getId() );
-        }
-		return Main::encodeURLfragment($this->getClass(), $construct_params, $method, $method_params);
-	}
 	function encodeURL(array $construct_params = array(), $method = null, array $method_params = array()) {
         if( empty($construct_params) && $this->getId() ) {
             $construct_params = array( $this->getId() );
