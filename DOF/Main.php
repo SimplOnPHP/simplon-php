@@ -95,6 +95,7 @@ class Main {
 	static
 		$class,
 		$method,
+		$dataName,
 		$construct_params,
 		$method_params;
 	
@@ -111,6 +112,15 @@ class Main {
 	
 	static function run($ini = null) {
 		self::setup($ini);
+		/**
+		echo '<br>self::$class ';var_dump(self::$class);
+		echo '<br>self::$construct_params ';var_dump(self::$construct_params);
+		echo '<br>self::$dataName ';var_dump(self::$dataName);
+		echo '<br>self::$method ';var_dump(self::$method);
+		echo '<br>self::$method_params ';var_dump(self::$method_params);
+		echo '<br>$_SERVER: ';var_dump($_SERVER,true);
+		return;
+		/**/
 		
 		if(class_exists(self::$class) || class_exists('\\DOF\\Elements\\'.self::$class)) {
             $cp = self::$construct_params;
@@ -122,14 +132,16 @@ class Main {
 				&&
 				($obj instanceof Elements\Element)
 			){
+				if(self::$dataName) {
+					$obj = $obj->{self::$dataName};
+				}
 				echo call_user_func_array(array($obj, self::$method), self::$method_params);
 			} else {
 				header('HTTP/1.1 403 Access forbidden');
 				return;
 			}
 		} else {
-			//header('HTTP/1.1 404 File not found');
-			echo 'Class '.self::$class.' not found';
+			header('HTTP/1.1 404 File not found');
 			return;
 		}
 	}
@@ -174,65 +186,131 @@ class Main {
 		return self::$DATA_STORAGE;
 	}
 	
-	static function decodeURL() {
-		
-		// Parses the URL
-		$f_decode_param = function($p) {
-			//$url_decoded = urldecode(urldecode($p));
-			$url_decoded = urldecode($p);
-			//$url_decoded = str_replace('%255C','\\', str_replace('%25255C','%255C', $p));
-			//$url_decoded = $p;
-            if($url_decoded == 'null') return null;
-			
-            $json_decoded = json_decode($url_decoded);
-			//return $json_decoded;
-			return isset($json_decoded) ? $json_decoded : $url_decoded;
-		};
-		
-		$server_request = $_SERVER['REQUEST_URI'];
-		$query_string = '';
-        $query_separator = self::$URL_METHOD_SEPARATOR;
-		if(strpos($server_request, $query_separator) === false) {
-            $query_separator = urlencode($query_separator);
-        }
-		if(strpos($server_request, $query_separator) !== false) {
-			$query_string = substr($server_request, strpos($server_request, $query_separator)+strlen($query_separator));
-			$server_request = substr($server_request, 0, strpos($server_request, $query_separator));
-		}
-		$virtual_path = array_values(array_diff(
-			explode('/',$server_request), 
-			explode('/',self::$REMOTE_ROOT)
-		));
-		
-		self::$class = @array_shift($virtual_path) ?: self::$DEFAULT_ELEMENT;
-		self::$construct_params = array_map($f_decode_param, @array_values($virtual_path) ?: array());
-		
-		$GET_virtual_path = array_values(explode('/',$query_string));
-		self::$method = @array_shift($GET_virtual_path) ?: self::$DEFAULT_METHOD;
-		self::$method_params = array_map($f_decode_param, @$GET_virtual_path ?: array());
+	static function fixCode($string, $encoding = true) {
+		return $encoding  
+			? strtr($string, array(
+				'%2F' => '/',
+				'%2522' => '%252522',
+				'%22' => '%2522',
+				'%255C' => '%25255C',
+				'%5C' => '%255C',
+			))
+			: strtr($string, array(
+				'%2522' => '%22',
+				'%252522' => '%2522',
+				'%255C' => '%5C',
+				'%25255C' => '%255C',
+			));
 	}
 	
-	static function encodeURLfragment($class = null, $construct_params = null, $method = null, array $method_params = array()) {
-		return
-            (isset($class) ? self::$REMOTE_ROOT . '/' . $class : '')
-            . (isset($construct_params) ? (!empty($construct_params) ? '/' . implode('/',array_map('json_encode', $construct_params)) : '/') : '')
-			. (isset($method) ? self::$URL_METHOD_SEPARATOR . $method : '')
-            . (@$method_params ? '/' . implode('/',array_map('json_encode', $method_params)) : '');
+	static function parameterEncoder($p) {
+		if(is_string($p)) {
+			$string_delimiter = '"';
+			$p = self::fixCode(urlencode($p));
+			return $string_delimiter. $p .$string_delimiter;
+		} else {
+			return urlencode($p);
+		}
 	}
-	static function encodeURL($class = null, $construct_params = null, $method = null, array $method_params = array()) {
-		$fencoder = function ($p) {
-			//return urlencode(urlencode(json_encode($p)));
-			//return str_replace('/','%2F', json_encode($p));
-			return str_replace('\\','%255C',json_encode($p));
-			//return json_encode($p);
+	
+	static function encodeURL($class = null, $construct_params = null, $method = null, $method_params = null, $dataName = null) {
+		$url = '';
+		if(isset($class)) {
+			// class
+			$url.= self::$REMOTE_ROOT . '/' . self::fixCode($class);
+			
+			// construct params
+			if(!empty($construct_params) && is_array($construct_params)) {
+				$url.= '/' . implode('/',array_map(
+					array('self','parameterEncoder'), 
+					$construct_params
+				));
+			}
+			
+			if(isset($dataName) && isset($method)) {
+				// Data name
+				$url.= self::$URL_METHOD_SEPARATOR . $dataName;
+			}
+			
+			if(isset($method)) {
+				// method
+				$url.= self::$URL_METHOD_SEPARATOR . $method;
+				
+				// method params
+				if(!empty($method_params) && is_array($method_params)) {
+					$url.= '/' . implode('/',array_map(
+						array('self','parameterEncoder'), 
+						$method_params
+					));
+				}
+			}
+		}
+		
+		return $url;
+	}
+	
+	static function decodeURL() {
+		$string_delimiter = '"';
+		$server_request = urldecode(substr($_SERVER['REQUEST_URI'], strlen(self::$REMOTE_ROOT)));
+        $qs = self::$URL_METHOD_SEPARATOR;
+		$sd = $string_delimiter;
+		$offset = 0;
+		
+		
+		$parameterDecoder = function($what, $encapsulated = false) use($sd, $qs, $server_request, &$offset) {
+			$regexes = array(
+				'class' => '\/ (?<raw>[^'.$sd.$qs.'\/]+) ',
+				'construct_params' => '(?:\/(?: (?<raw>[^'.$sd.$qs.'\/]+) | '.$sd.'(?<string>[^'.$sd.']*)'.$sd.' ))',
+				'dataName' => $qs.' (?<raw>[^'.$sd.$qs.'\/]+) (?='.$qs.')',
+				'method' => $qs.' (?<raw>[^'.$sd.$qs.'\/]+) ',
+				'method_params' => '(?:\/(?: (?<raw>[^'.$sd.$qs.'\/]+) | '.$sd.'(?<string>[^'.$sd.']*)'.$sd.' ))',
+			);
+			if(preg_match('/^'. $regexes[$what] .'/x', substr($server_request, $offset), $matches, PREG_OFFSET_CAPTURE)) {
+				$offset+= $matches[0][1] + strlen($matches[0][0]);
+				$raw = @$matches['raw'][0];
+				$string = @$matches['string'][0];
+				
+				if(empty($raw) && empty($string)) {
+					$return = '';
+				} else if(!empty($raw) && empty($string)) {
+					if($raw == 'null') {
+						$return = null;
+					} else if($raw == 'false') {
+						$return = array(false);
+					} else if(is_numeric($raw)) {
+						$return = floatval($raw) == intval($raw)
+							? intval($raw)
+							: floatval($raw);
+					} else {
+						$return = $raw;
+					}
+				} else if(empty($raw) && !empty($string)) {
+					$return = urldecode(\DOF\Main::fixCode($string, false));
+				}
+				return $encapsulated
+					? array($return)
+					: $return;
+			} else {
+				return false;
+			}
 		};
 		
-		return
-            (isset($class) ? self::$REMOTE_ROOT . '/' . $class : '')
-            . (isset($construct_params) ? (!empty($construct_params) ? '/' . implode('/',array_map($fencoder, $construct_params)) : '/') : '')
-			. (isset($method) ? self::$URL_METHOD_SEPARATOR . $method : '')
-            . (@$method_params ? '/' . implode('/',array_map($fencoder, $method_params)) : '');
+		self::$class = $parameterDecoder('class') ?: Main::$DEFAULT_ELEMENT;
+		
+		self::$construct_params = array();
+		while(($param = $parameterDecoder('construct_params', true)) !== false) {
+			self::$construct_params[] = $param[0];
+		}
+		
+		self::$dataName = $parameterDecoder('dataName');
+		self::$method = $parameterDecoder('method') ?: Main::$DEFAULT_METHOD;
+		
+		self::$method_params = array();
+		while(($param = $parameterDecoder('method_params', true)) !== false) {
+			self::$method_params[] = $param[0];
+		}
 	}
+	
 	
 	static function fromArray(array $ini) {
 		foreach($ini as $const => $value)
@@ -289,8 +367,10 @@ class Main {
 		
 		if(reset($pathExploded) == 'DOF') {
 			$file_to_load = '../' . str_replace('\\', '/', $classToLoad) . '.php';
-			require $file_to_load;
-			return true;
+			if(file_exists($file_to_load)) {
+				require $file_to_load;
+				return true;
+			}
 		} else {
 			$classToLoad = end($pathExploded);
 			

@@ -18,13 +18,13 @@
 */
 namespace DOF\Datas;
 
-class Float extends Integer {
+class Alphanumeric extends String {
 	function val($val = null) {
 		if(isset($val)) {
-			if(is_numeric($val))
-				$this->val = floatval($val);
+			if(ctype_alnum($val)) 
+				$this->val = $val;
 			else
-				user_error('Non-numeric value received.');
+				user_error('Non alphanumeric value received.');
 		} else {
 			return $this->val;
 		}

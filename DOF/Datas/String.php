@@ -21,14 +21,12 @@ namespace DOF\Datas;
 class String extends Data {
 	
 	protected 
-	$view = true,
-	$create = true,
-	$update = true,
-    $list = true,
-	$filterCriteria = 'name ~= :name';
+		$view = true,
+		$create = true,
+		$update = true,
+		$list = true,
+		$filterCriteria = 'name ~= :name';
 	
-    
-    
 	public function showInput($fill) {
         $data_id = 'DOF_'.$this->instanceId();
 		return 

@@ -22,6 +22,7 @@ class Html5 {
     
 	static function table_from_elements($elements, $columns = null) {
 		$tbody_html = '<tbody>';
+		$thead_html = '';
 		foreach($elements as $elementIndex => $element) {
 			$thead_html = '<thead><tr class="SimplOn">';
 			$tbody_html .= '<tr class="SimplOn tableRow '.$element->getClassName().'">';

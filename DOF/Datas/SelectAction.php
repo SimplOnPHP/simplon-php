@@ -28,11 +28,13 @@ class SelectAction extends ElementLink {
 	public function val($sources = null){
 		if(!is_array($sources)) $sources = $this->sources;
         
-		//$href = $this->parent->encodeURL($id ? array($id) : array(), $this->method,   array( $this->parent->parentClass() )      );
-        $params =  array( $this->parent->dataName(), 'makeSelection', array($this->parent->getId(), $this->parent->getClass()) ) ;
-        $href = Main::encodeURL($this->parent->parentClass(), array($this->parent->parentId()), 'callDataMethod', $params);
+        $href = $this->encodeURL('makeSelection', array($this->parent->getId(), $this->parent->getClass()) );
 		$content = vsprintf(array_shift($sources), $this->sourcesToValues($sources));
 		
 		return Main::$DEFAULT_RENDERER->link($content, $href, array('class'=>$this->htmlClasses()));
+	}
+	
+	function encodeURL($method = null, array $method_params = array()) {
+		return Main::encodeURL($this->parent->parentClass(), array($this->parent->parentId()), $method, $method_params, $this->parent->dataName());
 	}
 }

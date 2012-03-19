@@ -408,4 +408,8 @@ abstract class Data extends BaseObject {
 	public function label(){
 		return isset($this->label) ? $this->label : $this->getClassName();
 	}
+	
+	function encodeURL($method = null, array $method_params = array()) {
+		return Main::encodeURL($this->parent->getClass(), array($this->parent->getId()), $method, $method_params, $this->name());
+	}
 }
