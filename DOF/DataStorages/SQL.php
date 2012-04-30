@@ -17,6 +17,7 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace DOF\DataStorages;
+use \DOF\Main;
 
 abstract class SQL extends DataStorage
 {
@@ -108,7 +109,7 @@ abstract class SQL extends DataStorage
 		return in_array(strtolower($element->storage()), array_map('strtolower', $this->db->query('SHOW TABLES', \PDO::FETCH_COLUMN,0)->fetchAll()));
 	}
 	
-	public function alterTable(\DOF\Elements\Element &$element) {
+	public function alterTable(\DOF\Elements\Element $element) {
 		// Verify that we have the same Datas in the element and in the DB
 		$dbColumns = array();
 		$dbIndexes = array();
@@ -272,15 +273,13 @@ abstract class SQL extends DataStorage
 			$return = $element->storageChecked();
 		} else {
 			if(!$this->isSetElementStorage($element)) {
-				// @todo: Create Table ONLY IN DEVELOPMENT MODE
-				if(true) {
+				if(Main::$DEV_MODE) {
 					$return = $this->createTable($element);
 				} else {
 					$return = false;
 				}
 			} else if(!$this->isValidElementStorage($element)) {
-				// @todo: alter table ONLY IN DEVELOPMENT MODE
-				if(true) {
+				if(Main::$DEV_MODE) {
 					$return = $this->alterTable($element) && $this->isValidElementStorage($element);
 				} else {
 					$return = false;
@@ -299,18 +298,18 @@ abstract class SQL extends DataStorage
 		$typesMap = array_reverse(self::$typesMap, true);
 		foreach($typesMap as $class => $type)
 		{
-			if($attr_types = $element->attributesTypes('\\DOF\\Datas\\'.$class)) {
+			if($attr_types = $element->attributesTypesWith('\\DOF\\Datas\\'.$class)) {
 			//if($attr_types = $element->processData('doRead')) {
-				// @todo: continue from here! (new instance_of :)			
-				if($type == '_ForeignKey_') {
-					foreach($attr_types as $attr){
-						$encapsuledElement = $element->{'O'.$attr}()->element();
-						$encapsuledElementDatasTypes = $this->getDataTypes($encapsuledElement);
-						$result[$attr] = str_replace('auto_increment', '', $encapsuledElementDatasTypes[$encapsuledElement->field_id()]);
+				// @todo: continue from here! (new instance_of :)				
+					if($type == '_ForeignKey_') {
+						foreach($attr_types as $attr){
+							$encapsuledElement = $element->{'O'.$attr}()->element();
+							$encapsuledElementDatasTypes = $this->getDataTypes($encapsuledElement);
+							$result[$attr] = str_replace('auto_increment', '', $encapsuledElementDatasTypes[$encapsuledElement->field_id()]);
+						}
+					} else {
+							$result = array_merge($result, array_combine($attr_types, array_fill(0, count($attr_types), $type)));
 					}
-				} else {
-					$result = array_merge($result, array_combine($attr_types, array_fill(0, count($attr_types), $type)));
-				}
 			}
 		}
 		
@@ -346,7 +345,7 @@ abstract class SQL extends DataStorage
 		{
 			list($column, $class, $value) = $data;
 			if(!in_array($column, $columns)) {
-				$columns[] = $column;
+				$columns[] = '`'.$column.'`';
 				$values[':'.$column] = $value;
 			}
 		}
@@ -379,7 +378,7 @@ abstract class SQL extends DataStorage
 		foreach($element->processData('doUpdate') as $datas){
 			foreach($datas as $data){
 				if($data[0] != $field_id) {
-					$sets[] = $data[0].'=:'.$data[0];
+					$sets[] = '`'.$data[0].'`=:'.$data[0];
 				}
 				$values[':'.$data[0]] = $data[2];
 			}
@@ -402,6 +401,7 @@ abstract class SQL extends DataStorage
         $storages = is_array($element->storage())
                         ? $element->storage() 
                         : array($element->getClass() => $element->storage());
+		
 		/*
          * Select only the readable elements
          */
@@ -417,7 +417,7 @@ abstract class SQL extends DataStorage
 		foreach($storages as $class => $storage) {
 			$storage_fields = $fields; // id as id, 'id' as field_id, 'fe' as storage
 			$addFields =
-				'"'.$class.'" as `DOF_class`, '. 
+				'"'.strtr($class,array('\\'=>'\\\\')).'" as `DOF_class`, '. 
 				'"'.$element->field_id().'" as `DOF_field_id`, '.
 				'"'.$element->field_id().'" as `DOF_id`, '. // mandatory (ej. to make it possible to order on a UNION)
 				'"'.$element->field_id().'", `';
@@ -469,7 +469,7 @@ abstract class SQL extends DataStorage
                     default:
                         //trigger error
                 }
-                
+				
 		return $return;
 	}
 

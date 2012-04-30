@@ -32,7 +32,7 @@ class Html5 {
 				$data = $element->{'O'.$column}();
 				//@todo: this need to be improved in order to evetuly suport list Datas that are not common to all Elements
 				$thead_html .= '<th class="SimplOn">'.$data->label().'</th>';
-				$tbody_html.= '<td class="SimplOn tableData '.$data->getClassName().'">'.$data->val().'</td>';
+				$tbody_html.= '<td class="SimplOn tableData '.$data->getClassName().'">'.$data->showList().'</td>';
 			}
 			
 			$tbody_html .= '</tr>';

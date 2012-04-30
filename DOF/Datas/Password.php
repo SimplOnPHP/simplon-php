@@ -36,7 +36,6 @@ class Password extends String {
 	function val($val = null) {
 		
 		if(isset($val)) {
-			
 			if(is_string($val)){
 				$this->val=$val;
 			}else if(is_array($val)){
@@ -45,8 +44,10 @@ class Password extends String {
 				//if(!trim($val['new'])){throw new \DOF\DataValidationException($this->validationRequired); return;}
 				if($val['new']!=$val['confirm']){throw new \DOF\DataValidationException($this->validationMatch); return;}
 				
-				$this->val=$val['new'];
-				$this->encriptedFlag = False;
+				if(trim($val['new'])){
+					$this->val=$val['new'];
+					$this->encriptedFlag = False;
+				}
 			}
 			
 		} else {
@@ -139,9 +140,10 @@ class Password extends String {
 		
 	public function doUpdate()
 	{
-		if(!$this->encriptedFlag){ $this->val(md5($this->val)); }
-		
-		return parent::doUpdate();
+
+			if(!$this->encriptedFlag){ $this->val(md5($this->val)); }
+			return parent::doUpdate();
+
 	}
 
 	public function doSearch()

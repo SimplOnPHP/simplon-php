@@ -408,7 +408,11 @@ abstract class Data extends BaseObject {
 		return $this->showSearch();
 	}       
         
-        
+ 	function showList(){
+		return $this->val();
+	}
+	
+	
 	/**
 	 * Returns the label for the input
 	 *

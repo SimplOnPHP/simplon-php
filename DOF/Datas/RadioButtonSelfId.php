@@ -30,7 +30,17 @@ class RadioButtonSelfId extends Integer
 {
 	protected $options = array();
 	protected $showValues = true;
+	
+	protected $fetch = false;
 
+	protected
+		$view = false,
+		$create = false,
+		$update = true,
+		$required = false;	
+	
+	
+	
 	public $valudationNotAnOption='The value given is not a valid option';
 	//public $valudationNaN = 'This field must be an integer number.';
 	
@@ -38,6 +48,7 @@ class RadioButtonSelfId extends Integer
 	{
 		$this->showValues = false;
 		parent::__construct($label, $flags, $val, $filterCriteria);
+		$this->fetch = false;
 	}	
 	
 	public function val($val = null){
@@ -53,14 +64,16 @@ class RadioButtonSelfId extends Integer
 	}
 		
 	function showView($template = null){
-		$label = $this->label();
-		$this->label('');
-		$ret = $this->showInput(false);
-		$this->label($label);
-		return $ret;
+
+		return $this->showInput();
 	}
+
+	function showList($fill = true){
+		$value = $this->parent->getId();
+		return '<input class="DOF input '. $this->getClass() .'" name="'. $this->name() .'"  value="'.$value.'"'.' '.(($fill && $this->val==$value)?' checked="checked"':'').' type="radio" />';
+	}	
 	
-	public function showInput($fill)
+	public function showInput($fill = false)
 	{
 		$this->options = array($this->parent->getid());
 		$data_id = 'DOF_'.$this->instanceId();

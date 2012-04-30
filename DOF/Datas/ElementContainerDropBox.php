@@ -29,7 +29,6 @@ use \DOF\Main;
 class ElementContainerDropBox extends ElementContainer {
 
 	
-//	public function val($val = null) {
 //		if($val === '') {
 //			$class = $this->element->getClass();
 //			$this->element = new $class;
@@ -54,23 +53,27 @@ class ElementContainerDropBox extends ElementContainer {
 	
 	
 	
-//	function showInput($fill)
-//	{
-//        $element = $this->element->getClass();
-//        $element = new $element();
-//		
-////		  $element->addOnTheFlyAttribute('parentClass' , new Hidden(null,'CUSf', $this->parent->getClassName(), '' )    );
-////        $element->addOnTheFlyAttribute('dataName' , new Hidden(null,'CUSf', $this->name(), '' )    );
-////        $element->addOnTheFlyAttribute('parentId' , new Hidden(null,'CUSf', $this->parent->getId(), '' )    );
-////        $element->addOnTheFlyAttribute('select' , new RadioButtonSelfId(null,'CUSf')    );
-//
-//        // http://localhost/SimplON/sample_site/Fe         /2       |callDataMethod/"home    "/"makeSelection"
-//        // http://localhost/SimplON/sample_site/parentClass/parentId|callDataMethod/"dataName"/"makeSelection"
-//   
-//        
-//		//return 'ggggg  '.$this->element->getClassName();
-//		//var_dump($element->processSelect());
-//		return $element->processSelect();
-//		
-//	}
+	function showInput($fill)
+	{
+        $element = $this->element->getClass();
+        $element = new $element();
+		
+//		  $element->addOnTheFlyAttribute('parentClass' , new Hidden(null,'CUSf', $this->parent->getClassName(), '' )    );
+//        $element->addOnTheFlyAttribute('dataName' , new Hidden(null,'CUSf', $this->name(), '' )    );
+//        $element->addOnTheFlyAttribute('parentId' , new Hidden(null,'CUSf', $this->parent->getId(), '' )    );
+		$radioButton = new RadioButtonSelfId(null,'CrUSf',$this->val() );
+		$radioButton->name($this->name());
+        $element->addOnTheFlyAttribute( 'selectAction' , $radioButton );
+		//$element->addOnTheFlyAttribute('selectAction' , new Integer('','CUSf',3 ));
+		
+		
+        // http://localhost/SimplON/sample_site/Fe         /2       |callDataMethod/"home    "/"makeSelection"
+        // http://localhost/SimplON/sample_site/parentClass/parentId|callDataMethod/"dataName"/"makeSelection"
+   
+        
+		//return 'ggggg  '.$this->element->getClassName();
+		//return $element->select->showInput();
+		return $element->processSelect();
+		//return $element->selectAction->showInput();
+	}
 }
