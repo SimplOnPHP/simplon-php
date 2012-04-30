@@ -82,7 +82,7 @@ class Main {
 			
 		$QUICK_DELETE = false,
         
-        //super array to alter classes atributes on the fly nus bee in the format "class" -> array("data1name"=>$data1)
+        //super array to alter classes atributes on the fly must be in the format "class" -> array("data1name"=>$data1)
         $onTheFlyAttributes = array();
 	
 	static	
@@ -154,10 +154,12 @@ class Main {
 				}
 			} else {
 				header('HTTP/1.1 403 Access forbidden');
+				header('SimplOn: '.self::$class.' is not an Element class.');
 				return;
 			}
 		} else {
 			header('HTTP/1.1 404 File not found');
+			header('SimplOn: '.self::$class.' is not a valid class name.');
 			return;
 		}
 	}
@@ -182,6 +184,15 @@ class Main {
 				self::fromArray(parse_ini_file($ini));
 			}
 		}
+		
+		/* sets defaults 
+		foreach(self as $var => $val) {
+			if(!isset($$var)) {
+				switch($var) {
+					case 'DEFAULT_RENDERER': self::$DEFAULT_RENDERER = new DOF\Renderers\Html5(); break;
+				}
+			}
+		}*/
 		
 		if(self::$DEV_MODE) {
 			error_reporting(E_ALL);

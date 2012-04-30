@@ -18,15 +18,26 @@
 */
 namespace DOF\Datas;
 
-class Float extends Integer {
+class Float extends Data {
+	public $valudationNaN = 'This field must be a float number.';
+	
 	function val($val = null) {
 		if(isset($val)) {
-			if(is_numeric($val))
+			if( is_numeric($val) && is_float($val*1)  ) {
 				$this->val = floatval($val);
-			else
-				user_error('Non-numeric value received.');
+			}else{
+				throw new \DOF\DataValidationException($this->valudationNaN);
+			}
 		} else {
 			return $this->val;
 		}
+	}
+    
+	public function showInput($fill) {
+        $data_id = 'DOF_'.$this->instanceId();
+
+		return 
+            ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
+            '<input id="'.$data_id.'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
 	}
 }

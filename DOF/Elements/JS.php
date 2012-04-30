@@ -79,6 +79,6 @@ class JS extends Element {
 	
 	function index() {
 		header('Content-type: '. self::mime);
-		readfile(\DOF\Main::$DOF_PATH.'/'. self::type .'/'.$this->flavour.'/'.$this->directory.'/'.$this->file);
+		include(\DOF\Main::$DOF_PATH.'/'. self::type .'/'.$this->flavour.'/'.$this->directory.'/'.$this->file);
 	}
 }

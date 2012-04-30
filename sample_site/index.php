@@ -26,8 +26,7 @@ DOF\Main::run(array(
 
 	'JS_FLAVOUR' => 'jQuery',
 	
-	//'PERMISSIONS' => 'User',
-	'PERMISSIONS' => false,
+	'PERMISSIONS' => /**'User'/*/false/**/,
 	
 	'DEV_MODE' => true,
 	

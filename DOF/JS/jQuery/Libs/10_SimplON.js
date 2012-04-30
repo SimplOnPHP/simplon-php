@@ -228,4 +228,6 @@ var SimplOn = new function() {
 	}
 };
 
-$(function(){SimplOn.init();});
+$(function(){
+	SimplOn.init();
+});

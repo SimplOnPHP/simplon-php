@@ -30,9 +30,10 @@ class BaseObject
 	 *
 	 * @return string Class of the object
 	 */
-	public function getClass()
-	{
-		return get_class($this);
+	public function getClass($fssafe = '') {
+		return $fssafe
+			? strtr(get_class($this), '\\', $fssafe)
+			: get_class($this);
 	}
 	
 	/**

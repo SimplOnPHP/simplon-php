@@ -28,9 +28,8 @@ class String extends Data {
 		$filterCriteria = 'name ~= :name';
 	
 	public function showInput($fill) {
-        $data_id = 'DOF_'.$this->instanceId();
 		return 
-            ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
-            '<input id="'.$data_id.'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
+            ($this->label() ? '<label for="'.$this->htmlId().'">'.$this->label().': </label>' : '') .
+            '<input id="'.$this->htmlId().'" class="'.$this->htmlClasses().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
 	}
 }

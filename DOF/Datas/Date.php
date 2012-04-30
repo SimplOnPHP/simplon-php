@@ -18,14 +18,9 @@
 */
 namespace DOF\Datas;
 
-class Date extends Data {
+class Date extends String {
+	var 
+		$valudationCurrent = 'The current password is incorrect',
+		$validationMatch = 'The new password and the validation doesn\'t matct';
 	
-	protected $view = true;
-	protected $create = true;
-	protected $update = true;
-	
-	function showInput($fill)
-	{
-		return  '<input name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
-	}
 }

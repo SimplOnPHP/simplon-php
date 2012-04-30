@@ -947,23 +947,27 @@ class Element extends BaseObject {
 	}
 	
 	public function getJS($method, $returnFormat = 'array', $compress = false) {
-		$class = end(explode('\\',$this->getClass()));
+		$class = $this->getClass('-');
 		
-		// gets component's js file
-		$local_js = JS::getPath("$class.$method.js");
-		$a_js = $local_js ? array($local_js) : array();
+		// gets class' js file
+		$a_js = ($local_js = JS::getPath("$class.js"))
+				? array($local_js) 
+				: array();
+		
+		// gets method's js file
+		if($local_js = JS::getPath("$class.$method.js"))
+				$a_js[] = $local_js;
 		
 		// adds
 		foreach($this->dataAttributes() as $data)
 			foreach($this->{'O'.$data}()->getJS($method) as $local_js)
 				if($local_js)
 					$a_js[] = $local_js;
-				
-		$a_js = array_unique($a_js);
+		
 		sort($a_js);
 		
 		// includes libs
-		$a_js = array_unique(array_merge($a_js, JS::getLibs()));
+		$a_js = array_unique(array_merge(JS::getLibs(), $a_js));
 	
 		if($compress) {
 			// @todo: compress in one file and return the file path

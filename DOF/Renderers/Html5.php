@@ -19,7 +19,7 @@
 namespace DOF\Renderers;
 
 class Html5 {
-    
+	
 	static function table_from_elements($elements, $columns = null) {
 		$tbody_html = '<tbody>';
 		$thead_html = '';

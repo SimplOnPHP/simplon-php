@@ -211,6 +211,10 @@ abstract class Data extends BaseObject {
 	public function construct($label=null, $flags=null, $val=null, $filterCriteria=null) {}
 	
 	
+	function htmlId() {
+        return 'DOF_'.$this->instanceId();
+    }
+	
 	function htmlClasses($append = '', $nestingLevel = null) {
         if(!$nestingLevel) $nestingLevel = $this->parent->nestingLevel();
         return 'SimplOn Data '.'SNL-'.$nestingLevel.' '.$this->getClassName().' '.$this->name().' '.$append;
@@ -352,12 +356,19 @@ abstract class Data extends BaseObject {
 	}
 	
 	public function getJS($method) {
+		$class = $this->getClass('-');
+
+		// gets class' js file
+		$a_js = ($local_js = JS::getPath("$class.js"))
+				? array($local_js) 
+				: array();
+		
 		if($this->hasMethod($method)) {
-			$class = end(explode('\\',$this->getClass()));
-			return array(JS::getPath("$class.$method.js"));
-		} else {
-			return array();
+			// gets method's js file
+			if($local_js = JS::getPath("$class.$method.js"))
+					$a_js[] = $local_js;
 		}
+		return $a_js;
 	}
 	
 	
