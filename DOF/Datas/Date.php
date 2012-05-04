@@ -20,7 +20,25 @@ namespace DOF\Datas;
 
 class Date extends String {
 	var 
-		$valudationCurrent = 'The current password is incorrect',
-		$validationMatch = 'The new password and the validation doesn\'t matct';
+		$dateFormat = 'm/d/Y',
+		$validationDate = 'Invalid date received!',
+		$dateObj;
+	
+	function val($val = null) {
+		if(isset($val)) {
+			$val = trim($val);
+			if(is_numeric($val)) {
+				$this->dateObj = new \DateTime();
+				$this->dateObj->setTimestamp($val);
+			} else {
+				$this->dateObj = new \DateTime($val);
+			}
+			$this->val = $this->dateObj->format($this->dateFormat);
+		} else {
+			return $this->val;
+		}
+	}
+	
+	//@todo: declare doRead and similar methods
 	
 }

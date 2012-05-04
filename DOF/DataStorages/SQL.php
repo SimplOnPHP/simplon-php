@@ -30,9 +30,9 @@ abstract class SQL extends DataStorage
 		'Integer'   	=> 'int(11)',
 		'Float'         => 'float',
 		
-		'String'    	=> 'varchar(240)',
-		
 		'Date'          => 'date',
+		
+		'String'    	=> 'varchar(240)',
 				
 		'Text'      => 'text',
 		'ElementContainer' => '_ForeignKey_',
