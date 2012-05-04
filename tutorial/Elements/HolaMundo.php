@@ -1,6 +1,6 @@
 <?php
 
-use \DOF\Elements\Element, \DOF\Datas;
+use \SimplOn\Elements\Element, \SimplOn\Datas;
 
 /**
  * Tutorial ejercicio 1.1 HolaMundo

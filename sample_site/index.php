@@ -2,19 +2,19 @@
 date_default_timezone_set('America/Mexico_City');
 setlocale(LC_ALL, 'es_MX.UTF-8', 'es_ES.UTF-8');
 
-require '../DOF/Main.php';
-DOF\Main::run(array(
+require '../SimplOn/Main.php';
+SimplOn\Main::run(array(
 	'LOCAL_ROOT' => __DIR__,
 	'REMOTE_ROOT' => dirname($_SERVER['PHP_SELF']),
 	
-	'DOF_PATH' => realpath('../DOF'),
+	'SimplOn_PATH' => realpath('../SimplOn'),
 	
 	'DEFAULT_ELEMENT' => 'Fe',
 	'DEFAULT_METHOD' => 'index',
 	
 	'GENERIC_TEMPLATES_PATH' => realpath('Templates'),
-	'MASTER_TEMPLATE' => realpath('../DOF').'/Renderers/Html5.html',
-	'DEFAULT_RENDERER' => new DOF\Renderers\Html5(),
+	'MASTER_TEMPLATE' => realpath('../SimplOn').'/Renderers/Html5.html',
+	'DEFAULT_RENDERER' => new SimplOn\Renderers\Html5(),
 
 	'CREATE_LAYOUT_TEMPLATES' => true,
 	'OVERWRITE_LAYOUT_TEMPLATES' => 1,
@@ -26,13 +26,13 @@ DOF\Main::run(array(
 
 	'JS_FLAVOUR' => 'jQuery',
 	
-	'PERMISSIONS' => 'DOF\Elements\User',
+	'PERMISSIONS' => 'SimplOn\\Elements\\User',
 	//'PERMISSIONS' => false,
 	
 	'DEV_MODE' => true,
 	
 	'DATA_STORAGE' => array(
-		'driver' => 'DOF\\DataStorages\\MySql',
+		'driver' => 'SimplOn\\DataStorages\\MySql',
 		'host' => 'localhost',
 		'db' => 'sample_site',
 		'user' => 'root',

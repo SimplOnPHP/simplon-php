@@ -1,0 +1,51 @@
+<?php
+/*
+	Copyright © 2011 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+	
+	This file is part of “SimplOn PHP”.
+	
+	“SimplOn PHP” is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation version 3 of the License.
+	
+	“SimplOn PHP” is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
+*/
+namespace SimplOn\Datas;
+
+/**
+* ID para las tablas
+* --- No imprime un label y manda un input hidden.
+*
+* @version	1.0
+* @author	Ruben Schaffer
+* @todo fix so val retuns the value and only the inputmethod retuns the hidden inpunt
+*/
+abstract class Id extends Data
+{
+	
+	
+	protected
+		$view = false,
+		$create = false,
+		$update = true,
+		$required = true;
+
+	
+	/**
+	 *This needs to be redefined to enshure that REQURED can not be unset since this is an ID
+	 * @param type $flags 
+	 */
+	function dataFlags($flags)
+	{
+		parent::dataFlags($flags);
+		$this->required = true;
+	}
+	
+	
+}

@@ -1,4 +1,4 @@
 <?php
-class Search extends \DOF\Elements\Search
+class Search extends \SimplOn\Elements\Search
 {
 }

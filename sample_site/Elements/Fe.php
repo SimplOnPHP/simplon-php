@@ -1,10 +1,10 @@
 <?php
-use \DOF\Elements\Element, \DOF\Datas;
+use \SimplOn\Elements\Element, \SimplOn\Datas;
 
 class Fe extends Element
 {
 	public function construct($id = null, $storage=null, &$specialDataStorage = null) {
-	    $this->id = new \DOF\Datas\NumericId('Id');
+	    $this->id = new \SimplOn\Datas\NumericId('Id');
 		$this->cabeza = new Datas\String('¿Cuando tendrás Fe?', 'S');
 		$this->contenido = new Datas\String('Contenido', 'S');
 		$this->home = new Datas\ElementContainer(new Home(), 'Home');

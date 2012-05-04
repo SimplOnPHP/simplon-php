@@ -4,19 +4,19 @@
 date_default_timezone_set('America/Mexico_City');
 setlocale(LC_ALL, 'es_MX.UTF-8', 'es_ES.UTF-8');
 
-require '../DOF/Main.php';
-DOF\Main::run(array(
+require '../SimplOn/Main.php';
+SimplOn\Main::run(array(
 	'LOCAL_ROOT' => __DIR__,
 	'REMOTE_ROOT' => dirname($_SERVER['PHP_SELF']),
 	
-	'DOF_PATH' => realpath('../DOF'),
+	'SimplOn_PATH' => realpath('../SimplOn'),
 	'GENERIC_TEMPLATES_PATH' => realpath('Templates'),
 	'MASTER_TEMPLATE' => realpath('Templates') . '/Master.html',
 	
 	'DEFAULT_ELEMENT' => 'Fe',
 	'DEFAULT_METHOD' => 'index',
 	
-	'DEFAULT_RENDERER' => new DOF\Renderers\Html4(),
+	'DEFAULT_RENDERER' => new SimplOn\Renderers\Html4(),
 
 	'CREATE_LAYOUT_TEMPLATES' => true,
 	'OVERWRITE_LAYOUT_TEMPLATES' => true,
@@ -30,6 +30,6 @@ DOF\Main::run(array(
 	
 	'DEV_MODE' => true,
 	
-	'DATA_STORAGE' => new DOF\DataStorages\MySql('localhost','tutorial','root',''),
-	//'DATA_STORAGE' => new DOF\DataStorages\SQLite('localhost',__DIR__.'/sample_site.sqlite'),
+	'DATA_STORAGE' => new SimplOn\DataStorages\MySql('localhost','tutorial','root',''),
+	//'DATA_STORAGE' => new SimplOn\DataStorages\SQLite('localhost',__DIR__.'/sample_site.sqlite'),
 ));

@@ -1,11 +1,11 @@
 <?php
 
-require_once '../DOF/Utilities/Acl/Acl.php';
-require_once '../DOF/Utilities/Acl/Role.php';
-require_once '../DOF/Utilities/Acl/Resource.php';
-require_once '../DOF/Utilities/Acl/Role/GenericRole.php';
-require_once '../DOF/Utilities/Acl/Resource/GenericResource.php';
-require_once '../DOF/Utilities/Acl/Role/Registry.php';
+require_once '../SimplOn/Utilities/Acl/Acl.php';
+require_once '../SimplOn/Utilities/Acl/Role.php';
+require_once '../SimplOn/Utilities/Acl/Resource.php';
+require_once '../SimplOn/Utilities/Acl/Role/GenericRole.php';
+require_once '../SimplOn/Utilities/Acl/Resource/GenericResource.php';
+require_once '../SimplOn/Utilities/Acl/Role/Registry.php';
 
 $acl = new Zend\Acl\Acl();
  

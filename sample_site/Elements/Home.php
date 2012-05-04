@@ -1,11 +1,11 @@
 <?php
-use \DOF\Elements\Element, \DOF\Datas;
+use \SimplOn\Elements\Element, \SimplOn\Datas;
 
 class Home extends Element
 {
 	public function construct($id = null, $storage=null, &$specialDataStorage = null)
 	{
-	    $this->id = new \DOF\Datas\NumericId('Id');
+	    $this->id = new \SimplOn\Datas\NumericId('Id');
 		$this->cabeza = new Datas\String('Cabeza','VCUSL');
 		$this->contenido = new Datas\String('Contenido', 'sL');
 		$this->owner = new Datas\ElementContainer(new Person(), 'Owner');
