@@ -142,12 +142,17 @@ class Main {
 					if(!@$_SESSION['simplonUser'] && !(self::$class == self::$PERMISSIONS && self::$method =='processValidation')  ){
 						//ask for credentials
 						$class = '\\'.self::$PERMISSIONS;
-						$user = new $class();
+						$validator = new $class(); //$user is the default validator class
 						$_SESSION['url']=$_SERVER['REQUEST_URI'];
-						echo $user->showValidation();
+						echo $validator->showValidation();
 					}else{
 						//Validate user's permissions
-						echo call_user_func_array(array($obj, self::$method), self::$method_params);
+						if( $obj->allow($_SESSION['simplonUser'],self::$method) )
+						{
+							echo call_user_func_array(array($obj, self::$method), self::$method_params);
+						}else{
+							echo "You don't have permission to see this page";
+						}
 					}
 				}else{			
 					echo call_user_func_array(array($obj, self::$method), self::$method_params);
@@ -244,7 +249,7 @@ class Main {
 		$url = '';
 		if(isset($class)) {
 			// class
-			$url.= self::$REMOTE_ROOT . '/' . self::fixCode($class);
+			$url.= self::$REMOTE_ROOT . '/' . self::fixCode(strtr($class,'\\','-'));
 			
 			// construct params
 			if(!empty($construct_params) && is_array($construct_params)) {
@@ -322,7 +327,7 @@ class Main {
 			}
 		};
 		
-		self::$class = $parameterDecoder('class') ?: Main::$DEFAULT_ELEMENT;
+		self::$class = strtr($parameterDecoder('class'),'-','\\') ?: Main::$DEFAULT_ELEMENT;
 		
 		self::$construct_params = array();
 		while(($param = $parameterDecoder('construct_params', true)) !== false) {

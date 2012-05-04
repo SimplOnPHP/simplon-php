@@ -163,7 +163,7 @@ class Element extends BaseObject {
 		
 		$this->assignDatasName();
 		
-		//var_dump($this->{$this->field_id()}());
+		//user_error($this->{$this->field_id()}());
 
 		// Tells the DOFdata whose thier "container" in case any of it has context dependent info or functions.
 		$this->assignAsDatasParent();
@@ -419,7 +419,7 @@ class Element extends BaseObject {
 			$this->fillFromRequest();
 			$this->validateForDB();
 		}catch( \DOF\ElementValidationException $ev ){
-			var_dump($ev->datasValidationMessages());
+			user_error($ev->datasValidationMessages());
 			return;
 		}
 		try{
@@ -437,22 +437,22 @@ class Element extends BaseObject {
 				user_error('Cannot update in DS!', E_USER_ERROR);
 			}
 		}catch(\PDOException $ev ){
-			//var_dump($ev->errorInfo[1]);
+			//user_error($ev->errorInfo[1]);
 			//@todo handdle the exising ID (stirngID) in the DS
-			var_dump($ev);
+			user_error($ev);
 		}
 	}
 	
 	//function processUpdate($short_template=null, $sid=null){
 	function processUpdate($nextStep = null){
 		
-		try{
+//		try{
 			$this->fillFromRequest();
 			$this->validateForDB();
-		}catch( \DOF\ElementValidationException $ev ){
-			var_dump($ev->datasValidationMessages());
-			return;
-		}
+//		}catch( \DOF\ElementValidationException $ev ){
+//			user_error($ev->datasValidationMessages());
+//			return;
+//		}
 		try{
 			if($this->update()){
 
@@ -469,7 +469,7 @@ class Element extends BaseObject {
 				user_error('Cannot update in DS!', E_USER_ERROR);
 			}
 		}catch(\PDOException $ev ){
-			var_dump($ev->errorInfo[1]); //duplicated primary key (Possibel with stringID)
+			user_error($ev->errorInfo[1]); //duplicated primary key (Possibel with stringID)
 		}
 	}
 
@@ -514,7 +514,7 @@ class Element extends BaseObject {
 			$search = new Search(array($this->getClass()));
 			return $search->processSearch($this->toArray());
 		}catch( \DOF\ElementValidationException $ev ){
-			var_dump($ev->datasValidationMessages());
+			user_error($ev->datasValidationMessages());
 		}
 	}
     
@@ -543,7 +543,9 @@ class Element extends BaseObject {
 		$search = new Search(array($this->getClass()));
                 
        // $colums = array_merge( $this->datasWith("list"), array("selectAction","parentClass") );
-        $colums = array_merge( $this->datasWith("list"), array("selectAction") );
+        
+		//@todo do not add selectAction here but just include it in the listing using VCRSL when adding it on the fly 
+		$colums = array_merge( $this->datasWith("list"), array("selectAction") );
         
 		return $search->processSearch($this->toArray(),$colums);
 	}       
@@ -1037,7 +1039,7 @@ class Element extends BaseObject {
 	
 	
 	function getId(){
-        //var_dump($this->field_id());
+        //user_error($this->field_id());
 		return $this->{$this->field_id()}();
     }
 	
@@ -1129,7 +1131,17 @@ class Element extends BaseObject {
 		return @$a ?: array();
 	}
 	
-
+	// @todo: change name to attributesOfType
+	function attributesTypesWith($type = '\\DOF\\Datas\\Data', $what='fetch') {
+		foreach($this as $name => $data) {
+			if($data instanceof $type && $this->$name->$what() ) {
+				$a[] = $name;
+			}
+		}
+		return @$a ?: array();
+	}
+	
+	
 	//vcsrl
 	public function datasWith($what){
 		$output=array();
@@ -1143,8 +1155,34 @@ class Element extends BaseObject {
 	
 	
 	
-	static function allow($user, $method){
+	function allow($user, $method){
 		
+//		require_once Main::$DOF_PATH.'/Utilities/Acl/Acl.php';
+//		require_once Main::$DOF_PATH.'/Utilities/Acl/Role.php';
+//		require_once Main::$DOF_PATH.'/Utilities/Acl/Resource.php';
+//		require_once Main::$DOF_PATH.'/Utilities/Acl/Role/GenericRole.php';
+//		require_once Main::$DOF_PATH.'/Utilities/Acl/Resource/GenericResource.php';
+//		require_once Main::$DOF_PATH.'/Utilities/Acl/Role/Registry.php';		
+//		
+//		
+//		use Zend\Acl;
+//		
+//		$acl = new Zend\Acl\Acl();
+// 
+//		$acl->addRole(new \Zend\Acl\Role\GenericRole('guest'))
+//			->addRole(new \Zend\Acl\Role\GenericRole('member'))
+//			->addRole(new \Zend\Acl\Role\GenericRole('admin'));
+//
+//		$parents = array('guest', 'member', 'admin');
+//		$acl->addRole(new \Zend\Acl\Role\GenericRole('someUser'), $parents);
+//
+//		$acl->addResource(new \Zend\Acl\Resource\GenericResource('someResource'));
+//
+//		$acl->deny('guest', 'someResource');
+//		$acl->allow('member', 'someResource');
+//
+//		return $acl->isAllowed('someUser', 'someResource');
+		return true;
 	}
 	
 	
