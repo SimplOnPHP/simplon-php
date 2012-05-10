@@ -79,7 +79,6 @@ class Element extends BaseObject {
     protected $nestingLevel = 1;
     
     protected $parent;
-
 	
 	
 //------------------------------------------- ???	
@@ -301,20 +300,21 @@ class Element extends BaseObject {
 	 * 
 	 * @param array $array_of_data
 	 */
-	public function fillFromArray(&$array_of_data)
-	{
-		if(!is_array($array_of_data)) {
-			$array_of_data = array();
-		}
-		foreach($array_of_data as $dataName => $value){
-			if(isset($this->$dataName) && ($this->$dataName instanceof Data)){
-				try{
-					$this->$dataName($value);
-				}catch(\SimplOn\DataValidationException $ve){
-					$this->excetionsMessages[$dataName] = array($ve->getMessage());
+	public function fillFromArray(&$array_of_data) {
+		$filled = 0;
+		if(is_array($array_of_data)) {
+			foreach($array_of_data as $dataName => $value){
+				if(isset($this->$dataName) && ($this->$dataName instanceof Data)){
+					try{
+						$this->$dataName($value);
+						$filled++;
+					}catch(\SimplOn\DataValidationException $ve){
+						$this->excetionsMessages[$dataName] = array($ve->getMessage());
+					}
 				}
 			}
 		}
+		return $filled;
 	}
 	
 	public function requiredCheck($array=array()){
@@ -340,14 +340,21 @@ class Element extends BaseObject {
 	* distinguish between both can do it.
 	*
 	*/
-	public function fillFromRequest()
-	{
+	public function fillFromRequest() {
 		//try{
 			$this->fillFromArray($_REQUEST);
 		//}catch(\SimplOn\ElementValidationException $ev){}
 		/**
 		 * COMPLETE THE PART TO HANDLE FILES
 		 */
+	}
+	
+	public function fillFromPost() {
+		if($_POST) {
+			return $this->fillFromArray($_POST);
+		} else {
+			return false;
+		}
 	}	
 	
 	//------------Data Storage
@@ -558,7 +565,7 @@ class Element extends BaseObject {
 		$search = new Search(array($this->getClass()));
   
         $colums = array_merge($this->datasWith("list"), array("deleteAction","viewAction","updateAction") );
-                              
+        
 		return $search->processSearch($this->toArray(),$colums);
 	}        
         
@@ -701,26 +708,23 @@ class Element extends BaseObject {
 	* Default method that will be shown in case no methods have been specified.
 	*/
 	public function index() {
-		$footer = '<h1>'.$this->getClass().'</h1>'
-			.'<div id="SimplOn-create-new" class="SimplOn section">'.$this->createAction('', array('Create new %s','getClassName')).'</div>'
-			.'<div id="SimplOn-list" class="SimplOn section">'.$this->showAdmin(null, array(), 'body').'</div>'
-		;
-		return $this->obtainHtml(__FUNCTION__, null, null, array('footer' => $footer));
+		if(count(Main::$construct_params)) {
+			return $this->showView();
+		} else {
+			return $this->showAdmin();
+		}
 	}
 	
-	public function showCreate($template_file = null, $action = null, $parentClass = null)
-	{
+	public function showCreate($template_file = null, $action = null, $parentClass = null) {
 		return $this->obtainHtml(__FUNCTION__, $template_file, $action);
 	}
 	
 	/* */
-	public function showUpdate($template_file = null, $action = null)
-	{
+	public function showUpdate($template_file = null, $action = null) {
 		return $this->obtainHtml(__FUNCTION__, $template_file, $action);
 	}
 	
-	public function showView($template_file = null, $partOnly = false)
-	{
+	public function showView($template_file = null, $partOnly = false) {
         return $this->obtainHtml(__FUNCTION__, $template_file, null, null, $partOnly);
 	}
 	
@@ -736,9 +740,8 @@ class Element extends BaseObject {
     }
     
     
-	public function showSearch($template_file = null, $action = null)
-	{
-		return $this->obtainHtml(__FUNCTION__, $template_file, $this->encodeURL(array(),'showSearch'), array('footer' => $this->processAdmin(null, 'multi')));
+	public function showSearch($template_file = null, $action = null) {
+		return $this->obtainHtml(__FUNCTION__, $template_file, $this->encodeURL(array(),'showSearch'), array('footer' => $this->processAdmin()));
 	}
 
     public function addOnTheFlyAttribute( $attributeName, $attribute = null)
@@ -783,8 +786,7 @@ class Element extends BaseObject {
     
     
     
- 	public function showSelect($template_file = null, $action = null, $previewTemplate = null, $sid = null) //@todo delete??????
-	{
+ 	public function showSelect($template_file = null, $action = null, $previewTemplate = null, $sid = null) {
         if( $previewTemplate && $sid ){ 
             $this->addOnTheFlyAttribute('previewTemplate' , new Datas\Hidden(null,'CUSf', $previewTemplate, '' )    );
             $this->addOnTheFlyAttribute('sid' , new Datas\Hidden(null,'CUSf', $sid, '' )    );
@@ -793,13 +795,22 @@ class Element extends BaseObject {
         return $this->obtainHtml("showSearch", $template_file, $this->encodeURL(array(),'showSelect'), array('footer' => $this->processSelect(null, 'multi')));
 	}       
            
-  	public function showAdmin($template_file = null, $add_html = array(), $partOnly = false)
-	{
-		return $this->obtainHtml(
+  	public function showAdmin($template_file = null, $add_html = array(), $partOnly = false) {
+		$header = '<h1>'.$this->getClass().'</h1>'
+			.'<div id="SimplOn-create-new" class="SimplOn section">'.$this->createAction('', array('Create new %s','getClassName')).'</div>'
+			.'<div id="SimplOn-list" class="SimplOn section">'.$this->obtainHtml(
 				"showSearch", 
-				$template_file, 
+				null, 
 				$this->encodeURL(array(),'showAdmin'), 
-				array_merge($add_html, array('footer' => $this->processAdmin(null, 'multi'))), 
+				array('footer' => $this->processAdmin()), 
+				'body'
+			).'</div>'
+		;
+		return $this->obtainHtml(
+				"showAdmin", 
+				$template_file, 
+				null, 
+				array_merge($add_html, array('header' => $header)), 
 				$partOnly
 		);
 	}       
@@ -884,8 +895,8 @@ class Element extends BaseObject {
 				}
 			}
 			if($with_form) {
-				$html.= '<button name="commit" type="submit">'.$VCSL.'</button>'
-				.'<button class="SimplOn cancel-form" name="cancel">Cancel</button>'
+				$html.= '<button type="submit">'.$VCSL.'</button>'
+				.'<button class="SimplOn cancel-form">Cancel</button>'
 				.'</div></fieldset></form>';
 			} else {
 				$html.= '</div>';
@@ -1032,7 +1043,7 @@ class Element extends BaseObject {
 		}
 	}
 	
-	function showMultiPicker(){
+	function showMultiPicker() {
 		return Main::$DEFAULT_RENDERER->table(array($this->toArray()));
 	}
 			

@@ -19,15 +19,15 @@
 namespace SimplOn;
 use \SimplOn\Exception;
 
-/*! \mainpage SimplON PHP
+/*! \mainpage SimplOn PHP
  *
- * \section intro_sec What is SimplON?
+ * \section intro_sec What is SimplOn?
  *
- * SimplON is a web framework based on the concept of embedding meta-data 
+ * SimplOn is a web framework based on the concept of embedding meta-data 
  * into PHP objects to automate CRUD tasks and rendering them 
  * (ie. in HTML format).
  * 
- * \section core_obj_sec SimplON uses two core objects
+ * \section core_obj_sec SimplOn uses two core objects
  *
  * \subsection datas_subsec Datas
  * 
@@ -42,6 +42,25 @@ use \SimplOn\Exception;
  * 
  * \see http://tinyurl.com/SimplON-chart
  * 
+ * \section http_api Simple HTTP API
+ * 
+ * SimplOn uses a HTTP API simple to read and write.
+ * It is structured in the following way:
+ * \code
+ * /Foo/cp1/cp2/cpN!Moo/mp1/mp2/mpN
+ * \endcode
+ * Where \c cp are construct parameters for the element \c Foo, 
+ * while \c mp are parameters for the element's method \c Moo.
+ * 
+ * Since Datas have methods too, the way to call those methods is:
+ * \code
+ * /Foo/cp1/cp2/cpN!Doo!Moo/mp1/mp2/mpN
+ * \endcode
+ * Where \c Doo is a \c Foo's Data and \c Moo is \c Doo's method.
+ * 
+ * To create or update an Element, a HTTP POST must be sent
+ * containing an array with keys corresponding to Element's 
+ * Data names and their corresponding values.
  */
 
 spl_autoload_register( __NAMESPACE__ . '\\Main::load_obj');
@@ -219,23 +238,6 @@ class Main {
 		return self::$DATA_STORAGE;
 	}
 	
-	static function fixCode($string, $encoding = true) {
-		return $encoding  
-			? strtr($string, array(
-				'%2F' => '/',
-				'%2522' => '%252522',
-				'%22' => '%2522',
-				'%255C' => '%25255C',
-				'%5C' => '%255C',
-			))
-			: strtr($string, array(
-				'%2522' => '%22',
-				'%252522' => '%2522',
-				'%255C' => '%5C',
-				'%25255C' => '%255C',
-			));
-	}
-	
 	static function parameterEncoder($p) {
 		if(is_string($p)) {
 			$string_delimiter = '"';
@@ -294,8 +296,8 @@ class Main {
 			$regexes = array(
 				'class' => '\/ (?<raw>[^'.$sd.$qs.'\/]+) ',
 				'construct_params' => '(?:\/(?: (?<raw>[^'.$sd.$qs.'\/]+) | '.$sd.'(?<string>[^'.$sd.']*)'.$sd.' ))',
-				'dataName' => $qs.' (?<raw>[^'.$sd.$qs.'\/]+) (?='.$qs.')',
-				'method' => $qs.' (?<raw>[^'.$sd.$qs.'\/]+) ',
+				'dataName' => '\/?'.$qs.' (?<raw>[^'.$sd.$qs.'\/]+) (?='.$qs.')',
+				'method' => '\/?'.$qs.' (?<raw>[^'.$sd.$qs.'\/]+) ',
 				'method_params' => '(?:\/(?: (?<raw>[^'.$sd.$qs.'\/]+) | '.$sd.'(?<string>[^'.$sd.']*)'.$sd.' ))',
 			);
 			if(preg_match('/^'. $regexes[$what] .'/x', substr($server_request, $offset), $matches, PREG_OFFSET_CAPTURE)) {
@@ -342,6 +344,23 @@ class Main {
 		while(($param = $parameterDecoder('method_params', true)) !== false) {
 			self::$method_params[] = $param[0];
 		}
+	}
+	
+	static function fixCode($string, $encoding = true) {
+		return $encoding  
+			? strtr($string, array(
+				'%2F' => '/',
+				'%2522' => '%252522',
+				'%22' => '%2522',
+				'%255C' => '%25255C',
+				'%5C' => '%255C',
+			))
+			: strtr($string, array(
+				'%2522' => '%22',
+				'%252522' => '%2522',
+				'%255C' => '%5C',
+				'%25255C' => '%255C',
+			));
 	}
 	
 	

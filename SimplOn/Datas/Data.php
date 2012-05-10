@@ -217,7 +217,12 @@ abstract class Data extends BaseObject {
 	
 	function htmlClasses($append = '', $nestingLevel = null) {
         if(!$nestingLevel) $nestingLevel = $this->parent->nestingLevel();
-        return 'SimplOn Data '.'SNL-'.$nestingLevel.' '.$this->getClassName().' '.$this->name().' '.($this->required ? 'required ' : '').$append;
+        return 'SimplOn Data'
+			.' '.'SNL-'.$nestingLevel
+			.' '.$this->getClassName()
+			.' '.$this->name()
+			.' '.($this->required ? 'required ' : '')
+			.' '.$append;
     }
 	
 	function cssSelector($append = '', $nestingLevel = null) {

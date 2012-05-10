@@ -26,8 +26,8 @@ SimplOn\Main::run(array(
 
 	'JS_FLAVOUR' => 'jQuery',
 	
-	'PERMISSIONS' => 'SimplOn\\Elements\\User',
-	//'PERMISSIONS' => false,
+	//'PERMISSIONS' => 'SimplOn\\Elements\\User',
+	'PERMISSIONS' => false,
 	
 	'DEV_MODE' => true,
 	

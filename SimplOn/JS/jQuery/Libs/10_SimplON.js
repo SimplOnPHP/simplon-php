@@ -119,9 +119,7 @@ var SimplOn = new function() {
 			});
 		});
 		
-		$('form.SimplOn').validate({
-			debug: true
-		});
+		$('form.SimplOn.create, form.SimplOn.update').validate();
 	};
 	
 	this.ajaxHandler = function(r) {

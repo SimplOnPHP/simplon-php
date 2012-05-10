@@ -13,7 +13,7 @@ class User extends Element
 	{
 		$this->user = new Datas\StringId('User','VCUSL');
 		$this->password = new Datas\Password('Password');
-		$this->group = new Datas\ElementContainerDropBox(new UsersGroup(),'Group');
+		$this->group = new Datas\ElementContainer(new UsersGroup(),'Group');
 		//$this->filterCriteria('.cabeza OR contenido == "igual" OR contenido ^= "empieza" OR contenido $= "acaba" OR contenido ~= "papas a \"la\" .contenido francesa"');
 		
 	}
