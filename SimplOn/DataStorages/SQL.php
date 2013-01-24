@@ -61,7 +61,7 @@ abstract class SQL extends DataStorage
 			return $this->db->query("Select ".$whatToGet." FROM ".$fromWhere." ".(($filters)?" WHERE ".$filters:'').' '.(($range)?" LIMIT ".$range:'') )->fetchAll();
 			
 		} else if(!is_string($where)) {
-			throw new Exception(__CLASS__ . '->'. __FUNCTION__ .'() needs a valid SimplOn\Type\Element');
+			throw new \Exception(__CLASS__ . '->'. __FUNCTION__ .'() needs a valid SimplOn\Type\Element');
 		}
 	}
 
@@ -106,7 +106,11 @@ abstract class SQL extends DataStorage
 	}
 	
 	public function isSetElementStorage(\SimplOn\Elements\Element &$element) {
-		return in_array(strtolower($element->storage()), array_map('strtolower', $this->db->query('SHOW TABLES', \PDO::FETCH_COLUMN,0)->fetchAll()));
+		$query = $this->db->query('SHOW TABLES', \PDO::FETCH_COLUMN,0);
+		if(is_object($query))
+			return in_array(strtolower($element->storage()), array_map('strtolower', $query->fetchAll()));
+		else
+			throw new \Exception('Could not query the database: '. $this->db->errorInfo()[2]);
 	}
 	
 	public function alterTable(\SimplOn\Elements\Element $element) {
