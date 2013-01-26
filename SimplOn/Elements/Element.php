@@ -905,7 +905,11 @@ class Element extends BaseObject {
             
 			// save file
 			if(!empty($template_file))
-                Main::createFile($template_file, $dom.'');
+                /*Local directory is added to the variable x for the correct location of the created files.
+                 * If the directory is not specified, the files are created in the root directory.
+                 * In MSWindows X: \ and Linux \
+                 */
+                Main::createFile(__DIR__.$template_file, $dom.'');
 				
 		} else {
             // opens file
