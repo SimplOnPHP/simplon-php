@@ -1,24 +1,16 @@
 <?php
-
 use \SimplOn\Elements\Element, \SimplOn\Datas;
 
-/**
- * Tutorial ejercicio 1.1 HolaMundo
- * 
- * 
- */
-
 class HolaMundo extends Element {
-    
+   
     public function construct($id = null, &$specialDataStorage = null) {
-        $this->id = new Datas\Id('Id');
-        $this->nombre = new Datas\String('Nombre','u','yo');
-        $this->frase = new Datas\String('Frase','c');
-    }   
-    
+           $this->id = new Datas\NumericId('Id');                   
+           $this->nombre = new Datas\String('Nombre:',null,'yo');
+           $this->frase = new Datas\String('Frase:');
+           }   
+   
     function saluda(){
-       echo "Hola Mundo, ".$this->nombre().' '.$this->frase();
+      echo "Hola Mundo, ".$this->nombre().' '.$this->frase();
     }
-
 }
-
+?>
