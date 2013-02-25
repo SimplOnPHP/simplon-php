@@ -1,4 +1,6 @@
 <?php
+
+// check for a guided tutorial at https://simplonphp.org/tutorial
 date_default_timezone_set('America/Mexico_City');
 setlocale(LC_ALL, 'es_MX.UTF-8', 'es_ES.UTF-8');
 
@@ -8,16 +10,16 @@ SimplOn\Main::run(array(
 	'REMOTE_ROOT' => dirname($_SERVER['PHP_SELF']),
 	
 	'SimplOn_PATH' => realpath('../SimplOn'),
-	
-	'DEFAULT_ELEMENT' => 'HolaMundo',
-	'DEFAULT_METHOD' => 'index',
-	
 	'GENERIC_TEMPLATES_PATH' => realpath('Templates'),
 	'MASTER_TEMPLATE' => realpath('../SimplOn').'/Renderers/Html5.html',
+		
+	'DEFAULT_ELEMENT' => 'HolaMundo',
+	'DEFAULT_METHOD' => 'saluda',
+	
 	'DEFAULT_RENDERER' => new SimplOn\Renderers\Html5(),
 
 	'CREATE_LAYOUT_TEMPLATES' => true,
-	'OVERWRITE_LAYOUT_TEMPLATES' => 1,
+	'OVERWRITE_LAYOUT_TEMPLATES' => true,
 	'USE_LAYOUT_TEMPLATES' => true,
 	
 	'CREATE_FROM_TEMPLATES' => true,
@@ -26,18 +28,7 @@ SimplOn\Main::run(array(
 
 	'JS_FLAVOUR' => 'jQuery',
 	
-	//'PERMISSIONS' => 'SimplOn\\Elements\\User',
-	'PERMISSIONS' => false,
-	
 	'DEV_MODE' => true,
 	
-	'DATA_STORAGE' => array(
-		'driver' => 'SimplOn\\DataStorages\\MySql',
-		'host' => 'localhost',
-		'db' => 'tutorial',
-		'user' => 'root',
-		'pass' => ''
-	),
-	
-	'QUICK_DELETE' => true,
+	'DATA_STORAGE' => new SimplOn\DataStorages\MySql('localhost','tutorial','root',''),
 ));

@@ -1,22 +1,9 @@
 <IfModule mod_rewrite.c>
-	Options +FollowSymLinks
-	Options -Indexes
+Options +FollowSymLinks
+RewriteEngine on
 
-	<FilesMatch "\.(tpl|ini|log)">
-		Order deny,allow
-		Deny from all
-	</FilesMatch>
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ /SimplOnPHP/sample_site/index.php [QSA,L]
 
-	RewriteEngine on
 
-	## use the following if your site is reached as http://site.com/
-	#RewriteBase /
-	## use the following if your site is reached as http://domain.com/path/to/site/
-	#RewriteBase /path/to/site/
-	
-	RewriteBase /SimplOn/sample_site/
-	
-	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteCond %{REQUEST_FILENAME} !-d
-	RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>
