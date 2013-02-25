@@ -41,3 +41,9 @@ SimplOn\Main::run(array(
 	
 	'QUICK_DELETE' => true,
 ));
+
+/*echo __DIR__.'<br>';
+
+echo realpath('../SimplOn').'<br>';
+
+echo realpath('Templates');*/
