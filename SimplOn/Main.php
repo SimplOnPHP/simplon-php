@@ -62,9 +62,6 @@ use \SimplOn\Exception;
  * containing an array with keys corresponding to Element's 
  * Data names and their corresponding values.
  */
- 
-// ENABLE THIS ONLY WHILE DEVELOPING ON SIMPLON CORE
-define('SIMPLON_DEV', 1);
 
 spl_autoload_register( __NAMESPACE__ . '\\Main::load_obj');
 
@@ -136,6 +133,14 @@ class Main {
 	
 	static function run($ini = null) {
 		self::setup($ini);
+		/**		echo '<br>self::$class ';var_dump(self::$class);
+		echo '<br>self::$construct_params ';var_dump(self::$construct_params);
+		echo '<br>self::$dataName ';var_dump(self::$dataName);
+		echo '<br>self::$method ';var_dump(self::$method);
+		echo '<br>self::$method_params ';var_dump(self::$method_params);
+		echo '<br>$_SERVER: ';var_dump($_SERVER,true);
+		return;
+		/**/
 		
 		if(class_exists(self::$class) || class_exists('\\SimplOn\\Elements\\'.self::$class)) {
             $cp = self::$construct_params;
@@ -214,7 +219,7 @@ class Main {
 		}*/
 		
 		if(self::$DEV_MODE) {
-			error_reporting(E_ALL ^ E_STRICT);
+			error_reporting(E_ALL);
 			ini_set('display_errors', true);
 		} else {
 			error_reporting(0);
@@ -276,6 +281,8 @@ class Main {
 		}
 		
 		return $url;
+
+
 	}
 	
 	static function decodeURL() {
@@ -365,7 +372,7 @@ class Main {
 	
 	static function createFile($file_path, $data = null, $flags = null) {
 		// @todo: implement with RecursiveDirectoryIterator
-		
+		//echo "$file_path<br><br>";
 		$exploded_path = explode('/', $file_path);
 		$file = array_pop($exploded_path);
 		$current_path = '';

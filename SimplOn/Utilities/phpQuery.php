@@ -711,6 +711,7 @@ class DOMDocumentWrapper {
 			if ($this->isDocumentFragment && ! $innerMarkup)
 				foreach($nodes as $i => $node)
 					if ($node->isSameNode($this->root)) {
+					//	var_dump($node);
 						$nodes = array_slice($nodes, 0, $i)
 							+ phpQuery::DOMNodeListToArray($node->childNodes)
 							+ array_slice($nodes, $i+1);

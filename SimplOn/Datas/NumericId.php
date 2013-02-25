@@ -28,6 +28,7 @@ class NumericId extends Id
 		{
 		} else {
 			throw new \SimplOn\Exception('Cannot show this field with empty value!');
+			
 		}
 	}	
 

@@ -28,14 +28,26 @@ namespace SimplOn\Datas;
 */
 class StringId extends Id
 {
-	protected $view = true;
+    /**
+     *
+     * @var boolean $view,$create,$update, $list and $search- these variables are 
+     * flags to indicate if this input will be displayed in the different templates.
+     * @var boolean $required - required indicates if this data will be required.
+     */
+    	protected $view = true;
 	protected $create = true;
 	protected $update = true;
 	protected $list = true;
 	protected $search = true;
 	protected $required = true;
 	
-	
+	/**
+         * 
+         * function checkUnique - verify if exits the parent id into the database, if
+         * it's true return false in otherwise return true.
+         * 
+         * @return boolean
+         */
 	
 	public function checkUnique(){
 		$dataArray = $this->parent()->dataStorage()->readElement( $this->parent() );
@@ -45,7 +57,6 @@ class StringId extends Id
 			return true;
 		}
 	}
-	
 	
 	public function showInput($fill) {
         $data_id = 'SimplOn_'.$this->instanceId();

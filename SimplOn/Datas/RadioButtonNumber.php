@@ -19,26 +19,54 @@
 namespace SimplOn\Datas;
 
 /**
-* Hidden para las tablas
-* --- No imprime un label y manda un input hidden.
 *
+ * 
+ * 
+ * 
 * @version	1.0
 * @author	Ruben Schaffer
 * @todo fix so val retuns the value and only the inputmethod retuns the hidden inpunt
 */
 class RadioButtonNumber extends Integer
 {
+    /**
+     *
+     * @var array $options - This variable holds all options.
+     * @var boolean $showValues - This variable shows the value of options.
+     * @var string $valudationNotAnOption - Is a message to display just if the value introduced
+     * isn't an integer number.
+     */
 	protected $options = array();
 	protected $showValues = true;
 
 	public $valudationNotAnOption='The value given is not a valid option';
-	//public $valudationNaN = 'This field must be an integer number.';
+        //public $valudationNaN = 'This field must be an integer number.';
 	
+        /**
+         * function __contruct get the parameters to them in the parent construct
+         * 
+         * @param string $label
+         * @param array $options
+         * @param string $flags
+         * @param string $val
+         * @param string $filterCriteria
+         */
 	public function __construct($label=null, $options=array(), $flags=null, $val=null, $filterCriteria=null)
 	{
 		$this->options = $options;
 		parent::__construct($label, $flags, $val, $filterCriteria);
-	}	
+	}
+        
+        /**
+         * 
+         * function val - This function checks if the value is a valid number in option. 
+         * if isn't throw an exception.
+         * 
+         * @param null $val
+         * @return void
+         * @throws \SimplOn\DataValidationException
+         */
+	
 	
 	public function val($val = null){
 		if($val){
@@ -51,12 +79,21 @@ class RadioButtonNumber extends Integer
 			return $this->val;
 		}
 	}
+     /**
+     *
+     * function showView - This function shows the option selected in the input 
+     * Check if the variable $optionFlip, but there it creates and stores the inverted 
+     * array under option and displays.
+     * 
+     * @return string
+     * 
+     */  
 		
 	function showView($template = null){
-		if(!@$this->optionsFilp){$this->optionsFilp = array_flip($this->options);}
-		return $this->optionsFilp[$this->val()];
+		if(!@$this->optionsFlip){$this->optionsFlip = array_flip($this->options);}
+		return $this->optionsFlip[$this->val()];
 	}
-	
+
 	public function showInput($fill)
 	{
 		$data_id = 'SimplOn_'.$this->instanceId();

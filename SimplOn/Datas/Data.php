@@ -352,28 +352,37 @@ abstract class Data extends BaseObject {
 
         
 	public function getCSS($method) {
+		$class = $this->getClass('-');
+                 
 		if($this->hasMethod($method)) {
 			$class = end(explode('\\',$this->getClass()));
 			return array(CSS::getPath("$class.$method.css"));
+
 		} else {
 			return array();
 		}
+
 	}
+
+
 	
 	public function getJS($method) {
 		$class = $this->getClass('-');
-
 		// gets class' js file
 		$a_js = ($local_js = JS::getPath("$class.js"))
 				? array($local_js) 
 				: array();
-		
+		//var_dump($a_js);
 		if($this->hasMethod($method)) {
 			// gets method's js file
 			if($local_js = JS::getPath("$class.$method.js"))
 					$a_js[] = $local_js;
+
 		}
+		//var_dump($a_js);
+		//$a_js = array_unique(array_map(array('\\SimplOn\\Main', 'localToRemotePath'), $a_js));
 		return $a_js;
+
 	}
 	
 	
@@ -401,33 +410,66 @@ abstract class Data extends BaseObject {
 		
 		
 	}
-	
+	/**
+         * showView allows display the value in the views
+         * 
+         * @param type $template
+         * @return type
+         */
 	function showView($template = null){
 		return $this->val();
 	}
-	
+	/**
+         * showInput prints the label and the input with the correct 
+         * format (id,class,name,value, etc) to be display in the forms
+         */
 	abstract function showInput($fill);
-	
+	/**
+         * showCreate return the string returned by showInput to be displayed
+         * in showCreate template
+         * @return string
+         */
 	function showCreate(){
 		return $this->showInput(false);
 	}
-	
+	/**
+         * showUpdate return the string returned by showInput to be displayed 
+         * in showUpdate template
+         * @return string
+         */
 	function showUpdate(){
 		return $this->showInput(true);
 	}
-	
+	/**
+         * showSearch return the string returned by showInput to be displayed 
+         * in showSearch template to do a search
+         * @return string
+         */
 	function showSearch(){
 		return $this->showInput(true);
 	}
-
+        /**
+         * showSelect display the result of the search of the showSelect method
+         * @return string
+         */
  	function showSelect(){
 		return $this->showSearch();
 	}       
-        
+        /**
+         * showList is similar to showView but in this case is used to indicate 
+         * how will be display $this->val() in the views
+         * @return string
+         */
  	function showList(){
 		return $this->showView();
 	}
-	
+	/**
+         * showAdmin allows control how will be display the datas in the admin panel
+         * @return string
+         */
+        function showAdmin(){
+            return $this->showInput();
+        }
 	
 	/**
 	 * Returns the label for the input

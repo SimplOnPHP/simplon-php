@@ -17,15 +17,26 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace SimplOn\Datas;
-
+/**
+ * Text data type
+ * 
+ * This is a textarea data type which allow you show a common textarea.
+ * 
+ * @author Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+ * @copyright (c) 2011, Rubén Schaffer Levine and Luca Lauretta
+ * @category Data
+ */
 class Text extends Data
 {
+    /**
+     *
+     * @var boolean $list - this variable indicates if this data will be listed. 
+     */
 	protected $list = false;
 	
 	function showInput($fill)
 	{
 		$data_id = 'SimplOn_'.$this->instanceId();
-		//@todo: display a RichText editor instead of Textarea
 		return  ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
 				'<textarea id="'.$this->inputName().'" name="'.$this->inputName().'">'.(($fill)? $this->val :'').'</textarea>';
 	}

@@ -38,7 +38,7 @@ abstract class Id extends Data
 
 	
 	/**
-	 *This needs to be redefined to enshure that REQURED can not be unset since this is an ID
+	 *This needs to be redefined to enshure that REQUIRED can not be unset since this is an ID
 	 * @param type $flags 
 	 */
 	function dataFlags($flags)

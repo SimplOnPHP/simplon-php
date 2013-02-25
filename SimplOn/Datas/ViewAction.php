@@ -17,7 +17,15 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace SimplOn\Datas;
-
+/**
+ * ViewAction data type  
+ * 
+ * This is a view action data type which allow you show a direct link to showView.
+ * 
+ * @author Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+ * @copyright (c) 2011, Rubén Schaffer Levine and Luca Lauretta
+ * @category Data
+ */
 class ViewAction extends ElementLink {
 	
 	public function __construct($label, array $sources, $flags=null, $searchOp=null){

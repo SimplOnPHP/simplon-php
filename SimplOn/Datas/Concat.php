@@ -1,31 +1,37 @@
 <?php
-/*
-	Copyright © 2011 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
-	
-	This file is part of “SimplOn PHP”.
-	
-	“SimplOn PHP” is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation version 3 of the License.
-	
-	“SimplOn PHP” is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License
-	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
-*/
+/**
+ * Concat data type
+ * 
+ * This is a Concat data type which allow you print a text.
+ * 
+ * @author Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+ * @copyright (c) 2011, Rubén Schaffer Levine and Luca Lauretta
+ * @category Data
+ */
 namespace SimplOn\Datas;
 
 class Concat extends ComplexData {
+    /**
+     * 
+     * @param boolean $fill
+     * @return String no spaces
+     */
 		
 	public function val($fill = null){
-		
+        /**
+         * 
+         * @var $glue array - This variable stores the sources except the first one
+         * @var $sources array - This variable is an array with the elements to concat 
+         * @var $ret String - This variable stores the values ​​to concatenate.
+         */	
         $sources=$this->sources;
-        
-		$ret ='';
+	$ret ='';
         $glue=array_shift($sources);
+       /**
+        * Check if there are methods with the same name as item $ source if true 
+        * paste it returned by the method and if false just paste the item $ source.
+        * 
+        */
 		foreach($sources as $source){
             if($this->parent->hasMethod($source) ){
                 $ret .= $this->parent->$source().$glue;
@@ -33,7 +39,6 @@ class Concat extends ComplexData {
                 $ret .= $source.$glue;
             }
 		}
-		
 		return  trim($ret);
 	}
 

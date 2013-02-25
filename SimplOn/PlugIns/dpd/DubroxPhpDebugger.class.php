@@ -373,6 +373,12 @@ class Dubrox_PhpDebugger {
 		
 		// returns session status
 		$return = $_SESSION[$this->name];
+//		echo (
+//			'<br>
+//			$_SESSION[debug]: "' .print_r($_SESSION[$this->name],true). '" 
+//			$set: "'. $set .'"
+//			<br>'
+//		);
 		session_write_close();
 		session_name($ex_session_name);
 		

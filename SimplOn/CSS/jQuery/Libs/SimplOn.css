@@ -2,6 +2,12 @@ body {
 	font: 12px/14px sans-serif;
 }
 
+form{
+	display: block;
+	width: 60%;
+	margin: 0 auto;
+}
+
 table {
 	border-collapse: collapse;
 }

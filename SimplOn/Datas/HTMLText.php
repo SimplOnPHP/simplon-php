@@ -16,17 +16,49 @@
 	You should have received a copy of the GNU General Public License
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 namespace SimplOn\Datas;
+
+use \SimplOn\Elements\JS;
+
+/**
+ * HTMLText Data type 
+ * 
+ * This is a textarea data type which allow you show a rich-text editor, you can change 
+ * the library to use another rich-text editor plugin if you want.
+ * 
+ * @author Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+ * @copyright (c) 2011, Rubén Schaffer Levine and Luca Lauretta
+ * @category Data
+ * 
+ */
 
 class HTMLText extends Text
 {
-//	protected $list = false;
-//	
-//	function showInput($fill)
-//	{
-//		$data_id = 'SimplOn_'.$this->instanceId();		
-//		//@todo: display a RichText editor instead of Textarea
-//		return  ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
-//				'<textarea id="'.$this->inputName().'" name="'.$this->inputName().'">'.(($fill)? $this->val :'').'</textarea>';
-//	}
+    /**
+     * 
+     * function getJS - This is a overwritten function that belong to \SimplOn\Elements\JS 
+     * 
+     * @param string $method
+     * @return array
+     */
+	
+	public function getJS($method) {
+                //Is necessary declarate a varible to save the array returned for the original method
+                $rich_text = parent::getJS($method);
+                // here you can change or you can add more librarys if you want to change 
+                // or modify the plugin
+		$local_js = JS::getPath("0-nicEdit.js");
+                //add our library(s) to the origial array
+		$rich_text[] = $local_js;
+		// and finally returned the new array
+		return $rich_text;
+	}
+        
+	function showInput($fill)
+	{
+            return
+            ($this->label() ? '<label for="'.$this->htmlId().'">'.$this->label().': </label>' : '') .
+            '<textarea id="'.$this->htmlId().'" class="'.$this->htmlClasses().'" name="'.$this->inputName().'">'.(($fill)? $this->val :'').'</textarea>';
+	}
 }
