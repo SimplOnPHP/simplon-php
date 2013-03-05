@@ -19,26 +19,28 @@
 namespace SimplOn\Datas;
 
 /**
-*
- * 
- * 
- * 
-* @version	1.0
-* @author	Ruben Schaffer
-* @todo fix so val retuns the value and only the inputmethod retuns the hidden inpunt
+* RadioButtonNumber data type
+* 
+* Displays radio buttons that are stored in the array options, then check if the 
+* options are valid numbers and stores them in an array investing in securities 
+* that have been selected.
+* 
+* @author Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+* @copyright (c) 2011, Rubén Schaffer Levine and Luca Lauretta
+* @category Data
 */
 class RadioButtonNumber extends Integer
 {
-    /**
-     *
-     * @var array $options - This variable holds all options.
-     * @var boolean $showValues - This variable shows the value of options.
-     * @var string $valudationNotAnOption - Is a message to display just if the value introduced
-     * isn't an integer number.
-     */
+        /**
+         *
+         * @var array $options - This variable holds all options.
+         * @var boolean $showValues - This variable shows the value of options.
+         * @var string $valudationNotAnOption - Is a message to display just if the value introduced
+         * isn't an integer number.
+         */
 	protected $options = array();
 	protected $showValues = true;
-
+        
 	public $valudationNotAnOption='The value given is not a valid option';
         //public $valudationNaN = 'This field must be an integer number.';
 	
@@ -48,7 +50,7 @@ class RadioButtonNumber extends Integer
          * @param string $label
          * @param array $options
          * @param string $flags
-         * @param string $val
+         * @param string $val{
          * @param string $filterCriteria
          */
 	public function __construct($label=null, $options=array(), $flags=null, $val=null, $filterCriteria=null)
@@ -56,7 +58,6 @@ class RadioButtonNumber extends Integer
 		$this->options = $options;
 		parent::__construct($label, $flags, $val, $filterCriteria);
 	}
-        
         /**
          * 
          * function val - This function checks if the value is a valid number in option. 
@@ -79,20 +80,30 @@ class RadioButtonNumber extends Integer
 			return $this->val;
 		}
 	}
-     /**
-     *
-     * function showView - This function shows the option selected in the input 
-     * Check if the variable $optionFlip, but there it creates and stores the inverted 
-     * array under option and displays.
-     * 
-     * @return string
-     * 
-     */  
+        /**
+         * 
+         * function showView - This function shows the option selected in the input 
+         * Check if the variable $optionFlip, but there it creates and stores the 
+         * inverted array under option and displays.
+         * 
+         * @return string
+         * 
+         */ 
 		
 	function showView($template = null){
 		if(!@$this->optionsFlip){$this->optionsFlip = array_flip($this->options);}
 		return $this->optionsFlip[$this->val()];
 	}
+        
+        
+        /**
+         * 
+         * function showInput - This function prints the label and the input with the
+         * correct format (id,class,name, value) to be used in the forms.
+         * 
+         * @param boolean $fill
+         * @return string
+         */
 
 	public function showInput($fill)
 	{

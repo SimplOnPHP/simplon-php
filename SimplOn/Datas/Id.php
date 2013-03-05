@@ -24,7 +24,7 @@ namespace SimplOn\Datas;
 *
 * @version	1.0
 * @author	Ruben Schaffer
-* @todo fix so val retuns the value and only the inputmethod retuns the hidden inpunt
+* @category Data
 */
 abstract class Id extends Data
 {
@@ -38,7 +38,7 @@ abstract class Id extends Data
 
 	
 	/**
-	 *This needs to be redefined to enshure that REQUIRED can not be unset since this is an ID
+	 *
 	 * @param type $flags 
 	 */
 	function dataFlags($flags)
@@ -49,3 +49,4 @@ abstract class Id extends Data
 	
 	
 }
+ 

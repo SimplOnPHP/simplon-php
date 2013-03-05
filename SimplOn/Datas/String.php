@@ -43,7 +43,7 @@ class String extends Data {
 		$filterCriteria = 'name ~= :name';
         
 	public function showInput($fill) {
-		return 
+            return 
             ($this->label() ? '<label for="'.$this->htmlId().'">'.$this->label().': </label>' : '') .
             '<input id="'.$this->htmlId().'" class="'.$this->htmlClasses().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
 	}

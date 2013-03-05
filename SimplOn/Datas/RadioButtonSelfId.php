@@ -19,15 +19,26 @@
 namespace SimplOn\Datas;
 
 /**
-* Hidden para las tablas
-* --- No imprime un label y manda un input hidden.
-*
-* @version	1.0
-* @author	Ruben Schaffer
-* @todo fix so val retuns the value and only the inputmethod retuns the hidden inpunt
+* RadioButtonSelfId data type
+* 
+* Creates and displays a radio button for the same id.
+* 
+* @author Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+* @copyright (c) 2011, Rubén Schaffer Levine and Luca Lauretta
+* @category Data
 */
 class RadioButtonSelfId extends Integer
 {
+    /**
+     *
+     * @var $options array -This variable holds all options.
+     * @var $showValues boolean - This variable shows the value of options.
+     * @var $fetch boolean - This variable indicates if you have to read values ​​
+     * from the database
+     * 
+     * @var $view,$create,$update,required string -- 
+     * @var $valudationNotAnOption string -- 
+     */
 	protected $options = array();
 	protected $showValues = true;
 	
@@ -43,7 +54,17 @@ class RadioButtonSelfId extends Integer
 	
 	public $valudationNotAnOption='The value given is not a valid option';
 	//public $valudationNaN = 'This field must be an integer number.';
-	
+        
+        /**
+         * function __contruct get the parameters to them in the parent construct
+         * 
+         * @param string $label
+         * @param array $options
+         * @param string $flags
+         * @param string $val
+         * @param string $filterCriteria
+         */
+        
 	public function __construct($label=null, $flags=null, $val=null, $filterCriteria=null)
 	{
 		$this->showValues = false;
@@ -51,6 +72,14 @@ class RadioButtonSelfId extends Integer
 		$this->fetch = false;
 	}	
 	
+        /**
+         * 
+         * function val - This function checks if the value valid if isn't throw an exception.
+         * 
+         * @param null $val
+         * @return void
+         * @throws \SimplOn\DataValidationException
+         */
 	public function val($val = null){
 		if($val){
 			if(in_array($val, $this->options)){
@@ -67,15 +96,30 @@ class RadioButtonSelfId extends Integer
 
 		return $this->showInput();
 	}
+        /**
+         * 
+         * function showList - This function displays the elements in a list according to his id.
+         * 
+         * @param boolean $fill
+         * @return string
+         */
 
 	function showList($fill = true){
 		$value = $this->parent->getId();
-		return '<input class="SimplOn input '. $this->getClass() .'" name="'. $this->name() .'"  value="'.$value.'"'.' '.(($fill && $this->val==$value)?' checked="checked"':'').' type="radio" />';
-	}	
+                return '<input class="SimplOn input '. $this->getClass() .'" name="'. $this->name() .'"  value="'.$value.'"'.' '.(($fill && $this->val==$value)?' checked="checked"':'').' type="radio" />';
+	}
+        /**
+         * 
+         * function showInput - This function prints the label and the input with the
+         * correct format (id,class,name, value) to be used in the forms.
+         * 
+         * @param boolean $fill
+         * @return string
+         */
 	
 	public function showInput($fill = false)
 	{
-		$this->options = array($this->parent->getid());
+		$this->options = array($this->parent->getId());
 		$data_id = 'SimplOn_'.$this->instanceId();
 		$ret=($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '');
 		foreach($this->options as $key=>$value){

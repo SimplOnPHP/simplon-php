@@ -17,9 +17,27 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace SimplOn\Datas;
-
+/**
+ * Message data type
+ * 
+ * This is a Message data type which allow displays a mensagge in the templates.  
+ * 
+ * @author Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+ * @copyright (c) 2011, Rubén Schaffer Levine and Luca Lauretta
+ * @category Data
+ */
 class Message extends Data
 {
+     /**
+     *
+     * Muestra
+     * 
+     * @var boolean $view, $create, $update, $search, $list, $required, 
+     * $fetch - These variables are flags to indicate if this input will be
+     * displayed in the different templates.
+     * 
+     * 
+     */
 	protected
 	
 		$view = true,
@@ -37,12 +55,23 @@ class Message extends Data
 		$fetch = false;
 	
 	
-	
+     /** function showInput - This function show the view.
+     *  
+     * @param boolean $fill
+     * @return String
+     */
 	
 	function showInput($fill)
 	{ return $this->showView(); }
 	
-	
+     /**
+     *
+     *  The functions doRead,doCreate,doUpdate,doSearch - Show values ​​obtained 
+     *  from the database
+     * 
+     * @return string
+     * 
+     */         
 	public function doRead()
 	{}
 	
@@ -54,6 +83,5 @@ class Message extends Data
 
 	public function doSearch()
 	{}	
-	
-	
+		
 }

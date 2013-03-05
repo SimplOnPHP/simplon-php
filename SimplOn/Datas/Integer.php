@@ -29,6 +29,16 @@ namespace SimplOn\Datas;
 class Integer extends Data {
     /**
      *
+     * @var boolean $view,$create,$update and $list - these variables are 
+     * flags to indicate if this input will be displayed in the different templates
+     */
+    protected 
+		$view = true,
+		$create = true,
+		$update = true,
+		$list = true;
+    /**
+     *
      * @var string $valudationNaN - is a message to display just if the value introduced
      * isn't an integer number.
      */
@@ -45,13 +55,13 @@ class Integer extends Data {
         // if $val is defined and isn't null, start to verify the value
         if(isset($val)) {
             //verify if it's a numeric and integer number
-            if( is_numeric($val) && is_int($val*1)  ) {
+            if(is_numeric($val) && is_int($val*1))
                 //if it's true save the value into $var that belongs to Data
                 $this->val = intval($val);
-            }else{
+            else
                 //if it's false throw an exception
                 throw new \SimplOn\DataValidationException($this->valudationNaN);
-            }
+            
 	}
         //if $val is null return the variable
         else{
@@ -60,11 +70,9 @@ class Integer extends Data {
     }
     
     public function showInput($fill) {
-        $data_id = 'SimplOn_'.$this->instanceId();
-
         return 
-        ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
-        '<input id="'.$data_id.'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
+        ($this->label() ? '<label for="'.$this->htmlId().'">'.$this->label().': </label>' : '') .
+        '<input id="'.$this->htmlId().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
     }
 	
 //	public function validationMessages(){

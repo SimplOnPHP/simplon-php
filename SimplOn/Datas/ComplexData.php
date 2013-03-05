@@ -24,6 +24,13 @@ namespace SimplOn\Datas;
  * @example /sample_site/Elements/Example_ComplexData.php 
  */
 class ComplexData extends Data {
+    /**
+     *
+     * @var boolean $view, $create, $update, $list, $fetch, $required and $search
+     * are flags and are defined in  SimplOn\Datas\Data.
+     * 
+     * @var \SimplOn\Elements\Element $parent - is a reference to parent element of this data.  
+     */
 		
 	protected
 		$view = true,
@@ -33,34 +40,38 @@ class ComplexData extends Data {
 		$fetch = false,
 		$required = false,
 		$search = false,
-		/**
-		 * @var \SimplOn\Elements\Element
-		 */
 		$parent = null;
 	
 		
 	
 	public function __construct($label,$sources,$flags=null,$searchOp=null){
-		
-		
+		// $this->sources is an array with items to be used for complex data
 		$this->sources = $sources;
 		
 		parent::__construct($label,$flags,null,$searchOp);
 	}
-	
+	/**
+         * function sourcesToValues - this function verifies if $sources isn't defined
+         * if is true declare $sources to save $this->sources and define $values as an array
+         * and if there is a method with the same name that item $source then svae it into $values
+         * and finally return $values.
+         * 
+         * @param array $sources
+         * @return array
+         */
 	public function sourcesToValues($sources = null) {
-		if(!isset($sources)) $sources = $this->sources;
-		
-		$values = array();
-		foreach($sources as $source) {
-			$values[] = $this->parent->$source();
-		}
-		return $values;
+            if(!isset($sources)) $sources = $this->sources;
+            $values = array();
+            foreach($sources as $source) {
+                $values[] = $this->parent->$source();
+            }
+            return $values;
 	}
 
-	
+	//showView just return the value from function val()
 	public function showView($template = null, $sources = null) {return $this->val($sources);}
-	public function showInput($fill = false, $sources = null) {return $this->val($sources);}
+	//showInput just return the value from function val()
+        public function showInput($fill = false, $sources = null) {return $this->val($sources);}
 	
 
 	
@@ -75,7 +86,7 @@ class ComplexData extends Data {
 	public function doSearch(){}
 	
 	public function doDelete(){}
-	
-	
+        
 	
 }
+

@@ -26,14 +26,21 @@ class SelectAction extends ElementLink {
 	}
 
 	public function val($sources = null){
-		if(!is_array($sources)) $sources = $this->sources;
-        
-        $href = $this->encodeURL('makeSelection', array($this->parent->getId(), $this->parent->getClass()) );
-		$content = vsprintf(array_shift($sources), $this->sourcesToValues($sources));
-		
-		return Main::$DEFAULT_RENDERER->link($content, $href, array('class'=>$this->htmlClasses()));
+            // verify if $sources is not an array if it's true then $sources is stored into $this->sources
+            if(!is_array($sources)) $sources = $this->sources;
+            // @href save the URL to the method indicated, in this case is makeSelection
+            $href = $this->encodeURL('makeSelection', array($this->parent->getId(), $this->parent->getClass()) );
+            // $content save $sources with the correct format
+            $content = vsprintf(array_shift($sources), $this->sourcesToValues($sources));
+            //return the <a> tag with the correct href.
+            return Main::$DEFAULT_RENDERER->link($content, $href, array('class'=>$this->htmlClasses()));
 	}
-	
+	/**
+         * function encodeURL - overwrite parent function just to send 2 parameters
+         * @param string $method
+         * @param array $method_params
+         * @return string
+         */
 	function encodeURL($method = null, array $method_params = array()) {
 		return Main::encodeURL($this->parent->parentClass(), array($this->parent->parentId()), $method, $method_params, $this->parent->dataName());
 	}

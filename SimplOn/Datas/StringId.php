@@ -17,23 +17,25 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace SimplOn\Datas;
-
 /**
-* ID para las tablas
-* --- No imprime un label y manda un input hidden.
-*
-* @version	1.0
-* @author	Ruben Schaffer
-* @todo fix so val retuns the value and only the inputmethod retuns the hidden inpunt
+ * StringId data type
+ * 
+ * This is a string id data type which define a string as id.
+ *  
+ * @author Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+ * @copyright (c) 2011, Rubén Schaffer Levine and Luca Lauretta
+ * @category Data
 */
 class StringId extends Id
 {
     /**
-     *
+     * @var boolean $autoIncrement - this variable define if this field will be
+     * auto incremented or not. 
      * @var boolean $view,$create,$update, $list and $search- these variables are 
      * flags to indicate if this input will be displayed in the different templates.
      * @var boolean $required - required indicates if this data will be required.
      */
+        public $autoIncrement = false;
     	protected $view = true;
 	protected $create = true;
 	protected $update = true;

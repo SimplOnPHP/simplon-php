@@ -70,7 +70,8 @@ class Date extends String {
 						$dateObj = new \DateTime();
 						$dateObj->setTimestamp($val);
 					} else {
-                                                throw new \SimplOn\DataValidationException($this->isnotNumeric);
+                                            $dateObj = new \DateTime($val);
+                                           // throw new \SimplOn\DataValidationException($this->isnotNumeric);
 					}
 				} catch(\Exception $e) {
 					throw new \SimplOn\DataValidationException($this->validationDate);

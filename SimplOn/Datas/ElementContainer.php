@@ -47,7 +47,14 @@ class ElementContainer extends Data {
 		parent::__construct($label,$flags,$element_id);
         
 	}
-	
+	/**
+         * 
+         * function getJS - this function modifies the url of the encapsulated element to 
+         * don't display a incorrect url
+         * 
+         * @param string $method
+         * @return array
+         */
 	public function getJS($method) {
 		return array_map(
 			function($fp) {
@@ -56,7 +63,16 @@ class ElementContainer extends Data {
 			$this->element->getJS($method)
 		);
 	}
-    
+    /**
+     * 
+     * function parent -in this function you can designate a specific parent to 
+     * use in this data, if you don't to use another parent, this function return 
+     * the origal logic parent else change the logic parent for the new parent and
+     * execute this function in the element to change the parent of the element.
+     * 
+     * @param object $parent
+     * @return object
+     */
     function parent(&$parent = null){
         if(!$parent){
             return $this->parent;
@@ -66,9 +82,18 @@ class ElementContainer extends Data {
         }
     }
     
-	
+	/**
+         * 
+         * function showView - this function obtains the html content of the son
+         * element for introduce just that part into the parent element in the 
+         * differents templates and modifies the nesting level of the elements.
+         * 
+         * @param string $template
+         * @return string
+         */
 	function showView($template = null)
 	{
+            
         if($template) {
             $template = Main::loadDom($template);
             $template = $this->element->showView($template[$this->cssSelector().' '.$this->element->cssSelector()],true);
@@ -80,14 +105,21 @@ class ElementContainer extends Data {
         }
         $template=$template.'';
         $dom = \phpQuery::newDocument($template);
-
+        
         if(@$element) {
             $this->nestingLevelFix($dom);
         }
         
         return $dom.'';
+        
 	}
-	
+	/**
+         * 
+         * function val - this function introduces the values from database of son element 
+         * to database of parent element without modify the original values.
+         * @param type $val
+         * @return type
+         */
 	public function val($val = null) {
 		if($val === '') {
 			$class = $this->element->getClass();
@@ -105,7 +137,12 @@ class ElementContainer extends Data {
         $this->element->addOnTheFlyAttribute('selectAction' , new SelectAction('', array('Select')) );
     
 	}
-	
+	/**
+         * function input - this function displies the HTML to list and add new values into 
+         * parent element. 
+         * @param boolean $fill
+         * @return string
+         */
 	function showInput($fill)
 	{
         $nextStep = $this->encodeURL('makeSelection');
@@ -133,7 +170,13 @@ class ElementContainer extends Data {
             <input class="SimplOn input" name="'.$this->name().'" type="hidden" value="'.($fill?$this->val():'').'" />
 		';
 	}
-    
+    /**
+     * function showInputView - this function works after function showInput, after 
+     * have listed or added new values you can edit them or delete them without modify 
+     * the original values and put the HTML to do it.
+     * 
+     * @return string
+     */
 	public function showInputView()
 	{
         $template=$this->parent->templateFilePath('View');
@@ -189,7 +232,12 @@ class ElementContainer extends Data {
                 array('footer' => $element->processSelect())
         );
 	}
-    
+    /**
+     * function nestingLevelFix - this function update the nesting level of the elements
+     * every time that a new element is added.
+     * 
+     * @param type $dom
+     */
     function nestingLevelFix(&$dom) {
         $startingNestingLevel = $this->parent->nestingLevel();
         foreach($dom['.SimplOn.Element, .SimplOn.Data'] as $node) {
@@ -202,7 +250,11 @@ class ElementContainer extends Data {
             }
         }
     }
-
+/**
+ * function makeSelection - this function pass the arguments to javascript file to 
+ * display the light box.
+ * @param type $id
+ */
     function makeSelection($id){ 
         /*@var parentElement /SimplOn/Elements/Element */
         //$orig_sid = Main::$globalSID;
@@ -210,8 +262,6 @@ class ElementContainer extends Data {
         $this->element->fillFromDSById($id);
         //$parentElement = new $parentClass();
         //Main::$globalSID = $orig_sid;
-        
-        
         //$template = $parentElement->templateFilePath('View');
         
         $return = array(
@@ -232,7 +282,7 @@ class ElementContainer extends Data {
                 ),
             )
         );
-        
+
         header('Content-type: application/json');
         echo json_encode($return);
 

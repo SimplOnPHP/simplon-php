@@ -19,20 +19,41 @@
 namespace SimplOn\Datas;
 
 /**
-* Hidden para las tablas
-* --- No imprime un label y manda un input hidden.
-*
-* @version	1.0
-* @author	Ruben Schaffer
-* @todo fix so val retuns the value and only the inputmethod retuns the hidden inpunt
+* RadioButtonText data type
+* 
+* Displays radio buttons that are stored in the array options, then check if the 
+* options are valid string and stores them in an array investing in securities 
+* that have been selected.
+* 
+* @author Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+* @copyright (c) 2011, Rubén Schaffer Levine and Luca Lauretta
+* @category Data
 */
+
 class RadioButtonText extends String
 {
+    /**
+     *
+     * @var array $options - This variable holds all options.
+     * @var boolean $showValues - This variable shows the value of options.
+     * @var string $valudationNotAnOption - Is a message to display just if the value introduced
+     * isn't a string.
+     */
 	protected $options = array();
 	protected $showValues = true;
 
 	public $valudationNotAnOption='The value given is not a valid option';
 	//public $valudationNaN = 'This field must be an integer number.';
+         
+        /**
+         * function __contruct get the parameters to them in the parent construct
+         * 
+         * @param string $label
+         * @param array $options
+         * @param string $flags
+         * @param string $val
+         * @param string $filterCriteria
+         */
 	
 	public function __construct($label=null, $options=array(), $flags=null, $val=null, $filterCriteria=null)
 	{
@@ -41,6 +62,16 @@ class RadioButtonText extends String
 		parent::__construct($label, $flags, $val, $filterCriteria);
 		//echo $this->showInput(true);
 	}	
+        
+        /**
+         * 
+         * function val - This function checks if the value is a valid string in option. 
+         * if isn't throw an exception.
+         * 
+         * @param null $val
+         * @return void
+         * @throws \SimplOn\DataValidationException
+         */
 	
 	public function val($val = null){
 		if($val){
@@ -53,6 +84,14 @@ class RadioButtonText extends String
 			return $this->val;
 		}
 	}
+        /**
+         * 
+         * function showInput - This function prints the label and the input with the
+         * correct format (id,class,name, value) to be used in the forms.
+         * 
+         * @param boolean $fill
+         * @return string
+         */
 		
 	public function showInput($fill)
 	{
