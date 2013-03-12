@@ -129,33 +129,31 @@ class Element extends BaseObject {
 	 */
 	public function __construct($id_or_array = null, $storage=null, $specialDataStorage=null)
 	{
-        $this->sonMessage = new \SimplOn\Datas\Message();
-		$this->construct($id_or_array, $storage, $specialDataStorage);
+            $this->sonMessage = new \SimplOn\Datas\Message();
 		
-		
-		
-		//On heirs put here the asignation of SimplOndata and attributes
-		
-		if($storage) 
-            $this->storage($storage);
-        else
-            $this->storage(strtr($this->getClass(), '\\', '_'));
-		
-		//Assings the storage element for the SimplOnelement. (a global one : or a particular one)
-		if(!$specialDataStorage){
-			$this->dataStorage = Main::dataStorage();
-		}else{
-			$this->dataStorage=&$specialDataStorage;
-		}
-		
-		if(!$this->quickDelete) $this->quickDelete = Main::$QUICK_DELETE;
-		
-		if( !isset($this->viewAction) )$this->viewAction = new Datas\ViewAction('', array('View'));
-		if( !isset($this->createAction) )$this->createAction = new Datas\CreateAction('', array('Create'));
-		if( !isset($this->updateAction) )$this->updateAction = new Datas\UpdateAction('', array('Update'));
-		if( !isset($this->deleteAction) )$this->deleteAction = new Datas\DeleteAction('', array('Delete'));
-		//if( !isset($this->selectAction) )$this->selectAction = new Datas\SelectAction('', array('Select'));
-		//$this->multiSelectAction = new Datas\DeleteAction('', array('Select'));
+            //On heirs put here the asignation of SimplOndata and attributes
+            if($storage) 
+                $this->storage($storage);
+            else
+                $this->storage(strtr($this->getClass(), '\\', '_'));
+
+            //Assings the storage element for the SimplOnelement. (a global one : or a particular one)
+            if(!$specialDataStorage){
+                $this->dataStorage = Main::dataStorage();
+            }else{
+		$this->dataStorage=&$specialDataStorage;
+            }
+            //Called to "construct" function
+            $this->construct($id_or_array, $storage, $specialDataStorage);
+            
+            if(!$this->quickDelete) $this->quickDelete = Main::$QUICK_DELETE;
+
+            if( !isset($this->viewAction) )$this->viewAction = new Datas\ViewAction('', array('View'));
+            if( !isset($this->createAction) )$this->createAction = new Datas\CreateAction('', array('Create'));
+            if( !isset($this->updateAction) )$this->updateAction = new Datas\UpdateAction('', array('Update'));
+            if( !isset($this->deleteAction) )$this->deleteAction = new Datas\DeleteAction('', array('Delete'));
+            //if( !isset($this->selectAction) )$this->selectAction = new Datas\SelectAction('', array('Select'));
+            //$this->multiSelectAction = new Datas\DeleteAction('', array('Select'));
  
         //Load the attributes on the fly
         $this->addOnTheFlyAttributes();
@@ -441,7 +439,7 @@ class Element extends BaseObject {
 		try{
 			if($this->create()){
 				if(empty($nextStep)) {
-					header('Location: '.$this->encodeURL(array($this->getId()), 'showUpdate'));
+					header('Location: '.$this->encodeURL(array($this->getId()), 'showAdmin'));
 				} else if(substr($nextStep,-1*strlen('makeSelection')) == 'makeSelection') {
 					header('Location: '.$nextStep . '/' . $this->getId());
 				} else {
@@ -571,7 +569,7 @@ class Element extends BaseObject {
 		$this->fillFromRequest();
 		$search = new Search(array($this->getClass()));
   
-        $colums = array_merge($this->datasWith("list"), array("deleteAction","viewAction","updateAction") );
+                $colums = array_merge($this->datasWith("list"), array("deleteAction","viewAction","updateAction") );
         
 		return $search->processSearch($this->toArray(),$colums);
 	}        
@@ -783,14 +781,15 @@ class Element extends BaseObject {
         if(!$clearID){
             $id = $this->getId();
         }
-        
         foreach($this->dataAttributes() as $dataName) {
 			$this->{'O'.$dataName}()->clearValue();
 		}
-        
         $this->setId($id);
     } 
     
+    public function clearId(){
+        $this->{$this->field_id()}->clearValue();
+    }
     
     
  	public function showSelect($template_file = null, $action = null, $previewTemplate = null, $sid = null) {
@@ -808,7 +807,7 @@ class Element extends BaseObject {
 			.'<div id="SimplOn-list" class="SimplOn section">'.$this->obtainHtml(
 				"showSearch", 
 				null, 
-				$this->encodeURL(array(),'showDelete'), 
+				$this->encodeURL(array(),'showAdmin'), 
 				array('footer' => $this->processAdmin()), 
 				'body'
 			).'</div>'
