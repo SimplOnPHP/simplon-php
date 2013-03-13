@@ -426,14 +426,21 @@ class Element extends BaseObject {
 			$this->fillFromRequest();
 			$this->validateForDB();
 		}catch( \SimplOn\ElementValidationException $ev ){
-			$mistake=$ev->datasValidationMessages();
-			//var_dump($mistake);
-			foreach ($mistake as $key) {
-				foreach ($key as $key2) {
-				 	echo $key2.'<br>';
-				 }
+			$data = array();
+			foreach ($ev->datasValidationMessages() as $key => $value){
+				foreach ($value as $key2){
+					$data[] = array(
+					'func' => 'showValidationMessages',
+					'args' => array($key, $key2)
+					);
+				}
 			}
-						
+			$return = array(
+			'status' => true,
+			'type' => 'commands',
+			'data' => $data
+			);
+			echo json_encode($return);		
 			return;
 		}
 		try{
@@ -459,14 +466,27 @@ class Element extends BaseObject {
 	
 	//function processUpdate($short_template=null, $sid=null){
 	function processUpdate($nextStep = null){
-		
-//		try{
+	try{
 			$this->fillFromRequest();
 			$this->validateForDB();
-//		}catch( \SimplOn\ElementValidationException $ev ){
-//			user_error($ev->datasValidationMessages());
-//			return;
-//		}
+		}catch( \SimplOn\ElementValidationException $ev ){
+                    $data = array();
+                    foreach ($ev->datasValidationMessages() as $key => $value){
+                        foreach ($value as $key2){
+                            $data[] = array(
+                                'func' => 'showValidationMessages',
+                                'args' => array($key, $key2)
+                                );
+                        }
+                    }
+                    $return = array(
+							'status' => true,
+							'type' => 'commands',
+							'data' => $data
+							);
+                    echo json_encode($return);                    
+                    return;
+		}
 		try{
 			if($this->update()){
 
