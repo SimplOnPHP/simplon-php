@@ -1,20 +1,20 @@
 <?php
 /*
-	Copyright Â© 2011 RubÃ©n Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+	Copyright © 2011 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
 	
-	This file is part of â€œSimplOn PHPâ€.
+	This file is part of “SimplOn PHP”.
 	
-	â€œSimplOn PHPâ€ is free software: you can redistribute it and/or modify
+	“SimplOn PHP” is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation version 3 of the License.
 	
-	â€œSimplOn PHPâ€ is distributed in the hope that it will be useful,
+	“SimplOn PHP” is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 	
 	You should have received a copy of the GNU General Public License
-	along with â€œSimplOn PHPâ€.  If not, see <http://www.gnu.org/licenses/>.
+	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace SimplOn\Elements;
 
@@ -233,7 +233,7 @@ class Element extends BaseObject {
 	
 	/**
 	 * Allows some simplicity for coding and declarations, auto makes getters and setters 
-	 * so that any Dataâ€™s attribute value data->val() can be transparently accessed as a normal
+	 * so that any Data’s attribute value data->val() can be transparently accessed as a normal
 	 * element attribute by Element->data(); and load all other BasicObject SimplON functionality 
 	 * @see SimplOn.BaseObject::__call()
 	 * 
@@ -307,7 +307,7 @@ class Element extends BaseObject {
 						$this->$dataName($value);
 						$filled++;
 					}catch(\SimplOn\DataValidationException $ve){
-						$this->excetionsMessages[$dataName] = array($ve->getMessage());
+                                                $this->excetionsMessages[$dataName] = array($ve->getMessage());
 					}
 				}
 			}
@@ -428,12 +428,10 @@ class Element extends BaseObject {
 		}catch( \SimplOn\ElementValidationException $ev ){
 			$data = array();
 			foreach ($ev->datasValidationMessages() as $key => $value){
-				foreach ($value as $key2){
 					$data[] = array(
 					'func' => 'showValidationMessages',
-					'args' => array($key, $key2)
+					'args' => array($key, $value[0])
 					);
-				}
 			}
 			$return = array(
 			'status' => true,
@@ -472,12 +470,10 @@ class Element extends BaseObject {
 		}catch( \SimplOn\ElementValidationException $ev ){
                     $data = array();
                     foreach ($ev->datasValidationMessages() as $key => $value){
-                        foreach ($value as $key2){
                             $data[] = array(
                                 'func' => 'showValidationMessages',
                                 'args' => array($key, $key2)
                                 );
-                        }
                     }
                     $return = array(
 							'status' => true,
@@ -706,7 +702,7 @@ class Element extends BaseObject {
 	}
 	
 	/**
-	 * Sets each Data itâ€™s attribute name within the element instance.
+	 * Sets each Data it’s attribute name within the element instance.
 	 *
 	 * Comment: Usefull to the generate and handle the filtercriteria
 	 */
