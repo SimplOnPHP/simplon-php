@@ -131,7 +131,7 @@ class Search extends Element
 	
 	}
 
-	public function showView($template_file = '') {	
+	public function showView($template_file = '', $partOnly = false) {	
 		return $this->showSearch($template_file);
 	}
 
@@ -141,7 +141,7 @@ class Search extends Element
 	}
 
 
-	public function showSearch($template_file = '')
+	public function showSearch($template_file = NULL, $partOnly = false)
 	{
 		//$this->fillFromRequest();
             return 
@@ -152,7 +152,7 @@ class Search extends Element
 	}
 
         
-	public function showSelect($template_file = '')
+	public function showSelectshowSelect($template_file = NULL, $action = NULL, $previewTemplate = NULL, $sid = NULL)
 	{
 		//$this->fillFromRequest();
             return 

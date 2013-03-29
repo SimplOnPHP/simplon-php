@@ -65,6 +65,7 @@ var SimplOn = new function() {
 	};
 	
 	this.initForms = function () {
+		if(parent !== window) {
 			$('form.SimplOn.create, form.SimplOn.update, form.SimplOn.delete').each(function() {
 				$(this).ajaxForm({
 					url: $(this).attr('action'),
@@ -91,7 +92,7 @@ var SimplOn = new function() {
 					}*/
 				});
 			});
-		if(parent !== window) {
+            
             $('button.SimplOn.cancel-form').click(function(e){
                e.preventDefault();
                SimplOn.commands.closeLightbox();
@@ -199,14 +200,7 @@ var SimplOn = new function() {
             else $element = $($element);
             
 			$element.prepend(content);
-		},
-                showValidationMessages: function (field, error){
-                    //alert(content+': '+error);
-                    //alert(content);
-                    //var mensaje = '{'+field+': '+error+'}';
-                    var validator = $('form.SimplOn.create, form.SimplOn.update').validate();
-                    eval('validator.showErrors({"'+field+'": "'+error+'"})');
-                }
+		}
 	};
 	
 	this.utils = {

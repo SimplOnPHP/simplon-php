@@ -13,8 +13,8 @@ SimplOn\Main::run(array(
 	'GENERIC_TEMPLATES_PATH' => realpath('Templates'),
 	'MASTER_TEMPLATE' => realpath('../SimplOn').'/Renderers/Html5.html',
 		
-	'DEFAULT_ELEMENT' => 'HolaMundo',
-	'DEFAULT_METHOD' => 'saluda',
+	'DEFAULT_ELEMENT' => 'Persona',
+	'DEFAULT_METHOD' => 'showAdmin',
 	
 	'DEFAULT_RENDERER' => new SimplOn\Renderers\Html5(),
 

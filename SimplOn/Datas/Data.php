@@ -304,8 +304,10 @@ abstract class Data extends BaseObject {
 
     
     
-	public function clearValue() {
-            $this->val=null;
+	public function clearValue($filterCriteria = null) {
+		if(isset($this->value)){
+            $this->value=null;
+        }
 	}
 
     
@@ -353,7 +355,8 @@ abstract class Data extends BaseObject {
 		$class = $this->getClass('-');
                  
 		if($this->hasMethod($method)) {
-			$class = end(explode('\\',$this->getClass()));
+                        $a = explode('\\',$this->getClass());
+			$class = end($a);
 			return array(CSS::getPath("$class.$method.css"));
 
 		} else {

@@ -42,11 +42,10 @@ class Average extends ComplexData {
         foreach($values as $item){
             $count += $item;
         }
-        var_dump($count);
         // finally the average is calculated
         $result = $count/$size;
         // and return it
-        return $result;
+        return sprintf("%01.2f", $result);
         
     }
 }
