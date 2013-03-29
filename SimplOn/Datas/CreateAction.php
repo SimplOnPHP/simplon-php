@@ -41,4 +41,10 @@ class CreateAction extends ElementLink {
     public function __construct($label, array $sources, $flags=null, $searchOp=null){
     	parent::__construct($label, $sources, 'showCreate', array(), $flags,null,$searchOp);
     }
+    
+    public function val($sources = null){
+            $this->parent->clearId();
+            $link = parent::val($sources);
+            return $link;
+    }
 }

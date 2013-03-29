@@ -41,7 +41,7 @@ abstract class Id extends Data
 	 *
 	 * @param type $flags 
 	 */
-	function dataFlags($flags = NULL)
+	function dataFlags($flags)
 	{
 		parent::dataFlags($flags);
 		$this->required = true;

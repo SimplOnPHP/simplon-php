@@ -29,7 +29,7 @@ namespace SimplOn\Datas;
 class ViewAction extends ElementLink {
 	
 	public function __construct($label, array $sources, $flags=null, $searchOp=null){
-		parent::__construct($label, $sources, 'showView', array(), $flags,null,$searchOp);
+		parent::__construct($label,$sources, null,array(), $flags,null,$searchOp);
 	}
 	
 }

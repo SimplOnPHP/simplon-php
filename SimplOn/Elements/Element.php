@@ -129,33 +129,31 @@ class Element extends BaseObject {
 	 */
 	public function __construct($id_or_array = null, $storage=null, $specialDataStorage=null)
 	{
-        $this->sonMessage = new \SimplOn\Datas\Message();
-		$this->construct($id_or_array, $storage, $specialDataStorage);
+            $this->sonMessage = new \SimplOn\Datas\Message();
 		
-		
-		
-		//On heirs put here the asignation of SimplOndata and attributes
-		
-		if($storage) 
-            $this->storage($storage);
-        else
-            $this->storage(strtr($this->getClass(), '\\', '_'));
-		
-		//Assings the storage element for the SimplOnelement. (a global one : or a particular one)
-		if(!$specialDataStorage){
-			$this->dataStorage = Main::dataStorage();
-		}else{
-			$this->dataStorage=&$specialDataStorage;
-		}
-		
-		if(!$this->quickDelete) $this->quickDelete = Main::$QUICK_DELETE;
-		
-		if( !isset($this->viewAction) )$this->viewAction = new Datas\ViewAction('', array('View'));
-		if( !isset($this->createAction) )$this->createAction = new Datas\CreateAction('', array('Create'));
-		if( !isset($this->updateAction) )$this->updateAction = new Datas\UpdateAction('', array('Update'));
-		if( !isset($this->deleteAction) )$this->deleteAction = new Datas\DeleteAction('', array('Delete'));
-		//if( !isset($this->selectAction) )$this->selectAction = new Datas\SelectAction('', array('Select'));
-		//$this->multiSelectAction = new Datas\DeleteAction('', array('Select'));
+            //On heirs put here the asignation of SimplOndata and attributes
+            if($storage) 
+                $this->storage($storage);
+            else
+                $this->storage(strtr($this->getClass(), '\\', '_'));
+
+            //Assings the storage element for the SimplOnelement. (a global one : or a particular one)
+            if(!$specialDataStorage){
+                $this->dataStorage = Main::dataStorage();
+            }else{
+		$this->dataStorage=&$specialDataStorage;
+            }
+            //Called to "construct" function
+            $this->construct($id_or_array, $storage, $specialDataStorage);
+            
+            if(!$this->quickDelete) $this->quickDelete = Main::$QUICK_DELETE;
+
+            if( !isset($this->viewAction) )$this->viewAction = new Datas\ViewAction('', array('View'));
+            if( !isset($this->createAction) )$this->createAction = new Datas\CreateAction('', array('Create'));
+            if( !isset($this->updateAction) )$this->updateAction = new Datas\UpdateAction('', array('Update'));
+            if( !isset($this->deleteAction) )$this->deleteAction = new Datas\DeleteAction('', array('Delete'));
+            //if( !isset($this->selectAction) )$this->selectAction = new Datas\SelectAction('', array('Select'));
+            //$this->multiSelectAction = new Datas\DeleteAction('', array('Select'));
  
         //Load the attributes on the fly
         $this->addOnTheFlyAttributes();
@@ -309,7 +307,7 @@ class Element extends BaseObject {
 						$this->$dataName($value);
 						$filled++;
 					}catch(\SimplOn\DataValidationException $ve){
-						$this->excetionsMessages[$dataName] = array($ve->getMessage());
+                                                $this->excetionsMessages[$dataName] = array($ve->getMessage());
 					}
 				}
 			}
@@ -428,14 +426,19 @@ class Element extends BaseObject {
 			$this->fillFromRequest();
 			$this->validateForDB();
 		}catch( \SimplOn\ElementValidationException $ev ){
-			$mistake=$ev->datasValidationMessages();
-			//var_dump($mistake);
-			foreach ($mistake as $key) {
-				foreach ($key as $key2) {
-				 	echo $key2.'<br>';
-				 }
+			$data = array();
+			foreach ($ev->datasValidationMessages() as $key => $value){
+					$data[] = array(
+					'func' => 'showValidationMessages',
+					'args' => array($key, $value[0])
+					);
 			}
-						
+			$return = array(
+			'status' => true,
+			'type' => 'commands',
+			'data' => $data
+			);
+			echo json_encode($return);		
 			return;
 		}
 		try{
@@ -461,14 +464,25 @@ class Element extends BaseObject {
 	
 	//function processUpdate($short_template=null, $sid=null){
 	function processUpdate($nextStep = null){
-		
-//		try{
+	try{
 			$this->fillFromRequest();
 			$this->validateForDB();
-//		}catch( \SimplOn\ElementValidationException $ev ){
-//			user_error($ev->datasValidationMessages());
-//			return;
-//		}
+		}catch( \SimplOn\ElementValidationException $ev ){
+                    $data = array();
+                    foreach ($ev->datasValidationMessages() as $key => $value){
+                            $data[] = array(
+                                'func' => 'showValidationMessages',
+                                'args' => array($key, $key2)
+                                );
+                    }
+                    $return = array(
+							'status' => true,
+							'type' => 'commands',
+							'data' => $data
+							);
+                    echo json_encode($return);                    
+                    return;
+		}
 		try{
 			if($this->update()){
 
@@ -571,7 +585,7 @@ class Element extends BaseObject {
 		$this->fillFromRequest();
 		$search = new Search(array($this->getClass()));
   
-        $colums = array_merge($this->datasWith("list"), array("deleteAction","viewAction","updateAction") );
+                $colums = array_merge($this->datasWith("list"), array("deleteAction","viewAction","updateAction") );
         
 		return $search->processSearch($this->toArray(),$colums);
 	}        
@@ -783,14 +797,15 @@ class Element extends BaseObject {
         if(!$clearID){
             $id = $this->getId();
         }
-        
         foreach($this->dataAttributes() as $dataName) {
 			$this->{'O'.$dataName}()->clearValue();
 		}
-        
         $this->setId($id);
     } 
     
+    public function clearId(){
+        $this->{$this->field_id()}->clearValue();
+    }
     
     
  	public function showSelect($template_file = null, $action = null, $previewTemplate = null, $sid = null) {
@@ -1016,41 +1031,40 @@ class Element extends BaseObject {
 	
 	public function getCSS($method, $returnFormat = 'array', $compress = false) {
                
-            $a = explode('\\',$this->getClass());
-            $class = end($a);
-            // gets component's css file
-            $local_css = CSS::getPath("$class.$method.css");
+		$class = end(explode('\\',$this->getClass()));
+		// gets component's css file
+		$local_css = CSS::getPath("$class.$method.css");
 
-            $a_css = $local_css ? array($local_css) : array();
-
-            // adds
-            foreach($this->dataAttributes() as $data)
-                    foreach($this->{'O'.$data}()->getCSS($method) as $local_css)
-                            if($local_css)
-                                    $a_css[] = $local_css;
-
-            $a_css = array_unique($a_css);
-            sort($a_css);
-            // includes libs
-            $a_css = array_unique(array_merge($a_css, CSS::getLibs()));
-            if($compress) {
-                    // @todo: compress in one file and return the file path
-            }
-            // converts to remote paths
-            $a_css = array_map(array('\\SimplOn\\Main', 'localToRemotePath'), $a_css);
-            switch($returnFormat) {
-                    case 'html':
-                            $html_css = '';
-                            foreach($a_css as $css) {
-                                    $html_css.= '<link type="text/css" rel="stylesheet" href="'.$css.'" />'."\n";
-
-                            }
-                            return $html_css;
-                    default:
-                    case 'array':
-                            return $a_css;
-
-            }
+		$a_css = $local_css ? array($local_css) : array();
+                	
+		// adds
+		foreach($this->dataAttributes() as $data)
+			foreach($this->{'O'.$data}()->getCSS($method) as $local_css)
+				if($local_css)
+					$a_css[] = $local_css;
+				
+		$a_css = array_unique($a_css);
+		sort($a_css);
+                // includes libs
+		$a_css = array_unique(array_merge($a_css, CSS::getLibs()));
+		if($compress) {
+			// @todo: compress in one file and return the file path
+		}
+		// converts to remote paths
+		$a_css = array_map(array('\\SimplOn\\Main', 'localToRemotePath'), $a_css);
+		switch($returnFormat) {
+			case 'html':
+				$html_css = '';
+				foreach($a_css as $css) {
+                                        $html_css.= '<link type="text/css" rel="stylesheet" href="'.$css.'" />'."\n";
+                                
+                                }
+				return $html_css;
+			default:
+			case 'array':
+				return $a_css;
+                           
+		}
         } 
         
 	

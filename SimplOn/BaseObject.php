@@ -43,8 +43,7 @@ class BaseObject
 	 */
 	public function getClassName()
 	{
-            $a = explode('\\',get_class($this));
-            return end($a);
+		return end(explode('\\',get_class($this)));
 	}
 	
 	/**
