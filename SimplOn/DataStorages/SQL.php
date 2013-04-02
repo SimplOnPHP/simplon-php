@@ -391,7 +391,7 @@ abstract class SQL extends DataStorage
 		')->execute($values);
 	}
 
-	public function readElements(\SimplOn\Elements\Element &$element, $returnAs = 'array'){
+	public function readElements(\SimplOn\Elements\Element &$element, $returnAs = 'array', $position, $limit){
 		
         /*
          * Reads the storage "table" for each class, usually it's the same 
@@ -422,7 +422,7 @@ abstract class SQL extends DataStorage
 				'"'.$element->field_id().'" as `SimplOn_id`, '. // mandatory (ej. to make it possible to order on a UNION)
 				'"'.$element->field_id().'", `';
 			$where = $this->filterCriteria($element);
-			$selects[] = '(SELECT '.$addFields.implode('`, `', $storage_fields).'` FROM '.$storage.' '. ($where ? 'WHERE '.$where : '') .')';
+			$selects[] = '(SELECT '.$addFields.implode('`, `', $storage_fields).'` FROM '.$storage.' '. ($where ? 'WHERE '.$where : '').' '.((isset($limit)) ? " LIMIT $position,$limit" : '').')';
 		}
 		
 		
@@ -524,11 +524,11 @@ abstract class SQL extends DataStorage
         return $values;
     }
 
-
-
-
-
-
-
+	function countElements(\SimplOn\Elements\Element &$element){
+		$storage = $element->storage();
+		$query = $this->db->query("SELECT * FROM $storage")->fetchAll();
+		$size = sizeof($query);
+		return $size;
+	}
 
 }
