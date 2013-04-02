@@ -581,13 +581,26 @@ class Element extends BaseObject {
 	}       
 
          
- 	function processAdmin(){
+ 	function processAdmin($start,$limit){
+		$links = "";
+        if ($start < 1) $start = 1;
+        $position = ($start-1) * $limit;
 		$this->fillFromRequest();
 		$search = new Search(array($this->getClass()));
-  
-                $colums = array_merge($this->datasWith("list"), array("deleteAction","viewAction","updateAction") );
-        
-		return $search->processSearch($this->toArray(),$colums);
+		$admin = $this->encodeURL(array(), 'showAdmin');
+        $colums = array_merge($this->datasWith("list"), array("deleteAction","viewAction","updateAction") );
+		$totalElements = $this->dataStorage->countElements($this);
+        $division = ceil($totalElements/$limit);
+        if ($division > 1) {
+			for ($i = 1; $i <= $division; $i++) {
+				$links.= "<a href=\"$admin/$i/$limit\">$i<\a> ";
+			}
+			$next = $start+1;
+			$prev = $start-1;
+			if ($start > '1') $links="<a href=\"$admin/$prev/$limit\">Prev<\a> ".$links;
+			if ($next <$i ) $links.= "<a href=\"$admin/$next/$limit\">Next<\a> ";
+        }
+		return $search->processSearch($this->toArray(),$colums,$position,$limit).$links;
 	}        
         
 	
@@ -817,14 +830,15 @@ class Element extends BaseObject {
         return $this->obtainHtml("showSearch", $template_file, $this->encodeURL(array(),'showSelect'), array('footer' => $this->processSelect(null, 'multi')));
 	}       
               
-  	public function showAdmin($template_file = null, $add_html = array(), $partOnly = false) {
+  	public function showAdmin($start = 0, $limit = null, $template_file = null, $add_html = array(), $partOnly = false) {
+			if (!isset($limit)) $limit = Main::$LIMIT_ELEMENTS;
             $header = '<h1>'.$this->getClass().'</h1>'
 			.'<div id="SimplOn-create-new" class="SimplOn section">'.$this->createAction('', array('Create new %s','getClassName')).'</div>'
 			.'<div id="SimplOn-list" class="SimplOn section">'.$this->obtainHtml(
 				"showSearch", 
 				null, 
 				$this->encodeURL(array(),'showAdmin'), 
-				array('footer' => $this->processAdmin()), 
+				array('footer' => $this->processAdmin($start,$limit)), 
 				'body'
 			).'</div>'
 		;
