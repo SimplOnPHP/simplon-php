@@ -101,6 +101,7 @@ class Main {
 			
 		$QUICK_DELETE = false,
         
+		$LIMIT_ELEMENTS,
         //super array to alter classes atributes on the fly must be in the format "class" -> array("data1name"=>$data1)
         $onTheFlyAttributes = array();
 	

@@ -31,4 +31,6 @@ SimplOn\Main::run(array(
 	'DEV_MODE' => true,
 	// MySql('localhost','your database','your user','your password')
 	'DATA_STORAGE' => new SimplOn\DataStorages\MySql('localhost','tutorial','root',''),
+	//LIMIT ELEMENTS = specify results number to show when pagination it's used
+	'LIMIT_ELEMENTS' => '50',
 ));
