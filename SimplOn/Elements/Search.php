@@ -163,7 +163,7 @@ class Search extends Element
 	}        
         
         
-	function processSearch($params = null, $columns = null){
+	function processSearch($params = null, $columns = null, $position, $limit){
 		if(is_array($params))
 			try{
 				$this->fillFromArray($params);
@@ -179,7 +179,7 @@ class Search extends Element
 		$elementsTypes = $this->elementsTypes();
 		$this->elementsTypes = null;
 		
-		$return = Main::$DEFAULT_RENDERER->table_from_elements($this->dataStorage->readElements($this, 'Elements'),$columns); //@review the use of $this->datastorage -- such variable must be aasigned to the element DataStorage at some point or it will search on the incorrect DA if the Element's DS is not the default DS
+		$return = Main::$DEFAULT_RENDERER->table_from_elements($this->dataStorage->readElements($this, 'Elements', $position, $limit),$columns); //@review the use of $this->datastorage -- such variable must be aasigned to the element DataStorage at some point or it will search on the incorrect DA if the Element's DS is not the default DS
                 
         // restoration
 		$this->elementsTypes($elementsTypes);
