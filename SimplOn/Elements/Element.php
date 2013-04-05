@@ -444,11 +444,41 @@ class Element extends BaseObject {
 		try{
 			if($this->create()){
 				if(empty($nextStep)) {
-					header('Location: '.$this->encodeURL(array($this->getId()), 'showAdmin'));
+                                        $data = array( array(
+                                            'func' => 'redirectNextStep',
+                                            'args' => array ( $this->encodeURL(array($this->getId())).'!showAdmin')
+                                        ));
+                                        $return = array(
+                                            'status' => true,
+                                            'type' => 'commands',
+                                            'data' => $data
+                                        );
+                                        echo json_encode($return);
+                                        return;
 				} else if(substr($nextStep,-1*strlen('makeSelection')) == 'makeSelection') {
-					header('Location: '.$nextStep . '/' . $this->getId());
+                                        $data = array( array(
+                                            'func' => 'redirectNextStep',
+                                            'args' => array ( $nextStep.'/'.$this->getId())
+                                        ));
+                                        $return = array(
+                                            'status' => true,
+                                            'type' => 'commands',
+                                            'data' => $data
+                                        );
+                                        echo json_encode($return);
+                                        return;
 				} else {
-					header('Location: '.$nextStep);
+                                        $data = array( array(
+                                            'func' => 'redirectNextStep',
+                                            'args' => $nextStep
+                                        ));
+                                        $return = array(
+                                            'status' => true,
+                                            'type' => 'commands',
+                                            'data' => $data
+                                        );
+                                        echo json_encode($return);
+                                        return;
 				}
 
 			} else {
@@ -476,28 +506,46 @@ class Element extends BaseObject {
                                 );
                     }
                     $return = array(
-							'status' => true,
-							'type' => 'commands',
-							'data' => $data
-							);
+                                    'status' => true,
+                                    'type' => 'commands',
+                                    'data' => $data
+                                    );
                     echo json_encode($return);                    
                     return;
 		}
 		try{
-			if($this->update()){
-
+                    if($this->update()){
 				if(empty($nextStep)) {
-					header('Location: '.$this->encodeURL(array($this->getId()), 'showAdmin'));
+                                        $data = array( array(
+                                            'func' => 'redirectNextStep',
+                                            'args' => array ( $this->encodeURL(array($this->getId())).'!showAdmin')
+                                        ));
+                                        $return = array(
+                                            'status' => true,
+                                            'type' => 'commands',
+                                            'data' => $data
+                                        );
+                                        echo json_encode($return);
+                                        return;
 				} else {
-					header('Location: '.$nextStep);
-					//if($sid) $this->sid($sid);
-					//return $this->makeSelection($short_template, $sid);
-				}
+                                        $data = array( array(
+                                            'func' => 'redirectNextStep',
+                                            'args' => $nextStep
+                                        ));
+                                        $return = array(
+                                            'status' => true,
+                                            'type' => 'commands',
+                                            'data' => $data
+                                        );
+                                        echo json_encode($return);
+                                        return;
+				} 
+                } else {
+                                        // @todo: error handling
+                                        user_error('Cannot update in DS!', E_USER_ERROR);
+                                        
+                                        }
 
-			} else {
-				// @todo: error handling
-				user_error('Cannot update in DS!', E_USER_ERROR);
-			}
 		}catch(\PDOException $ev ){
 			user_error($ev->errorInfo[1]); //duplicated primary key (Possibel with stringID)
 		}

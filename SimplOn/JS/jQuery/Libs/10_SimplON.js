@@ -201,11 +201,11 @@ var SimplOn = new function() {
 			$element.prepend(content);
 		},
                 showValidationMessages: function (field, error){
-                    //alert(content+': '+error);
-                    //alert(content);
-                    //var mensaje = '{'+field+': '+error+'}';
                     var validator = $('form.SimplOn.create, form.SimplOn.update').validate();
                     eval('validator.showErrors({"'+field+'": "'+error+'"})');
+                },
+                redirectNextStep: function(url){
+                    window.location.href= url;
                 }
 	};
 	
