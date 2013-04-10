@@ -135,4 +135,8 @@ class BaseObject
 	public function instanceId() {
 		return spl_object_hash($this);
 	}
+	
+	public function ObjectId() {
+            return $this->getClassName() . '-' . $this->instanceId();
+            }
 }

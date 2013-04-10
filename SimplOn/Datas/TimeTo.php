@@ -139,8 +139,7 @@ class TimeTo extends String {
  * @return string
  */	
 	function showView(){
-            $idTimer = rand();
-            return '<div id="'.$idTimer.'"></div><script type="text/javascript">timeToTimer("'.$this->viewVal.'", "'.$this->orderFormatFlags($this->timerFormat).'", "'.$idTimer.'")</script>';
+            return '<div id="'.$this->ObjectId().'"></div><script type="text/javascript">timeToTimer("'.$this->viewVal.'", "'.$this->orderFormatFlags($this->timerFormat).'", "'.$this->ObjectId().'")</script>';
 	}
 	
 	public function showInput($fill) {
