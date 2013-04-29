@@ -629,7 +629,7 @@ class Element extends BaseObject {
 	}       
 
          
- 	function processAdmin($start,$limit){
+ 	function processAdmin($start,$limit = null){
 		$links = "";
         if ($start < 1) $start = 1;
         $position = ($start-1) * $limit;
@@ -638,7 +638,7 @@ class Element extends BaseObject {
 		$admin = $this->encodeURL(array(), 'showAdmin');
         $colums = array_merge($this->datasWith("list"), array("deleteAction","viewAction","updateAction") );
 		$totalElements = $this->dataStorage->countElements($this);
-        $division = ceil($totalElements/$limit);
+        $division = $limit ? ceil($totalElements/$limit) : 0;
         if ($division > 1) {
 			for ($i = 1; $i <= $division; $i++) {
 				$links.= "<a href=\"$admin/$i/$limit\">$i<\a> ";

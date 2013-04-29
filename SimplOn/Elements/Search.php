@@ -163,7 +163,7 @@ class Search extends Element
 	}        
         
         
-	function processSearch($params = null, $columns = null, $position, $limit){
+	function processSearch($params = null, $columns = null, $position = 1, $limit = null){
 		if(is_array($params))
 			try{
 				$this->fillFromArray($params);

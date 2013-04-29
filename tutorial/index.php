@@ -13,8 +13,8 @@ SimplOn\Main::run(array(
 	'GENERIC_TEMPLATES_PATH' => realpath('Templates'),
 	'MASTER_TEMPLATE' => realpath('../SimplOn').'/Renderers/Html5.html',
 		
-	'DEFAULT_ELEMENT' => 'HolaMundo',
-	'DEFAULT_METHOD' => 'saluda',
+	'DEFAULT_ELEMENT' => 'Persona',
+	'DEFAULT_METHOD' => 'showAdmin',
 	
 	'DEFAULT_RENDERER' => new SimplOn\Renderers\Html5(),
 
@@ -31,6 +31,4 @@ SimplOn\Main::run(array(
 	'DEV_MODE' => true,
 	// MySql('localhost','your database','your user','your password')
 	'DATA_STORAGE' => new SimplOn\DataStorages\MySql('localhost','tutorial','root',''),
-	//LIMIT ELEMENTS = specify results number to show when pagination it's used
-	'LIMIT_ELEMENTS' => '50',
 ));
