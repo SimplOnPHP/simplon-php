@@ -391,7 +391,7 @@ abstract class SQL extends DataStorage
 		')->execute($values);
 	}
 
-	public function readElements(\SimplOn\Elements\Element &$element, $returnAs = 'array', $position, $limit){
+	public function readElements(\SimplOn\Elements\Element &$element, $returnAs = 'array', $position = 1, $limit = null){
 		
         /*
          * Reads the storage "table" for each class, usually it's the same 

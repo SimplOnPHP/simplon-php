@@ -2,8 +2,9 @@
 Options +FollowSymLinks
 RewriteEngine on
 
+RewriteBase /SimplOnPHP/sample_site/
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(.*)$ /SimplOnPHP/sample_site/index.php [QSA,L]
+RewriteRule ^(.*)$ index.php [QSA,L]
 
 
 </IfModule>
