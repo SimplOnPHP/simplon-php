@@ -40,7 +40,7 @@ class Password extends String {
 protected 
 	$encriptedFlag = False,
 	$valudationCurrent = 'The current password is incorrect',
-	$validationMatch = "The new password and the validation doesn't matct",	
+	$validationMatch = "The new password and the validation doesn't match",	
 	$view = False,
 	$list = False,
 	$required = True,
@@ -85,7 +85,7 @@ protected
 		}
                 //if $val is null or undefined return $this->val
                 else {
-			return $this->val;
+			return trim($this->val);
 		}
 	}
 	/**

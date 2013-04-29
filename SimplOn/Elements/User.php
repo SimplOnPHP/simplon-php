@@ -13,7 +13,8 @@ class User extends Element
 	{
 		$this->user = new Datas\StringId('User','VCUSL');
 		$this->password = new Datas\Password('Password');
-		$this->group = new Datas\ElementContainer(new UsersGroup(),'Group');
+		$this->group = new Datas\String('Group');
+		//$this->group = new Datas\ElementContainer(new UsersGroup(),'Group');
 		//$this->filterCriteria('.cabeza OR contenido == "igual" OR contenido ^= "empieza" OR contenido $= "acaba" OR contenido ~= "papas a \"la\" .contenido francesa"');
 		
 	}
@@ -35,7 +36,7 @@ class User extends Element
 	public function processValidation(){
 		if( @$_REQUEST[$this->user->inputName()] ){
 			$this->fillFromDSById( $_REQUEST[$this->user->inputName()] );
-			if($this->password() == md5($_REQUEST[$this->password->inputName()]) ){
+			if($this->password() == trim(md5($_REQUEST[$this->password->inputName()]))){
 				$this->sonMessage($this->validationAceptedMessage.$this->user);
 				$_SESSION['simplonUser'] = $this->user();
 				return header('Location: '.$_SESSION['url']);
@@ -44,6 +45,5 @@ class User extends Element
 				return $this->showValidation();
 			}
 		}
-		
 	}	
 }
