@@ -44,21 +44,20 @@ class HTMLText extends Text
      */
 	
 	public function getJS($method) {
-                //Is necessary declarate a varible to save the array returned for the original method
-                $rich_text = parent::getJS($method);
-                // here you can change or you can add more librarys if you want to change 
-                // or modify the plugin
+        //Is necessary declarate a varible to save the array returned for the original method
+        $rich_text = parent::getJS($method);
+        // here you can change or you can add more librarys if you want to change 
+        // or modify the plugin
 		$local_js = JS::getPath("0-nicEdit.js");
-                //add our library(s) to the origial array
+        //add our library(s) to the origial array
 		$rich_text[] = $local_js;
 		// and finally returned the new array
 		return $rich_text;
 	}
         
-	function showInput($fill)
-	{
-            return
-            ($this->label() ? '<label for="'.$this->htmlId().'">'.$this->label().': </label>' : '') .
-            '<textarea id="'.$this->htmlId().'" class="'.$this->htmlClasses().'" name="'.$this->inputName().'">'.(($fill)? $this->val :'').'</textarea>';
+	function showInput($fill){
+		return
+        ($this->label() ? '<label for="'.$this->htmlId().'">'.$this->label().': </label>' : '') .
+        '<textarea id="'.$this->htmlId().'" class="'.$this->htmlClasses().'" name="'.$this->inputName().'">'.(($fill)? $this->val :'').'</textarea>';
 	}
 }

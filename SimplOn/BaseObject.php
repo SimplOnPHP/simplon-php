@@ -43,7 +43,8 @@ class BaseObject
 	 */
 	public function getClassName()
 	{
-		return end(explode('\\',get_class($this)));
+		$class = explode('\\',get_class($this));
+		return end($class);
 	}
 	
 	/**
@@ -137,6 +138,7 @@ class BaseObject
 	}
 	
 	public function ObjectId() {
-            return $this->getClassName() . '-' . $this->instanceId();
-            }
+		return $this->getClassName() . '-' . $this->instanceId();
+	}
+
 }

@@ -301,14 +301,11 @@ abstract class Data extends BaseObject {
 			'name' => $this->name(),
 		));
 	}
-
-    
     
 	public function clearValue() {
-            $this->val=null;
+        $this->val=null;
 	}
 
-    
 	
 	/**
 	 * Sets create, update, search, list, required and fetch flags according to the letters in $flags
@@ -353,7 +350,8 @@ abstract class Data extends BaseObject {
 		$class = $this->getClass('-');
                  
 		if($this->hasMethod($method)) {
-			$class = end(explode('\\',$this->getClass()));
+			$getClass = explode('\\',$this->getClass());    
+			$class = end($getClass);
 			return array(CSS::getPath("$class.$method.css"));
 
 		} else {
@@ -455,7 +453,7 @@ abstract class Data extends BaseObject {
 	}       
         /**
          * showList is similar to showView but in this case is used to indicate 
-         * how will be display $this->val() in the views
+         * how will be display $this->val() in the list
          * @return string
          */
  	function showList(){

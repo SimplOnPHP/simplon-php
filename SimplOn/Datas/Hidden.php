@@ -55,5 +55,5 @@ class Hidden extends Data
 		} 
 	}
 		
-	public function label() {}
+	public function label($flags = null) {}
 }

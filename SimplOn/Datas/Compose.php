@@ -39,7 +39,9 @@ class Compose extends ComplexData {
         */
  	public function val($sources = null){
 		if(!is_array($sources)) $sources = $this->sources;
-        $content = vsprintf(array_shift($sources),$this->sourcesToValues($sources));	
+		$operator = array_shift($sources);
+		$values = $this->sourcesToValues($sources);
+        $content = vsprintf($operator,$values);	
 		return $content;
 	}  
 }

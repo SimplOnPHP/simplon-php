@@ -46,7 +46,7 @@ class Alphanumeric extends String {
             if(ctype_alnum($val))
                 $this->val = $val;
             else
-                throw new \SimplOn\DataValidationException($this->noNumeric);
+                throw new \SimplOn\DataValidationException($this->noAlphaNumeric);
 	} else {
             return $this->val;
 	}

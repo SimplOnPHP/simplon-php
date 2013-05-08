@@ -51,7 +51,7 @@ class NumericId extends Id
 		}
 	}	
 
-	public function label() {}
+	public function label($label = null) {}
 	
 	/**
          * 

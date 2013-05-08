@@ -61,7 +61,7 @@ class ElementContainerDropBox extends ElementContainer {
 //		  $element->addOnTheFlyAttribute('parentClass' , new Hidden(null,'CUSf', $this->parent->getClassName(), '' )    );
 //        $element->addOnTheFlyAttribute('dataName' , new Hidden(null,'CUSf', $this->name(), '' )    );
 //        $element->addOnTheFlyAttribute('parentId' , new Hidden(null,'CUSf', $this->parent->getId(), '' )    );
-		$radioButton = new RadioButtonSelfId(null,'CrUSf',$this->val() );
+		$radioButton = new RadioButtonSelfId(null,'CrUSf',$this->val());
 		$radioButton->name($this->name());
         $element->addOnTheFlyAttribute( 'selectAction' , $radioButton );
 		//$element->addOnTheFlyAttribute('selectAction' , new Integer('','CUSf',3 ));

@@ -91,7 +91,7 @@ class Date extends String {
  * 
  * @return string
  */	
-	function showView(){
+	function showView($template = null){
 		return $this->viewVal;
 	}
 	
