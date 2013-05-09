@@ -403,70 +403,35 @@ updateInDS // este debe ser automatico desde el save si se tiene id se genera
 	}
 
 	function processCreate($nextStep = null) {
-
-		try {
+		try{
 			$this->fillFromRequest();
 			$this->validateForDB();
-		} catch (\SimplOn\ElementValidationException $ev) {
-			$data = array();
-			foreach ($ev->datasValidationMessages() as $key => $value) {
-				$data[] = array(
-				'func' => 'showValidationMessages',
-				'args' => array($key, $value[0])
-				);
+		}catch( \SimplOn\ElementValidationException $ev ){
+			$mistake=$ev->datasValidationMessages();
+			//var_dump($mistake);
+			foreach ($mistake as $key) {
+				foreach ($key as $key2) {
+				 	echo $key2.'<br>';
+				 }
 			}
-			$return = array(
-			'status' => true,
-			'type' => 'commands',
-			'data' => $data
-			);
-			echo json_encode($return);
+						
 			return;
 		}
-		try {
-			if ($this->create()) {
-				if (empty($nextStep)) {
-					$data = array(array(
-					'func' => 'redirectNextStep',
-					'args' => array($this->encodeURL(array($this->getId())) . '!showAdmin')
-					));
-					$return = array(
-					'status' => true,
-					'type' => 'commands',
-					'data' => $data
-					);
-					echo json_encode($return);
-					return;
-				} else if (substr($nextStep, -1 * strlen('makeSelection')) == 'makeSelection') {
-					$data = array(array(
-					'func' => 'redirectNextStep',
-					'args' => array($nextStep . '/' . $this->getId())
-					));
-					$return = array(
-					'status' => true,
-					'type' => 'commands',
-					'data' => $data
-					);
-					echo json_encode($return);
-					return;
+		try{
+			if($this->create()){
+				if(empty($nextStep)) {
+					header('Location: '.$this->encodeURL(array($this->getId()), 'showAdmin'));
+				} else if(substr($nextStep,-1*strlen('makeSelection')) == 'makeSelection') {
+					header('Location: '.$nextStep . '/' . $this->getId());
 				} else {
-					$data = array(array(
-					'func' => 'redirectNextStep',
-					'args' => $nextStep
-					));
-					$return = array(
-					'status' => true,
-					'type' => 'commands',
-					'data' => $data
-					);
-					echo json_encode($return);
-					return;
+					header('Location: '.$nextStep);
 				}
+
 			} else {
 				// @todo: error handling
 				user_error('Cannot update in DS!', E_USER_ERROR);
 			}
-		} catch (\PDOException $ev) {
+		}catch(\PDOException $ev ){
 			//user_error($ev->errorInfo[1]);
 			//@todo handdle the exising ID (stirngID) in the DS
 			user_error($ev);
@@ -475,57 +440,29 @@ updateInDS // este debe ser automatico desde el save si se tiene id se genera
 
 	//function processUpdate($short_template=null, $sid=null){
 	function processUpdate($nextStep = null) {
-		try {
+//		try{
 			$this->fillFromRequest();
 			$this->validateForDB();
-		} catch (\SimplOn\ElementValidationException $ev) {
-			$data = array();
-			foreach ($ev->datasValidationMessages() as $key => $value) {
-				$data[] = array(
-				'func' => 'showValidationMessages',
-				'args' => array($key, $key2)
-				);
-			}
-			$return = array(
-			'status' => true,
-			'type' => 'commands',
-			'data' => $data
-			);
-			echo json_encode($return);
-			return;
-		}
-		try {
-			if ($this->update()) {
-				if (empty($nextStep)) {
-					$data = array(array(
-					'func' => 'redirectNextStep',
-					'args' => array($this->encodeURL(array($this->getId())) . '!showAdmin')
-					));
-					$return = array(
-					'status' => true,
-					'type' => 'commands',
-					'data' => $data
-					);
-					echo json_encode($return);
-					return;
+//		}catch( \SimplOn\ElementValidationException $ev ){
+//			user_error($ev->datasValidationMessages());
+//			return;
+//		}
+		try{
+			if($this->update()){
+
+				if(empty($nextStep)) {
+					header('Location: '.$this->encodeURL(array($this->getId()), 'showAdmin'));
 				} else {
-					$data = array(array(
-					'func' => 'redirectNextStep',
-					'args' => $nextStep
-					));
-					$return = array(
-					'status' => true,
-					'type' => 'commands',
-					'data' => $data
-					);
-					echo json_encode($return);
-					return;
+					header('Location: '.$nextStep);
+					//if($sid) $this->sid($sid);
+					//return $this->makeSelection($short_template, $sid);
 				}
+
 			} else {
 				// @todo: error handling
 				user_error('Cannot update in DS!', E_USER_ERROR);
 			}
-		} catch (\PDOException $ev) {
+		}catch(\PDOException $ev ){
 			user_error($ev->errorInfo[1]); //duplicated primary key (Possibel with stringID)
 		}
 	}
