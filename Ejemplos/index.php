@@ -13,7 +13,7 @@ SimplOn\Main::run(array(
 	'MASTER_TEMPLATE' => realpath('../SimplOn').'/Renderers/Html5.html',
 		
 	'DEFAULT_ELEMENT' => 'Ejemplos',
-	'DEFAULT_METHOD' => 'menu',
+	'DEFAULT_METHOD' => 'index',
 	
 	'DEFAULT_RENDERER' => new SimplOn\Renderers\Html5(),
 
@@ -29,7 +29,7 @@ SimplOn\Main::run(array(
 	
 	'DEV_MODE' => true,
 	// MySql('localhost','your database','your user','your password')
-	'DATA_STORAGE' => new SimplOn\DataStorages\MySql('localhost','proyecto','root',''),
+	'DATA_STORAGE' => new SimplOn\DataStorages\MySql('localhost','Ejemplos','root',''),
         
     'LIMIT_ELEMENTS' => '20',
 ));

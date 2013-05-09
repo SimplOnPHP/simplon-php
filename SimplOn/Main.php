@@ -220,7 +220,7 @@ class Main {
 		}*/
 		
 		if(self::$DEV_MODE) {
-			error_reporting(E_ALL ^ E_STRICT);
+			error_reporting(E_ALL);
 			ini_set('display_errors', true);
 		} else {
 			error_reporting(0);

@@ -4,7 +4,7 @@
  * Date: April 6 2013
  */
 $(function() {
-	$('input.SimplOn.Data.TimeTo.years, input.SimplOn.Data.TimeTo.months, input.SimplOn.Data.TimeTo.weeks, input.SimplOn.Data.TimeTo.days').datepicker({maxDate: "-1D"});
+	$('input.SimplOn.Data.TimeTo.years, input.SimplOn.Data.TimeTo.months, input.SimplOn.Data.TimeTo.weeks, input.SimplOn.Data.TimeTo.days').datepicker({minDate: "1D"});
 	$('input.SimplOn.Data.TimeTo.hours, input.SimplOn.Data.TimeTo.minutes, input.SimplOn.Data.TimeTo.seconds').AnyTime_picker({earliest: new Date(), format: "%m/%d/%Y %H:%i"});
 
 });

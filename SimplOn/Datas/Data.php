@@ -350,8 +350,8 @@ abstract class Data extends BaseObject {
 		$class = $this->getClass('-');
                  
 		if($this->hasMethod($method)) {
-			$getClass = explode('\\',$this->getClass());    
-			$class = end($getClass);
+			$arrayClassName = explode('\\',$this->getClass());    
+			$class = end($arrayClassName);
 			return array(CSS::getPath("$class.$method.css"));
 
 		} else {
