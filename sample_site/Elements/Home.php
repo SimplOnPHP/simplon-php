@@ -3,7 +3,7 @@ use \SimplOn\Elements\Element, \SimplOn\Datas;
 
 class Home extends Element
 {
-	public function construct($id = null, $storage=null, &$specialDataStorage = null)
+	public function construct($id = null, &$specialDataStorage = null)
 	{
 	    $this->id = new \SimplOn\Datas\NumericId('Id');
 		$this->cabeza = new Datas\String('Cabeza','VCUSL');

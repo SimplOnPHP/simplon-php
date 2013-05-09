@@ -19,7 +19,7 @@
 namespace SimplOn\Elements;
 
 class PivotTable extends Element {
-	public function construct($id = null, $storage=null, &$specialDataStorage = null) {
+	public function construct($id = null, &$specialDataStorage = null) {
 	    $this->id = new \SimplOn\Datas\NumericId();
 	    $this->parentId = new \SimplOn\Datas\Integer('','S');
 		$this->childId = new \SimplOn\Datas\Integer('','S');

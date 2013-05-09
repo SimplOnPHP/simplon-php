@@ -138,7 +138,7 @@ class TimeSince extends String {
  * 
  * @return string
  */	
-	function showView(){
+	function showView($template = null){
             return '<div id="'.$this->ObjectId().'"></div><script type="text/javascript">timeSinceTimer("'.$this->viewVal.'", "'.$this->orderFormatFlags($this->timerFormat).'", "'.$this->ObjectId().'")</script>';
 	}
 	
