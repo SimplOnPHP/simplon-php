@@ -76,11 +76,13 @@
     background: #f4f4f4;  
     color: #b4b3b3;  
     cursor: default;
+	width: 100%;
 } 
 
 .ui-datepicker-calendar .ui-state-hover {
 	background-color: #444;
 	color: #ddd;
+	width: 100%;
 }
 
 .ui-datepicker-title{
