@@ -1120,16 +1120,17 @@ return $dom[$partOnly];
 		return $output;
 	}
 
-	function allow($validator, $class, $method) {
+	function allow($validator, $method) {
 
 		$validatorClass = '\\' . Main::$PERMISSIONS;
 		$validatorObject = new $validatorClass($validator);
 
 		if(isset($_SESSION['simplonUser'])){
-			if ($this->permissions[$validatorObject->group()]) {
-				return $this->isAllowed($this->permissions[$validatorObject->group()], $method);
-				//} elseif ($this->permissions['default']){
-			} elseif (Main::$DEFAULT_PERMISSIONS[$validatorObject->group()]) {
+			if (isset($this->permissions[$validatorObject->group()])) {
+				return $this->isAllowed($this->permissions[$validatorObject->group()], $method); 
+                        } elseif (isset($this->permissions['default'])){
+                                return $this->isAllowed($this->permissions['default'], $method);
+			} elseif (isset(Main::$DEFAULT_PERMISSIONS[$validatorObject->group()])) {
 				return $this->isAllowed(Main::$DEFAULT_PERMISSIONS[$validatorObject->group()], $method);
 			} else {
 				return true;

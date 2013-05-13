@@ -448,7 +448,7 @@ abstract class Data extends BaseObject {
          * showSelect display the result of the search of the showSelect method
          * @return string
          */
- 	function showSelect(){
+ 	function showSelect($class = array()){
 		return $this->showSearch();
 	}       
         /**

@@ -118,7 +118,7 @@ var SimplOn = new function() {
 			});
 		});
 		
-		$('form.SimplOn.create, form.SimplOn.update').validate();
+		$('form.SimplOn.create, form.SimplOn.update, form.SimplOn.User.search').validate();
 	};
 	
 	this.ajaxHandler = function(r) {
@@ -201,7 +201,7 @@ var SimplOn = new function() {
 			$element.prepend(content);
 		},
                 showValidationMessages: function (field, error){
-                    var validator = $('form.SimplOn.create, form.SimplOn.update').validate();
+                    var validator = $('form.SimplOn.create, form.SimplOn.update, form.SimplOn.User.search').validate();
                     eval('validator.showErrors({"'+field+'": "'+error+'"})');
                 },
                 redirectNextStep: function(url){

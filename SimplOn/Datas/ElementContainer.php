@@ -212,7 +212,7 @@ class ElementContainer extends Data {
 	}
 
     
-  	public function showSelect()
+  	public function showSelect($class = null)
 	{
         $element = $this->element->getClass();
         $element = new $element();

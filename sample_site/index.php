@@ -27,6 +27,9 @@ SimplOn\Main::run(array(
 	'JS_FLAVOUR' => 'jQuery',
 	
 	//'PERMISSIONS' => 'SimplOn\\Elements\\User',
+        /*'DEFAULT_PERMISSIONS' => array('Administrator' => array ('Allow' => array('ADSUI')),
+                                        'User',
+                                        'Guest'),*/
 	'PERMISSIONS' => false,
 	
 	'DEV_MODE' => true,
@@ -41,9 +44,3 @@ SimplOn\Main::run(array(
 	
 	'QUICK_DELETE' => true,
 ));
-
-/*echo __DIR__.'<br>';
-
-echo realpath('../SimplOn').'<br>';
-
-echo realpath('Templates');*/

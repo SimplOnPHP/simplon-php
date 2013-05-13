@@ -212,7 +212,7 @@ class ElementsContainer extends Data {
     
     
     /// use a search element and add the onthefly params to the search element
-  	public function showSelect($class) {
+  	public function showSelect($class = null) {
         $element = new $class();
         $element->fillFromRequest();
         $element->parent($this->parent());
