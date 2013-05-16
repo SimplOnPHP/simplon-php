@@ -171,8 +171,9 @@ class Main {
 						if( $obj->allow(@$_SESSION['simplonUser'],self::$method) ) {
 							echo call_user_func_array(array($obj, self::$method), self::$method_params);
 						} else {
-							header('HTTP/1.1 403 Access forbidden');
-							header('SimplOn: You don\'t have permissions to see this page.');
+							//header('HTTP/1.1 403 Access forbidden');
+							//header('SimplOn: You don\'t have permissions to see this page.');
+                                                        echo '<h1>Access forbidden</h1>';
 							return;
 						}
 					}

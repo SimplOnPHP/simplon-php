@@ -26,11 +26,12 @@ SimplOn\Main::run(array(
 
 	'JS_FLAVOUR' => 'jQuery',
 	
-	//'PERMISSIONS' => 'SimplOn\\Elements\\User',
-        /*'DEFAULT_PERMISSIONS' => array('Administrator' => array ('Allow' => array('ADSUI')),
-                                        'User',
-                                        'Guest'),*/
-	'PERMISSIONS' => false,
+	'PERMISSIONS' => 'SimplOn\\Elements\\User',
+        'DEFAULT_PERMISSIONS' => array('Administrator' => array ('Allow' => array('*')),
+                                        'User' => array('Allow' => array('*')),
+                                        'Guest' => array('Allow' => array('V'),
+                                                         'Deny' => array('*'))),
+	//'PERMISSIONS' => false,
 	
 	'DEV_MODE' => true,
 	

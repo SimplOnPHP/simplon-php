@@ -8,7 +8,6 @@ class User extends Element
 		$validationAceptedMessage = 'Welcome:',
 		$validationRejectedMessage = "User and Password don't match Please try again";
 	
-	
 	public function construct($id = null, &$specialDataStorage = null)
 	{
 		$this->user = new Datas\StringId('User','VCUSL');
@@ -16,6 +15,9 @@ class User extends Element
 		$this->group = new Datas\String('Group');
 		//$this->group = new Datas\ElementContainer(new UsersGroup(),'Group');
 		//$this->filterCriteria('.cabeza OR contenido == "igual" OR contenido ^= "empieza" OR contenido $= "acaba" OR contenido ~= "papas a \"la\" .contenido francesa"');
+                $this->permissions = array('Administrator' => array ('Allow' => array('*')),
+                                        'User' => array('Deny' => array('*')),
+                                        'Guest' => array('Deny' => array('*')));
 		
 	}
 	

@@ -1210,7 +1210,9 @@ return $dom[$partOnly];
 		'd' => array('processDelete', 'showDelete'),
 		's' => array('processSearch', 'showSearch'),
 		'u' => array('processUpdate', 'showUpdate'),
-		'i' => array('index')
+                'v' => array('showView'),
+		'i' => array('index'),
+                '*' => array('*')
 		);
 		$allowedMethods = array();
 		$deniedMethods = array();
@@ -1241,9 +1243,9 @@ return $dom[$partOnly];
 			}
 		}
 
-		if (in_array($method, $allowedMethods)) {
+		if ( in_array('*', $allowedMethods) || in_array($method, $allowedMethods) ) {
 			return true;
-		} elseif (in_array($method, $deniedMethods)) {
+		} elseif ( in_array('*', $deniedMethods) || in_array($method, $deniedMethods) ) {
 			return false;
 		} else {
 			return true;

@@ -5,7 +5,7 @@ class Fe extends Element
 {
 	public function construct($id = null, &$specialDataStorage = null) {
 	    $this->id = new \SimplOn\Datas\NumericId('Id');
-		$this->cabeza = new Datas\String('¿Cuando tendrás Fe?', 'S');
+		$this->cabeza = new Datas\String('¿Cuando tendrás Fe?', 'SR');
 		$this->contenido = new Datas\String('Contenido', 'S');
 		$this->home = new Datas\ElementContainer(new Home(), 'Home');
         //$this->home2 = new Datas\ElementContainer(new Home(), 'Home2');
@@ -17,7 +17,7 @@ class Fe extends Element
 
 	public function test(){
 
-		$this->fillFromDSById();
+		//$this->fillFromDSById();
 		
 		//echo $this->cabeza();
 		
@@ -25,7 +25,8 @@ class Fe extends Element
 		
 		//$this->cabeza('cabezon');
 		
-		echo $this->updateAction->showView();
+		//echo $this->updateAction->showView();
+            echo 'Test';
 		
 	}
   
