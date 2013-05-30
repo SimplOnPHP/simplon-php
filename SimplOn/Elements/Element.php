@@ -594,6 +594,10 @@ $jsInstructions = array(
 echo json_encode($jsInstructions);
 }
 */
+	
+	function processCheckBox(){
+		return $this->dataStorage->readElements($this,'array',null,null,null);
+	} 
 
 	function processSelect() {
 		$this->fillFromRequest();
@@ -604,6 +608,21 @@ echo json_encode($jsInstructions);
 		$colums = array_merge($this->datasWith("list"), array("selectAction"));
 
 		return $search->processSearch($this->toArray(), $colums);
+	}
+	
+	function processReport(){
+		$this->addOnTheFlyAttribute('SimplOn_count' , new Datas\ControlSelect('Count', $this->dataAttributes()));
+		$this->addOnTheFlyAttribute('SimplOn_group' , new Datas\ControlSelect('Group', $this->dataAttributes()));
+		$this->assignDatasName(); 
+		$this->fillFromRequest();
+		$count = $this->SimplOn_count->val();
+		$group = $this->SimplOn_group->val();
+		if(isset($count)){
+			$this->SimplOn_count->addCount($count);
+		}
+		$colums = array_merge($this->datasWith("list"), array("deleteAction","viewAction","updateAction"));
+		$process = new Report(array($this->getClass()),null,null,$count,$group);
+		return $process->processRep($this->toArray(),$colums,$position = 0,$limit = 20);
 	}
 
 	function processAdmin($start, $limit = null) {
@@ -854,6 +873,18 @@ echo json_encode($jsInstructions);
 		"showAdmin", $template_file, null, array_merge($add_html, array('header' => $header)), $partOnly
 		);
 	}
+	
+	public function showReport($template_file = null, $add_html = array(), $partOnly = false) {
+		$header = '<h1>'.$this->getClass().'</h1>'
+		.'<div id="SimplOn-create-new" class="SimplOn section">'.$this->createAction('', array('Create new %s','getClassName')).'</div>'
+		.'<div id="SimplOn-list" class="SimplOn section">'.$this->obtainHtml(
+		"showSearch", null, $this->encodeURL(array(),'showReport'), array('footer' => $this->processReport()), 'body'
+		).'</div>'
+		;
+		return $this->obtainHtml(
+		"showReport", $template_file, null, array_merge($add_html, array('header' => $header)), $partOnly
+		);
+	}  
 
 	public function obtainHtml($caller_method, $template = null, $action = null, $add_html = array(), $partOnly = false) {
 
