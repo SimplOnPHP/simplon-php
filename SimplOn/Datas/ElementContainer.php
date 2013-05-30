@@ -38,10 +38,15 @@ class ElementContainer extends Data {
 		 * Encapsulated element
 		 * @var SimplOn\Elements\Element
 		 */
-		$element;
-	
-	public function __construct( \SimplOn\Elements\Element $element, $label=null, $flags=null, $element_id=null) {
-		
+		$element,
+		/*
+		 * Column's name where values will be extracted
+		 * @var String
+		 */
+		$colmn;
+		 
+	public function __construct( \SimplOn\Elements\Element $element, $label=null, $flags=null, $element_id=null, $column = null) {
+		$this->colmn = $column;
 		$this->element($element);
         
 		parent::__construct($label,$flags,$element_id);
@@ -210,7 +215,31 @@ class ElementContainer extends Data {
             return '';
         }
 	}
-
+	
+	function showSearch() {
+		$class = $this->element;
+		$element = new $class();
+		$element->fillFromRequest();
+		$parnt = $this->parent();
+		$element->parent($parnt);
+		$opt = $element->processCheckBox();
+		$ret = '';
+		foreach($opt as $array){
+		    $idField = $array['SimplOn_field_id'];
+		    $simplonClass = $array['SimplOn_class'];
+		    $column = $array[$this->colmn];
+		    $ret.='<br>'.$column.'<input class="SimplOn input '
+					. $this->getClass().
+					'" name="'.$this->name().'[]'.
+					'"value="'.$array[$idField].
+					'"type="checkbox" '
+					.((is_array($this->val))
+					? ((in_array($array[$idField], $this->val)) ? 'Checked' : '')
+					: '').
+					'/><br>';
+		}
+		    return  $ret;
+	}
     
   	public function showSelect($class = null)
 	{
@@ -232,6 +261,53 @@ class ElementContainer extends Data {
                 array('footer' => $element->processSelect())
         );
 	}
+	
+	public function doSearch(){
+		$value = $this->val();
+		$num = 0;
+		if(is_array($value)){
+			$arr = array();
+			if($this->search() && $this->fetch()){
+				foreach ($value as $val){
+					$arr[] = array($this->name().$num, $this->getClass(), $val, $this->filterCriteria());
+					$num += 1;
+				}
+			}
+		} else {
+			$arr= ($this->search() && $this->fetch())
+			? array(array($this->name(), $this->getClass(), $this->val(), $this->filterCriteria()))
+			: null;
+		}
+		return $arr;
+	}
+	
+	public function filterCriteria($filterCriteria = null) {
+		$glue = '_';
+		$name = $this->name();
+		$num = 0;
+		$paste = '';
+		$ret =array();
+		$values = $this->val();
+		if(is_array($values)){
+			foreach ($values as $value) {
+				if(property_exists($this->parent,$name.$num)){
+					$paste = $name.$glue.$num;
+					while(property_exists($this->parent,$paste)){
+						$paste .= $glue;
+					}
+					$ret[]=$name.' == :'.$paste;
+				}else{
+					$ret[]=$name.' == :'.$name.$num;
+				}
+				$num += 1;
+			}
+			$criteria = implode(' OR ', $ret);
+			return $criteria;
+		}else{
+			return parent::filterCriteria($filterCriteria);
+		}
+	}
+	
     /**
      * function nestingLevelFix - this function update the nesting level of the elements
      * every time that a new element is added.
