@@ -8,6 +8,11 @@ form{
 	margin: 0 auto;
 }
 
+select{
+	width: 300px; 
+	height: 150px;
+}
+
 table {
 	border-collapse: collapse;
 }
