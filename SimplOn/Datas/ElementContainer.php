@@ -126,21 +126,23 @@ class ElementContainer extends Data {
          * @return type
          */
 	public function val($val = null) {
-		if($val === '') {
+		if(is_array($val)){
+			$this->val = $val;
+			return $this->val;
+		}else if($val === '') {
 			$class = $this->element->getClass();
 			$this->element = new $class;
 		} else	if($val !== null) {
 			$this->element->fillFromDSById($val);
 		} else {
-			return @$this->element->getId();
+			if(is_array($this->val)){
+				return $this->val;
+			} else return @$this->element->getId();
 		}
-
         $this->element->addOnTheFlyAttribute('parentClass' , new Hidden(null,'CUSf', $this->parent->getClassName(), '' )    );
         $this->element->addOnTheFlyAttribute('dataName' , new Hidden(null,'CUSf', $this->name(), '' )    );
         $this->element->addOnTheFlyAttribute('parentId' , new Hidden(null,'CUSf', $this->parent->getId(), '' )    );
-
         $this->element->addOnTheFlyAttribute('selectAction' , new SelectAction('', array('Select')) );
-    
 	}
 	/**
          * function input - this function displies the HTML to list and add new values into 

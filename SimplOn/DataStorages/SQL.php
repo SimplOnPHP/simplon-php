@@ -391,8 +391,10 @@ abstract class SQL extends DataStorage
 		')->execute($values);
 	}
 
-	public function readElements(\SimplOn\Elements\Element &$element, $returnAs = 'array', $position = null, $limit = null){
-		
+	public function readElements(\SimplOn\Elements\Element &$element, $returnAs = 'array', $position = null, $limit = null, $group = null){
+		if(isset($group)){
+			$group = implode(',', $group);
+		}
         /*
          * Reads the storage "table" for each class, usually it's the same 
          * as the class name but could be otherwise (any class may use 
@@ -417,16 +419,14 @@ abstract class SQL extends DataStorage
 		foreach($storages as $class => $storage) {
 			$storage_fields = $fields; // id as id, 'id' as field_id, 'fe' as storage
 			$addFields =
-				'"'.strtr($class,array('\\'=>'\\\\')).'" as `SimplOn_class`, '. 
+				'"'.strtr($class,array('\\'=>'\\\\')).'" as `SimplOn_class`, '.
 				'"'.$element->field_id().'" as `SimplOn_field_id`, '.
 				'"'.$element->field_id().'" as `SimplOn_id`, '. // mandatory (ej. to make it possible to order on a UNION)
-				'"'.$element->field_id().'", `';
+				'"'.$element->field_id().'", ';
 			$where = $this->filterCriteria($element);
-			$selects[] = '(SELECT '.$addFields.implode('`, `', $storage_fields).'` FROM '.$storage.' '. ($where ? 'WHERE '.$where : '').' '.((isset($limit)) ? " LIMIT $position,$limit" : '').')';
+			$selects[] = '(SELECT '.$addFields.implode(', ', $storage_fields).' FROM '.$storage.' '. ($where ? 'WHERE '.$where : '').' '.($group? 'GROUP BY '.$group:'').' '.((isset($limit)) ? " LIMIT $position,$limit" : '').')';
 		}
-		
-		
-		
+
 		// @todo: where and order by (and limit)
 		$query_string = implode("\n".' UNION ', $selects).'
 			ORDER BY SimplOn_id desc

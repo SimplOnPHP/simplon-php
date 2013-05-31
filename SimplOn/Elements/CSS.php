@@ -57,7 +57,6 @@ class CSS extends Element {
 			foreach($bases as $name => $base) {
 				
 				$filepath = $base . '/'. self::type .'/' . $flavour . '/' . $directory . '/' .$file;
-                                //echo "$filepath<br>";
 				if(file_exists($filepath)) {
 					self::$files_exists[$token_id] = $filepath;
 					return $filepath;
@@ -79,10 +78,7 @@ class CSS extends Element {
                                   
 			}
 		}
-                
 		return self::$files_exists[$token_id];
-                var_dump(self::$files_exists[$token_id]);
-                 
 	}
 	
 	static function getLibs($flavour = null) {

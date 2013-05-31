@@ -51,7 +51,6 @@ class JS extends Element {
 				'Site' => Main::$LOCAL_ROOT,
 			);
 			foreach($bases as $name => $base) {
-				//echo "$file<br>";
 				$filepath = $base . '/'. self::type .'/' . $flavour . '/' . $directory . '/' .$file;
 				if(file_exists($filepath)) {
 					self::$files_exists[$token_id] = $filepath;

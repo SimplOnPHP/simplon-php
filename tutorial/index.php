@@ -14,7 +14,7 @@ SimplOn\Main::run(array(
 	'MASTER_TEMPLATE' => realpath('../SimplOn').'/Renderers/Html5.html',
 		
 	'DEFAULT_ELEMENT' => 'Persona',
-	'DEFAULT_METHOD' => 'showAdmin',
+	'DEFAULT_METHOD' => 'index',
 	
 	'DEFAULT_RENDERER' => new SimplOn\Renderers\Html5(),
 

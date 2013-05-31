@@ -621,7 +621,7 @@ echo json_encode($jsInstructions);
 			$this->SimplOn_count->addCount($count);
 		}
 		$colums = array_merge($this->datasWith("list"), array("deleteAction","viewAction","updateAction"));
-		$process = new Report(array($this->getClass()),null,null,$count,$group);
+		$process = new Report(array($this->getClass()),null,null,$group);
 		return $process->processRep($this->toArray(),$colums,$position = 0,$limit = 20);
 	}
 
@@ -1043,7 +1043,6 @@ return $dom[$partOnly];
 		$a_js[] = $local_js;
 
 		sort($a_js);
-		//var_dump($a_js);
 		// includes libs
 		$a_js = array_unique(array_merge(JS::getLibs(), $a_js));
 

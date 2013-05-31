@@ -459,14 +459,18 @@ abstract class Data extends BaseObject {
  	function showList(){
 		return $this->showView();
 	}
-	/**
+		/**
          * showAdmin allows control how will be display the datas in the admin panel
          * @return string
          */
-        function showAdmin(){
-            return $this->showInput();
-        }
-	
+    function showAdmin(){
+    	return $this->showInput();
+    }
+
+    function showReport(){
+    	return $this->showInput();
+    }
+    
 	/**
 	 * Returns the label for the input
 	 *
