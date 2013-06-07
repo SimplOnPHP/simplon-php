@@ -438,16 +438,7 @@ updateInDS // este debe ser automatico desde el save si se tiene id se genera
 					echo json_encode($return);
 					return;
 				} else if (substr($nextStep, -1 * strlen('makeSelection')) == 'makeSelection') {
-					$data = array(array(
-					'func' => 'redirectNextStep',
-					'args' => array($nextStep . '/' . $this->getId())
-					));
-					$return = array(
-					'status' => true,
-					'type' => 'commands',
-					'data' => $data
-					);
-					echo json_encode($return);
+					header('Location: '.$nextStep . '/' . $this->getId());
 					return;
 				} else {
 					$data = array(array(
@@ -483,7 +474,7 @@ updateInDS // este debe ser automatico desde el save si se tiene id se genera
 			foreach ($ev->datasValidationMessages() as $key => $value) {
 				$data[] = array(
 				'func' => 'showValidationMessages',
-				'args' => array($key, $key2)
+				'args' => array($key, $value[0])
 				);
 			}
 			$return = array(
@@ -594,10 +585,10 @@ $jsInstructions = array(
 echo json_encode($jsInstructions);
 }
 */
-	
 	function processCheckBox(){
-		return $this->dataStorage->readElements($this,'array',null,null,null);
+	return $this->dataStorage->readElements($this,'array',null,null,null);
 	} 
+
 
 	function processSelect() {
 		$this->fillFromRequest();
@@ -624,6 +615,7 @@ echo json_encode($jsInstructions);
 		$process = new Report(array($this->getClass()),null,null,$group);
 		return $process->processRep($this->toArray(),$colums,$position = 0,$limit = 20);
 	}
+ 
 
 	function processAdmin($start, $limit = null) {
 		$links = "";
@@ -885,6 +877,8 @@ echo json_encode($jsInstructions);
 		"showReport", $template_file, null, array_merge($add_html, array('header' => $header)), $partOnly
 		);
 	}  
+ 
+
 
 	public function obtainHtml($caller_method, $template = null, $action = null, $add_html = array(), $partOnly = false) {
 
@@ -991,7 +985,7 @@ echo json_encode($jsInstructions);
 			if (!isset($data[4])) {
 				$vladu = $domNode . '';
 			}
-			if ($data[4]) {
+			if (isset($data[4])) {
 				$data = $this->{'O' . $data[4]}();
 				if ($data instanceof Data && $data->hasMethod($caller_method))
 				$domNode->html($data->$caller_method($domNode) ? : '');
@@ -1043,6 +1037,7 @@ return $dom[$partOnly];
 		$a_js[] = $local_js;
 
 		sort($a_js);
+		//var_dump($a_js);
 		// includes libs
 		$a_js = array_unique(array_merge(JS::getLibs(), $a_js));
 
@@ -1212,7 +1207,6 @@ return $dom[$partOnly];
 		}
 		return $output;
 	}
-
 	function allow($validator, $method) {
 
 		$validatorClass = '\\' . Main::$PERMISSIONS;
@@ -1246,6 +1240,8 @@ return $dom[$partOnly];
 		);
 		$allowedMethods = array();
 		$deniedMethods = array();
+                $allowedElementMethods = array();
+		$deniedElementMethods = array();
 		if (isset($methods['Allow'])) {
 			$flagsMethods = str_split(strtolower($methods['Allow'][0]));
 			foreach ($flagsMethods as $key) {
@@ -1255,7 +1251,7 @@ return $dom[$partOnly];
 			}
 			if (isset($methods['Allow'][1])) {
 				foreach ($methods['Allow'][1] as $value) {
-					$allowedMethods[] = $value;
+					$allowedElementMethods[] = $value;
 				}
 			}
 		}
@@ -1268,18 +1264,16 @@ return $dom[$partOnly];
 			}
 			if (isset($methods['Deny'][1])) {
 				foreach ($methods['Deny'][1] as $value) {
-					$deniedMethods[] = $value;
+					$deniedElementMethods[] = $value;
 				}
 			}
 		}
-
-		if ( in_array('*', $allowedMethods) || in_array($method, $allowedMethods) ) {
-			return true;
-		} elseif ( in_array('*', $deniedMethods) || in_array($method, $deniedMethods) ) {
+                if ( ( in_array('*', $deniedElementMethods) || in_array('*', $deniedMethods)) || (in_array($method, $deniedElementMethods) || in_array($method, $deniedMethods)) ) {
 			return false;
+		} elseif ( (in_array('*', $allowedElementMethods) || in_array('*', $allowedMethods)) || ( in_array($method, $allowedElementMethods) || in_array($method, $allowedMethods)) ) {
+			return true;
 		} else {
 			return true;
 		}
 	}
-
 }

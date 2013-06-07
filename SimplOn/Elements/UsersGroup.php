@@ -5,7 +5,7 @@ use \SimplOn\Datas;
 class UsersGroup extends Element
 {
 
-	public function construct($id = null, $specialDataStorage = null)
+	public function construct($id = null, &$specialDataStorage = null)
 	{
 		$this->name = new Datas\StringId();
 		$this->description = new Datas\Text();

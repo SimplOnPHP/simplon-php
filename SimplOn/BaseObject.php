@@ -140,5 +140,4 @@ class BaseObject
 	public function ObjectId() {
 		return $this->getClassName() . '-' . $this->instanceId();
 	}
-
 }
