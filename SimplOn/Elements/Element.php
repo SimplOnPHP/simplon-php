@@ -349,13 +349,11 @@ break; */
 * @todo: in  arrays format ????
 */
 	public function fillFromDSById($id = null) {
-		if (isset($id))
-		$this->setId($id);
-
-		if ($this->getId()) {
-
+		if (isset($id)) {
+			$this->setId($id);
+		}
+		if ($this->getId() || $this->getId() === 0) {
 			$dataArray = $this->dataStorage->readElement($this);
-
 			$this->fillFromArray($dataArray);
 		} else {
 			throw new Exception('The object of class: ' . $this->getClass() . " has no id so it can't be filled using method fillElementById");
@@ -502,14 +500,14 @@ updateInDS // este debe ser automatico desde el save si se tiene id se genera
 				} else {
 					$data = array(array(
 					'func' => 'redirectNextStep',
-					'args' => $nextStep
+					'args' => array($nextStep),
 					));
 					$return = array(
 					'status' => true,
 					'type' => 'commands',
 					'data' => $data
 					);
-					echo json_encode($return);
+					header('Location: '.$nextStep);
 					return;
 				}
 			} else {
@@ -571,9 +569,6 @@ function processSelection(){
 
 $parentClass = $_??????['parentClass'];
 
-
-
-
 //-------------------
 $jsInstructions = array(
 '' => ,
@@ -586,60 +581,73 @@ echo json_encode($jsInstructions);
 }
 */
 	function processCheckBox(){
-	return $this->dataStorage->readElements($this,'array',null,null,null);
+	return $this->dataStorage->readElements($this, 'array', null, null, null);
 	} 
-
 
 	function processSelect() {
 		$this->fillFromRequest();
 		$search = new Search(array($this->getClass()));
-
 		// $colums = array_merge( $this->datasWith("list"), array("selectAction","parentClass") );
 		//@todo do not add selectAction here but just include it in the listing using VCRSL when adding it on the fly
 		$colums = array_merge($this->datasWith("list"), array("selectAction"));
-
 		return $search->processSearch($this->toArray(), $colums);
 	}
 	
-	function processReport(){
-		$this->addOnTheFlyAttribute('SimplOn_count' , new Datas\ControlSelect('Count', $this->dataAttributes()));
-		$this->addOnTheFlyAttribute('SimplOn_group' , new Datas\ControlSelect('Group', $this->dataAttributes()));
+	function processReport($start, $limit = null){
+		if ($start < 1) {
+			$start = 1;
+		}
+		$position = ($start - 1) * $limit;
+		$this->addOnTheFlyAttribute('SimplOn_count', new Datas\ControlSelect('Count', $this->dataAttributes()));
+		$this->addOnTheFlyAttribute('SimplOn_group', new Datas\ControlSelect('Group', $this->dataAttributes()));
 		$this->assignDatasName(); 
 		$this->fillFromRequest();
 		$count = $this->SimplOn_count->val();
 		$group = $this->SimplOn_group->val();
-		if(isset($count)){
+		if(isset($count)) {
 			$this->SimplOn_count->addCount($count);
 		}
-		$colums = array_merge($this->datasWith("list"), array("deleteAction","viewAction","updateAction"));
-		$process = new Report(array($this->getClass()),null,null,$group);
-		return $process->processRep($this->toArray(),$colums,$position = 0,$limit = 20);
+		$colums = array_merge($this->datasWith("list"), array("deleteAction", "viewAction", "updateAction"));
+		$process = new Report(array($this->getClass()), null, null, $group);
+		$tableReport = $process->processRep($this->toArray(), $colums, $position, $limit); 
+		$totalRecords = $process->total;
+		$links = $this->makePaging($start, $limit, $totalRecords);
+		return $tableReport.$links;
 	}
  
-
 	function processAdmin($start, $limit = null) {
-		$links = "";
-		if ($start < 1)
-		$start = 1;
+		if ($start < 1) {
+			$start = 1;
+		}			
 		$position = ($start - 1) * $limit;
 		$this->fillFromRequest();
 		$search = new Search(array($this->getClass()));
 		$admin = $this->encodeURL(array(), 'showAdmin');
 		$colums = array_merge($this->datasWith("list"), array("deleteAction", "viewAction", "updateAction"));
-		$totalElements = $this->dataStorage->countElements($this);
+		$tableAdmin = $search->processSearch($this->toArray(), $colums, $position, $limit);
+		$totalRecords = $search->total;
+		$links = $this->makePaging($start, $limit, $totalRecords);
+		return $tabl . $links;
+	}
+
+	function makePaging($start, $limit, $totalRecords){
+		$links = "";
+		$totalElements = $totalRecords;
 		$division = $limit ? ceil($totalElements / $limit) : 0;
 		if ($division > 1) {
 			for ($i = 1; $i <= $division; $i++) {
-				$links.= "<a href=\"$admin/$i/$limit\">$i<\a> ";
+				$links.= "<a class = 'SimplOn_pag' href=\"/$i/$limit\">$i<\a> ";
 			}
 			$next = $start + 1;
 			$prev = $start - 1;
-			if ($start > '1')
-			$links = "<a href=\"$admin/$prev/$limit\">Prev<\a> " . $links;
-			if ($next < $i)
-			$links.= "<a href=\"$admin/$next/$limit\">Next<\a> ";
+			if ($start > '1') {
+				$links = "<a class = 'SimplOn_pag' href=\"/$prev/$limit\">Prev<\a> " . $links;
+			}
+			if ($next < $i) {
+				$links.= "<a class = 'SimplOn_pag' href=\"/$next/$limit\">Next<\a> ";
+			}
 		}
-		return $search->processSearch($this->toArray(), $colums, $position, $limit) . $links;
+		return $links;
 	}
 
 	public function defaultFilterCriteria($operator = 'AND') {
@@ -853,8 +861,9 @@ echo json_encode($jsInstructions);
 	}
 
 	public function showAdmin($start = 0, $limit = null, $template_file = null, $add_html = array(), $partOnly = false) {
-		if (!isset($limit))
-		$limit = Main::$LIMIT_ELEMENTS;
+		if (!isset($limit)) {
+			$limit = Main::$LIMIT_ELEMENTS;
+		}
 		$header = '<h1>' . $this->getClass() . '</h1>'
 		. '<div id="SimplOn-create-new" class="SimplOn section">' . $this->createAction('', array('Create new %s', 'getClassName')) . '</div>'
 		. '<div id="SimplOn-list" class="SimplOn section">' . $this->obtainHtml(
@@ -866,11 +875,14 @@ echo json_encode($jsInstructions);
 		);
 	}
 	
-	public function showReport($template_file = null, $add_html = array(), $partOnly = false) {
+	public function showReport($start = 0, $limit = null, $template_file = null, $add_html = array(), $partOnly = false) {
+		if (!isset($limit)) {
+			$limit = Main::$LIMIT_ELEMENTS;
+		}
 		$header = '<h1>'.$this->getClass().'</h1>'
 		.'<div id="SimplOn-create-new" class="SimplOn section">'.$this->createAction('', array('Create new %s','getClassName')).'</div>'
 		.'<div id="SimplOn-list" class="SimplOn section">'.$this->obtainHtml(
-		"showSearch", null, $this->encodeURL(array(),'showReport'), array('footer' => $this->processReport()), 'body'
+		"showSearch", null, $this->encodeURL(array(),'showReport'), array('footer' => $this->processReport($start, $limit)), 'body'
 		).'</div>'
 		;
 		return $this->obtainHtml(
