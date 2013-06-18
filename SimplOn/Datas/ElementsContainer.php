@@ -189,15 +189,28 @@ class ElementsContainer extends Data {
 	public function showInputView($element)
 	{
         if($element->getId()){
-            $nextStep = $this->encodeURL('makeSelection', array ($element->getId()) );
-            
+            $next = $this->encodeURL('makeUpdate', array($element->getId(),$element->getClass()));
+            $nextStep = str_replace("\"","", $next);
             $elementTemplate = \phpQuery::newDocument($this->parent->showView());
             $elementTemplate = $elementTemplate[$this->cssSelector().' '.$element->cssSelector().':first'].'';
-            
+            $href = htmlentities(
+                $element->encodeURL(
+                    array(),
+                    'showUpdate',
+                    array(
+                        '',
+                        $element->encodeURL(
+                            array(),
+                            'processUpdate',
+                            array($nextStep)
+                        )
+                    )
+                )
+            );
             return '
-                    <div class="SimplOn element-box">
+                    <div class="SimplOn preview element-box '.$element->getId().'">
                         <div class="SimplOn actions">
-                            <a class="SimplOn lightbox" href="'.htmlentities($element->encodeURL(array(),'showUpdate',array('',$element->encodeURL(array(),'processUpdate',array($nextStep))  ))).'">Edit</a>
+                            <a class="SimplOn lightbox" href="'.$href.'">Edit</a>
                             <a class="SimplOn delete" href="#">X</a>
                         </div>
                         <div class="SimplOn view">'.$element->showView($elementTemplate, true).'</div>
@@ -208,9 +221,6 @@ class ElementsContainer extends Data {
             return '';
         }
 	}
-
-    
-    
     /// use a search element and add the onthefly params to the search element
   	public function showSelect($class = null) {
         $element = new $class();
@@ -264,10 +274,31 @@ class ElementsContainer extends Data {
         header('Content-type: application/json');
         echo json_encode($return);
     }
-    
-    
-    
-	
+
+    function makeUpdate($id, $class){ 
+        $element = new $class($id);
+        $element->nestingLevel($this->parent->nestingLevel() + 1);
+        $return = array(
+            'status' => true,
+            'type' => 'commands',
+            'data' => array(
+                array(
+                    'func' => 'replaceHtml',
+                    'args' => array(
+                        $this->showInputView($element),
+                        null,
+                        null,
+                        $id
+                        )
+                ),
+                array(
+                    'func' => 'closeLightbox'
+                ),
+            )
+        );
+        header('Content-type: application/json');
+        echo json_encode($return);
+    }    
 
 	public function doRead(){}
 	public function postRead(){
