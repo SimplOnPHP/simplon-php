@@ -182,10 +182,11 @@ var SimplOn = new function() {
 			var exits;
 			if(!context) context = parent;
 			exits = $('.SimplOn.preview', context.document).hasClass(id);
-			if(exits) $('.SimplOn.preview.'+id, context.document).remove();
-			if(!$element) $element = $('.SimplOnLightbox', context.document);
-            else $element = $($element);
-			$element.prepend(content);
+			if(exits){
+				if(!$element) $element = $('.SimplOn.preview.'+id, context.document);
+				else $element = $($element);
+				$element.replaceWith(content);
+			} 
 			context.SimplOn.initActions(context);
 		},
 		closeLightbox: function (context) {
