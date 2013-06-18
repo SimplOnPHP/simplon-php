@@ -3,10 +3,21 @@ var SimplOn = new function() {
 		this.context = window.document;
 		this.initActions();
 		this.initForms();
-		
+		this.paging();
 		$('input,button',this.context).first().focus();
 	};
 	
+	this.paging = function(){
+		$(".SimplOn_pag").on('click',function(e){
+			var link, action;
+			e.preventDefault();
+			link = $(this).attr('href');
+			action = $('form').attr('action');
+			$('form').attr('action',action+link);
+			$('form').submit();
+		});
+	}
+
 	this.initActions = function (context) {
 		if(!context) context = window;
 		$('.SimplOn.Data a.SimplOn.lightbox', context.document).click(function(e) {
@@ -167,11 +178,20 @@ var SimplOn = new function() {
 				: $($element);
 			$element.remove();
 		},
+		replaceHtml: function (content, $element, context, id) {
+			var exits;
+			if(!context) context = parent;
+			exits = $('.SimplOn.preview', context.document).hasClass(id);
+			if(exits) $('.SimplOn.preview.'+id, context.document).remove();
+			if(!$element) $element = $('.SimplOnLightbox', context.document);
+            else $element = $($element);
+			$element.prepend(content);
+			context.SimplOn.initActions(context);
+		},
 		closeLightbox: function (context) {
 			if(!context) context = parent;
             context.$.colorbox.close();
 		},
-		
 		changePreview: function (content, $element, context) {
 			if(!context) context = parent;
             if(!$element) $element = $('.SimplOnLightbox', context.document).closest('.SimplOn.ElementContainer').find('.preview');
@@ -199,14 +219,15 @@ var SimplOn = new function() {
             else $element = $($element);
             
 			$element.prepend(content);
+			context.SimplOn.initActions(context);
 		},
-                showValidationMessages: function (field, error){
-                    var validator = $('form.SimplOn.create, form.SimplOn.update, form.SimplOn.User.search').validate();
-                    eval('validator.showErrors({"'+field+'": "'+error+'"})');
-                },
-                redirectNextStep: function(url){
-                    window.location.href= url;
-                }
+		showValidationMessages: function (field, error){
+			var validator = $('form.SimplOn.create, form.SimplOn.update, form.SimplOn.User.search').validate();
+			eval('validator.showErrors({"'+field+'": "'+error+'"})');
+		},
+		redirectNextStep: function(url){
+			window.top.location.href= url;
+		}
 	};
 	
 	this.utils = {
