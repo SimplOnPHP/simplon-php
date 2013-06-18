@@ -91,8 +91,14 @@ class RadioButtonNumber extends Integer
          */ 
 		
 	function showView($template = null){
-		if(!@$this->optionsFlip){$this->optionsFlip = array_flip($this->options);}
-		return $this->optionsFlip[$this->val()];
+    	if ($this->val) {
+    		if (!@$this->optionsFlip) {
+    			$this->optionsFlip = array_flip($this->options);
+    		}
+    		return $this->optionsFlip[$this->val()];
+		} else {
+        	return $this->val;
+	   }
 	}
         
         
