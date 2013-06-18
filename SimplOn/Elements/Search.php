@@ -34,6 +34,8 @@ use
  */
 class Search extends Element
 {
+	public $total;
+
 	protected
 		$parent, 
 		/**
@@ -178,7 +180,7 @@ class Search extends Element
 				$this->dataAttributes = array_diff($this->dataAttributes, array('elementsTypes'));
 		$elementsTypes = $this->elementsTypes();
 		$this->elementsTypes = null;
-		
+		$this->total = $this->dataStorage->countElements($this);
 		$return = Main::$DEFAULT_RENDERER->table_from_elements($this->dataStorage->readElements($this, 'Elements', $position, $limit),$columns); //@review the use of $this->datastorage -- such variable must be aasigned to the element DataStorage at some point or it will search on the incorrect DA if the Element's DS is not the default DS
                 
         // restoration
