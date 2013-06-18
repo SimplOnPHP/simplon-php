@@ -524,11 +524,35 @@ abstract class SQL extends DataStorage
         return $values;
     }
 
-	function countElements(\SimplOn\Elements\Element &$element){
-		$storage = $element->storage();
-		$query = $this->db->query("SELECT * FROM $storage")->fetchAll();
-		$size = sizeof($query);
-		return $size;
+	function countElements(\SimplOn\Elements\Element &$element, , $group=null){
+		if (isset($group)) {
+			$group = implode(',', $group);
+		}
+		$storages = is_array($element->storage())
+                        ? $element->storage() 
+                        : array($element->getClass() => $element->storage());
+		foreach ($element->processData('doRead') as $dataInfo) {
+			foreach ($dataInfo as $fieldInfo) {
+				$fields[] = $fieldInfo[0];
+			}
+		}
+		foreach ($storages as $class => $storage) {
+			$storage_fields = $fields; 
+			$addFields =
+				'"'.strtr($class,array('\\'=>'\\\\')).'" as `SimplOn_class`, '.
+				'"'.$element->field_id().'" as `SimplOn_field_id`, '.
+				'"'.$element->field_id().'" as `SimplOn_id`, '. 
+				'"'.$element->field_id().'", ';
+			$where = $this->filterCriteria($element);
+			$selects[] = '(SELECT '.$addFields.implode(', ', $storage_fields).' FROM '.$storage.' '. ($where ? 'WHERE '.$where : '').' '.($group? 'GROUP BY '.$group:'').')';
+		}
+		$query_string = implode("\n".' UNION ', $selects).'ORDER BY SimplOn_id desc';
+		$query = $this->db->prepare($query_string);
+		$values = $this->obtainValues($element, $query_string);
+		$query->execute($values);
+		$results = $query->fetchAll();
+        $totalRecords = sizeof($results);
+		return $totalRecords;
 	}
 
 }
