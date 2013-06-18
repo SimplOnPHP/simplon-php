@@ -225,22 +225,22 @@ class ElementContainer extends Data {
 		$parnt = $this->parent();
 		$element->parent($parnt);
 		$opt = $element->processCheckBox();
-		$ret = '';
-		foreach($opt as $array){
+		$ret = '<br>';
+		foreach ($opt as $array) {
 		    $idField = $array['SimplOn_field_id'];
 		    $simplonClass = $array['SimplOn_class'];
 		    $column = $array[$this->colmn];
-		    $ret.='<br>'.$column.'<input class="SimplOn input '
-					. $this->getClass().
+		    $ret.='<input class="'
+					.$this->getClass().
 					'" name="'.$this->name().'[]'.
 					'"value="'.$array[$idField].
 					'"type="checkbox" '
 					.((is_array($this->val))
 					? ((in_array($array[$idField], $this->val)) ? 'Checked' : '')
 					: '').
-					'/><br>';
+					'/> '.$column.'<br>';
 		}
-		    return  $ret;
+		return  $ret;
 	}
     
   	public function showSelect($class = null)

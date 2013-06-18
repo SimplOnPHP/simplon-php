@@ -76,7 +76,9 @@ class ControlSelect extends ComplexData {
 			){
 				$select .= '';
 			}else{
-				$select .= '<option value="'.$data.'">'.$data.'</option>';
+				$select .= '<option value="'.$data.'"'.((is_array($this->val))
+					? ((in_array($data, $this->val)) ? 'selected' : '')
+					: '').'>'.$data.'</option>';
 			}
 		}
 		$select .= '</select>';
