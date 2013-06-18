@@ -524,7 +524,7 @@ abstract class SQL extends DataStorage
         return $values;
     }
 
-	function countElements(\SimplOn\Elements\Element &$element, , $group=null){
+	function countElements(\SimplOn\Elements\Element &$element, $group=null){
 		if (isset($group)) {
 			$group = implode(',', $group);
 		}

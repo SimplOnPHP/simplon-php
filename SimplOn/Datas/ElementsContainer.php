@@ -225,7 +225,8 @@ class ElementsContainer extends Data {
   	public function showSelect($class = null) {
         $element = new $class();
         $element->fillFromRequest();
-        $element->parent($this->parent());
+        $parent = $this->parent();
+        $element->parent($parent);
         
         $element->addOnTheFlyAttribute('parentClass' , new Hidden(null,'CUSf', $this->parent->getClassName(), '' )    );
         $element->addOnTheFlyAttribute('dataName' , new Hidden(null,'CUSf', $this->name(), '' )    );
