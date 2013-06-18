@@ -226,7 +226,7 @@ var SimplOn = new function() {
 			eval('validator.showErrors({"'+field+'": "'+error+'"})');
 		},
 		redirectNextStep: function(url){
-			window.top.location.href= url;
+			window.location.href= url;
 		}
 	};
 	

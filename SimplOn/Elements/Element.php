@@ -627,7 +627,7 @@ echo json_encode($jsInstructions);
 		$tableAdmin = $search->processSearch($this->toArray(), $colums, $position, $limit);
 		$totalRecords = $search->total;
 		$links = $this->makePaging($start, $limit, $totalRecords);
-		return $tabl . $links;
+		return $tableAdmin.$links;
 	}
 
 	function makePaging($start, $limit, $totalRecords){
