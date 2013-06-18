@@ -997,7 +997,7 @@ echo json_encode($jsInstructions);
 			if (!isset($data[4])) {
 				$vladu = $domNode . '';
 			}
-			if (isset($data[4])) {
+			if ($data[4]) {
 				$data = $this->{'O' . $data[4]}();
 				if ($data instanceof Data && $data->hasMethod($caller_method))
 				$domNode->html($data->$caller_method($domNode) ? : '');
@@ -1049,7 +1049,6 @@ return $dom[$partOnly];
 		$a_js[] = $local_js;
 
 		sort($a_js);
-		//var_dump($a_js);
 		// includes libs
 		$a_js = array_unique(array_merge(JS::getLibs(), $a_js));
 
