@@ -21,8 +21,8 @@ namespace SimplOn\Elements;
 class PivotTable extends Element {
 	public function construct($id = null, &$specialDataStorage = null) {
 	    $this->id = new \SimplOn\Datas\NumericId();
-	    $this->parentId = new \SimplOn\Datas\Integer('','S');
-		$this->childId = new \SimplOn\Datas\Integer('','S');
-		$this->childClass = new \SimplOn\Datas\String('','S');
+	    $this->parentId = new \SimplOn\Datas\String('','S');
+            $this->childId = new \SimplOn\Datas\String('','S');
+            $this->childClass = new \SimplOn\Datas\String('','S');
 	}
 }

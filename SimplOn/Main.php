@@ -155,10 +155,7 @@ class Main {
 				&&
 				($obj instanceof Elements\Element)
 			){
-				if(self::$dataName) {
-					$obj = $obj->{self::$dataName};
-				}
-				if(self::$PERMISSIONS && (self::$class !='JS' && self::$class!='CSS')   ){
+                                if(self::$PERMISSIONS && (self::$class !='JS' && self::$class!='CSS')   ){
 					if(!@$_SESSION['simplonUser'] && !(self::$class == self::$PERMISSIONS && self::$method =='processValidation')  ){
 						//ask for credentials
 						$class = '\\'.self::$PERMISSIONS;
@@ -166,11 +163,14 @@ class Main {
 						$_SESSION['url']=$_SERVER['REQUEST_URI'];
 						echo $validator->showValidation();
 					}else{
-                                                if (isset($_SERVER['HTTP_REFERER'])){ $_SESSION['url']=$_SERVER['HTTP_REFERER']; }
-						//Validate user's permissions
+						if (isset($_SERVER['HTTP_REFERER'])){ $_SESSION['url']=$_SERVER['HTTP_REFERER']; }
+								//Validate user's permissions
 						if( $obj->allow(@$_SESSION['simplonUser'],self::$method) ) {
+							if(self::$dataName) {
+								$obj = $obj->{self::$dataName};
+							}
 							echo call_user_func_array(array($obj, self::$method), self::$method_params);
-						} else {
+						}else{
 							//header('HTTP/1.1 403 Access forbidden');
 							//header('SimplOn: You don\'t have permissions to see this page.');
                                                         echo '<h1>Access forbidden</h1>';
@@ -178,7 +178,10 @@ class Main {
 						}
 					}
 				}else{			
-					echo call_user_func_array(array($obj, self::$method), self::$method_params);
+                                    if(self::$dataName) {
+                                            $obj = $obj->{self::$dataName};
+					}
+                                    echo call_user_func_array(array($obj, self::$method), self::$method_params);
 				}
 			} else {
 				header('HTTP/1.1 403 Access forbidden');

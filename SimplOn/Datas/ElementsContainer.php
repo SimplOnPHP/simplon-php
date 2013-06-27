@@ -89,7 +89,7 @@ class ElementsContainer extends Data {
             $this->parent=$parent;
             
             if(!$this->pivot){
-               $this->pivot = new \SimplOn\Elements\PivotTable(null, 'Pivot_'.$this->parent->getClass().'_'.$this->name); 
+               $this->pivot = new \SimplOn\Elements\PivotTable(null, 'Pivot_'.strtr($this->parent->getClass(), '\\', '_').'_'.$this->name); 
             }
             
             foreach($this->elements as $element){
@@ -167,7 +167,7 @@ class ElementsContainer extends Data {
             $nextStep = $this->encodeURL('makeSelection');
             $ret.='<li>'.$classInstance->getClassName()
                 .' <a class="SimplOn lightbox" href="'.htmlentities($this->encodeURL('showSelect',array($classInstance->getClass()) )).'">List</a> '
-                .' <a class="SimplOn lightbox" href="'.htmlentities($classInstance->encodeURL(array(),'showCreate',array(null, $classInstance->encodeURL(array(), 'processCreate', array($nextStep))  ))).'">Add</a> '
+                .' <a class="SimplOn lightbox" href="'.htmlentities($classInstance->encodeURL(array(),'showCreate',array( '', $classInstance->encodeURL(array(), 'processCreate', array($nextStep))  ))).'">Add</a> '
                 .'</li>'
             ;
         }
@@ -320,7 +320,6 @@ class ElementsContainer extends Data {
 	public function doCreate(){}
 	public function postCreate(){
         $this->pivot->parentId($this->parent->getId());
-        
         //delete all elements in the table
         $this->pivot->dataStorage()->delete($this->pivot);
         

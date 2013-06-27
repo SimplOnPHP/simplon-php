@@ -436,7 +436,7 @@ updateInDS // este debe ser automatico desde el save si se tiene id se genera
 					echo json_encode($return);
 					return;
 				} else if (substr($nextStep, -1 * strlen('makeSelection')) == 'makeSelection') {
-					header('Location: '.$nextStep . '/' . $this->getId());
+					header('Location: '.$nextStep . '/' . $this->getId().'/"'.Main::fixCode(strtr(urlencode($this->getClass()),'\\','-')).'"');
 					return;
 				} else {
 					$data = array(array(
@@ -997,7 +997,7 @@ echo json_encode($jsInstructions);
 			if (!isset($data[4])) {
 				$vladu = $domNode . '';
 			}
-			if ($data[4]) {
+                        if(isset($data[4]) && $data[4]){
 				$data = $this->{'O' . $data[4]}();
 				if ($data instanceof Data && $data->hasMethod($caller_method))
 				$domNode->html($data->$caller_method($domNode) ? : '');
@@ -1218,24 +1218,32 @@ return $dom[$partOnly];
 		}
 		return $output;
 	}
+        
 	function allow($validator, $method) {
 
 		$validatorClass = '\\' . Main::$PERMISSIONS;
 		$validatorObject = new $validatorClass($validator);
-
-		if(isset($_SESSION['simplonUser'])){
-			if (isset($this->permissions[$validatorObject->group()])) {
-				return $this->isAllowed($this->permissions[$validatorObject->group()], $method); 
-                        } elseif (isset($this->permissions['default'])){
-                                return $this->isAllowed($this->permissions['default'], $method);
-			} elseif (isset(Main::$DEFAULT_PERMISSIONS[$validatorObject->group()])) {
-				return $this->isAllowed(Main::$DEFAULT_PERMISSIONS[$validatorObject->group()], $method);
-			} else {
-				return true;
-			}
-		} else {
-			return true;
-		}
+                $rolesArray = $validatorObject->role();
+                $roleNameHierarchy = array();
+                foreach ($rolesArray as $key){
+                    $roleNameHierarchy[$key->level()] = $key->name();
+                }
+                asort($roleNameHierarchy);
+                if(isset($_SESSION['simplonUser'])){
+                        foreach ($roleNameHierarchy as $value) {
+                            if (isset($this->permissions[$value])) {
+                                    return $this->isAllowed($this->permissions[$value], $method); 
+                            } elseif (isset($this->permissions['default'])){
+                                    return $this->isAllowed($this->permissions['default'], $method);
+                            } elseif (isset(Main::$DEFAULT_PERMISSIONS[$value])) {
+                                    return $this->isAllowed(Main::$DEFAULT_PERMISSIONS[$value], $method);
+                            } else {
+                                    return false;
+                            }
+                    }
+                } else {
+                            return true;
+                    }
 	}
 
 	function isAllowed($methods, $method) {
@@ -1254,27 +1262,27 @@ return $dom[$partOnly];
                 $allowedElementMethods = array();
 		$deniedElementMethods = array();
 		if (isset($methods['Allow'])) {
-			$flagsMethods = str_split(strtolower($methods['Allow'][0]));
+			$flagsMethods = str_split(strtolower(array_shift($methods['Allow'])));
 			foreach ($flagsMethods as $key) {
 				foreach ($values[$key] as $value) {
 					$allowedMethods[] = $value;
 				}
 			}
-			if (isset($methods['Allow'][1])) {
-				foreach ($methods['Allow'][1] as $value) {
+			if (isset($methods['Allow'])) {
+				foreach ($methods['Allow'] as $value) {
 					$allowedElementMethods[] = $value;
 				}
 			}
 		}
 		if (isset($methods['Deny'])) {
-			$flagsMethods = str_split(strtolower($methods['Deny'][0]));
+			$flagsMethods = str_split(strtolower(array_shift($methods['Deny'])));
 			foreach ($flagsMethods as $key) {
 				foreach ($values[$key] as $value) {
 					$deniedMethods[] = $value;
 				}
 			}
 			if (isset($methods['Deny'][1])) {
-				foreach ($methods['Deny'][1] as $value) {
+				foreach ($methods['Deny'] as $value) {
 					$deniedElementMethods[] = $value;
 				}
 			}
