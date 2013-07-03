@@ -151,7 +151,7 @@ abstract class SQL extends DataStorage
 			
 			//ADD INDEXES
 			if($dataName!=$element->field_id() && $element->{'O'.$dataName}()->search() ) {
-				$alters[] = 'ADD INDEX `Index'.$dataName.'` (`'.$dataName.'` ASC)';
+				$alters[] = 'ADD INDEX `Index'.$dataName.'` ('.(($dataType==='text') ? $dataName .= '(200)' : $dataName).' ASC)';
 			}
 		}
 		
