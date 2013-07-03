@@ -156,11 +156,6 @@ class Element extends BaseObject {
 		// Tells the SimplOndata whose thier "container" in case any of it has context dependent info or functions.
 		$this->assignAsDatasParent();
 
-
-
-
-
-
 		//checking if there is already a dataStorage and storage for this element
 		$this->dataStorage->ensureElementStorage($this);
 
@@ -594,22 +589,28 @@ echo json_encode($jsInstructions);
 	}
 	
 	function processReport($start, $limit = null){
+		$storeFlags = $this->storeAllFlags();
+		$this->changeCurrentFlags(null,'search');
+		$labelsNames = $this->getLabelsAndNames();
 		if ($start < 1) {
 			$start = 1;
 		}
 		$position = ($start - 1) * $limit;
-		$this->addOnTheFlyAttribute('SimplOn_count', new Datas\ControlSelect('Count', $this->dataAttributes()));
-		$this->addOnTheFlyAttribute('SimplOn_group', new Datas\ControlSelect('Group', $this->dataAttributes()));
+		$this->addOnTheFlyAttribute('SimplOn_count', new Datas\ControlSelect('Count', $labelsNames));
+		$this->addOnTheFlyAttribute('SimplOn_group', new Datas\ControlSelect('Group', $labelsNames));
 		$this->assignDatasName(); 
 		$this->fillFromRequest();
 		$count = $this->SimplOn_count->val();
 		$group = $this->SimplOn_group->val();
+		if ($count !== null) {
+			$this->changeCurrentFlags(null,'list',false);
+			$this->changeCurrentFlags($count,'list');
+		}
 		if(isset($count)) {
 			$this->SimplOn_count->addCount($count);
 		}
-		$colums = array_merge($this->datasWith("list"), array("deleteAction", "viewAction", "updateAction"));
 		$process = new Report(array($this->getClass()), null, null, $group);
-		$tableReport = $process->processRep($this->toArray(), $colums, $position, $limit); 
+		$tableReport = $process->processRep($this->toArray(), $position, $limit); 
 		$totalRecords = $process->total;
 		$links = $this->makePaging($start, $limit, $totalRecords);
 		return $tableReport.$links;
@@ -648,6 +649,78 @@ echo json_encode($jsInstructions);
 			}
 		}
 		return $links;
+	}
+
+	function getLabelsAndNames(){
+		$data = '\\SimplOn\\Datas\\Data';
+		$numId = '\\SimplOn\\Datas\\NumericId';
+		$label = array();
+		$dataName = array();
+		foreach ($this as $name => $dataObj) {
+			if ($dataObj instanceof $data) {
+				if (	$dataObj->label() !== '' &&
+					$dataObj->label() !== 'sonMessage'&&
+					$dataObj->label() !== null){
+					$label[] = $dataObj->label();
+				}
+				if (!($dataObj instanceof $numId) && 
+					$name !== 'sonMessage'&& 
+					$name !== 'viewAction'&&
+					$name !== 'createAction' &&
+					$name !== 'deleteAction'&&
+					$name !== 'updateAction'){
+					$dataName[] = $name;
+				}
+			}
+		}
+		$labelsAndNames = array_combine($label, $dataName);
+		return $labelsAndNames;
+	}
+
+	function storeAllFlags() {
+		$type = '\\SimplOn\\Datas\\NumericId';
+		foreach ($this->dataAttributes() as $dataName) {
+			if( !($dataName === 'viewAction') &&
+				!($dataName === 'createAction') &&
+				!($dataName === 'deleteAction') &&    
+				!($dataName === 'updateAction')
+			){
+				if (!($this->{'O' . $dataName}() instanceof $type)) {
+					$status = $this->{'O' . $dataName}()->search();
+					$flagsName[] = $dataName;
+					$flagsStatus[] = $status;
+				}
+			}    
+		}
+		$flagStock = array_combine($flagsName, $flagsStatus);
+		return $flagStock;
+	}
+
+	function changeCurrentFlags($chosenDatas = array(), $flag, $status = true) {
+		$type = '\\SimplOn\\Datas\\NumericId';
+		if (isset($chosenDatas)) {
+			foreach ($chosenDatas as $data){
+			$this->{'O' . $data}()->$flag($status);
+			}
+		} else {
+			foreach ($this->dataAttributes() as $dataName) {
+				if(    !($dataName === 'viewAction') &&
+				!($dataName === 'createAction') &&
+				!($dataName === 'deleteAction') &&    
+				!($dataName === 'updateAction')
+				){
+					if (!($this->{'O' . $dataName}() instanceof $type)) {
+						$this->{'O' . $dataName}()->$flag($status);
+					}
+				}    
+			}
+		}
+	}
+
+	function restoreAllFlags($flagStock = array()) {
+		foreach ($flagStock as $dataName => $value) {
+			$this->{'O' . $dataName}()->search($value);
+		}
 	}
 
 	public function defaultFilterCriteria($operator = 'AND') {
