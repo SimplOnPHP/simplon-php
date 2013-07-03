@@ -28,79 +28,73 @@ namespace SimplOn\Datas;
 	 * @category Data
 	 */
 class ArrayInteger extends Integer {
-    /**
-     * @var boolean $view,$create,$update and $list - these variables are 
-     * flags to indicate if this input will be displayed in the different templates
-	 * 
-	 *  
-     */
+         /**
+         * @var boolean $view,$create,$update and $list - these variables are 
+         * flags to indicate if this input will be displayed in the different templates   
+         */
     protected 
 		$view = true,
 		$create = true,
 		$update = true,
 		$list = true,
 		$sources;
-    /**
-     * @var array $sources
-     * @var string $valudationNaN - is a message to display just if the value introduced
-     * isn't an integer number.
-     */
+	 /**
+	  * @var array $sources
+	  * @var string $valudationNaN - is a message to display just if the value introduced
+	  * isn't an integer number.
+	  */
     public $valudationNaN = 'This field must be an integer.';
-    /**
-	 * @param strig $label
-	 * @param array $sources
-	 * @param string $flags
-	 * @param type $searchOp
-	 */
-	public function __construct($label,$sources,$flags=null,$searchOp=null){
-		$this->sources = $sources;
-		
-		parent::__construct($label,$flags,null,$searchOp);
-	}
-	/**
-     * function val - This function verifies if the value introduced is an integer, 
-     * if isn't throw an exception.
-     * 
-     * @param type $val
-	 * 
-     * @return void
-     * @throws \SimplOn\DataValidationException
-     */
+    	 /**
+	  * @param strig $label
+	  * @param array $sources
+	  * @param string $flags
+	  * @param type $searchOp
+	  */
+    public function __construct($label,$sources,$flags=null,$searchOp=null){
+        $this->sources = $sources;
+	parent::__construct($label,$flags,null,$searchOp);
+    }
+	 /**
+          * function val - This function verifies if the value introduced is an integer, 
+          * if isn't throw an exception.
+          * 
+          * @param type $val
+	  * 
+          * @return void
+          * @throws \SimplOn\DataValidationException
+          */
     public function val($val = null){
-	    $val = (int) $val;
-		
-		if($val){
-			if(is_numeric($val) && is_int($val*1)){
-				if(in_array($this->sources[$val],$this->sources)){
-					$this->val = $val;
-					return $this->val;
-				}
-			}else{
-				throw new \SimplOn\DataValidationException($this->valudationNaN);
-			}
+        $val = (int) $val;
+	if($val){
+            if(is_numeric($val) && is_int($val*1)){
+                if(in_array($this->sources[$val],$this->sources)){
+                    $this->val = $val;
+                    return $this->val;
+              }
+                }else{
+		    throw new \SimplOn\DataValidationException($this->valudationNaN);
+		}
 		}else{
 			return $this->val;
-		}
-	}
+	        }
+    }
 	/**
-     * 
-     * function showInput - This function shows a select with the values ​​in the array $sources.
-     *  
+         * function showInput - This function shows a select with the values ​​in the array $sources.
+         *  
 	 * @param boolean $fill
 	 * @return string
 	 */
     public function showInput($fill) {
         $datas = $this->sources;
-		$select = '';
-		$select = '<label for="'.$this->htmlId().'">'.$this->label().': </label>'.
-				'<select id="'.$this->htmlId().'" class="'.$this->htmlClasses().'" name="'.$this->name().'" >';
-		$select .= '<option value="none">None</option>';
-		foreach ($datas as $key=>$value){
-			
-				$select .= '<option value="'.$key.'"'.((isset($this->val))
-					? ((($key === $this->val)) ? 'selected' : '')
-					: '').'>'.$value.'</option>';
-				}
+	$select = '';
+	$select = '<label for="'.$this->htmlId().'">'.$this->label().': </label>'.
+		  '<select id="'.$this->htmlId().'" class="'.$this->htmlClasses().'" name="'.$this->name().'" >';
+	$select .= '<option value="none">None</option>';
+	foreach ($datas as $key=>$value){		
+	$select .= '<option value="'.$key.'"'.((isset($this->val))
+		? ((($key === $this->val)) ? 'selected' : '')
+		: '').'>'.$value.'</option>';
+	}
 		$select .= '</select>';
 		return $select;
     }
@@ -112,9 +106,8 @@ class ArrayInteger extends Integer {
 	function showView($template = null){
 		if($this->val === null){
 			return $this->sources = '';
-		}else{
-			
-		return $this->sources[$this->val()];
+			}else{
+			return $this->sources[$this->val()];
+			}
+        	}
 	}
-  }
-}

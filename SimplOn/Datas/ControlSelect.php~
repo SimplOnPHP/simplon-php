@@ -65,10 +65,21 @@ class ControlSelect extends ComplexData {
 		$select = '';
 		$select = '<label for="'.$this->htmlId().'">'.$this->label().': </label>'.
 				'<select id="'.$this->htmlId().'" class="'.$this->htmlClasses().'" name="'.$this->name().'[]'.'" multiple>';
-		foreach ($datas as $label => $data){
-		        $select .= '<option value="'.$data.'"'.((is_array($this->val))
-			  ? ((in_array($data, $this->val)) ? 'selected' : '')
-			  : '').'>'.$label.'</option>';
+		foreach ($datas as $data){
+			if(	$data === 'sonMessage' || 
+				$data === 'viewAction' || 
+				$data === 'createAction' || 
+				$data === 'deleteAction' || 
+				$data === 'updateAction' || 
+				$data === 'SimplOn_count' ||
+				$data === 'SimplOn_group'
+			){
+				$select .= '';
+			}else{
+				$select .= '<option value="'.$data.'"'.((is_array($this->val))
+					? ((in_array($data, $this->val)) ? 'selected' : '')
+					: '').'>'.$data.'</option>';
+			}
 		}
 		$select .= '</select>';
 		return $select;
