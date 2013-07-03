@@ -17,6 +17,7 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace SimplOn\Datas;
+use SimplOn\Elements\CSS;
 /**
  * Date data type
  * 
@@ -84,6 +85,15 @@ class Date extends String {
 		} else {
 			return $this->val;
 		}
+	}
+/*
+ * function getCSS get the stylesheet to show calendars
+ */
+	public function getCSS($method) {
+		$array_css = parent::getCSS($method);
+		$local_css = CSS::getPath('01-jquery-ui.css');
+		$array_css[] = $local_css;
+		return $array_css;
 	}
 /**
  * function showView - This function shows the date selected in the input 
