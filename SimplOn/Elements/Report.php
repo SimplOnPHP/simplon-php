@@ -45,7 +45,7 @@ class Report extends \SimplOn\Elements\Search{
 		return $fields;
 	}
 	
-	public function processRep($params = null, $position, $limit) {
+	public function processRep($params = null, $columns = null, $position, $limit) {
 		if(is_array($params))
 			try{
 				$this->fillFromArray($params);
@@ -62,7 +62,7 @@ class Report extends \SimplOn\Elements\Search{
 		$this->elementsTypes = null;
 		//@review the use of $this->datastorage -- such variable must be aasigned to the element DataStorage at some point or it will search on the incorrect DA if the Element's DS is not the default DS
 		$this->total = $this->dataStorage->countElements($this, $this->group);
-		$return = Main::$DEFAULT_RENDERER->table_from_elements($this->dataStorage->readElements($this, 'Elements', $position, $limit,$this->group)); 
+		$return = Main::$DEFAULT_RENDERER->table_from_elements($this->dataStorage->readElements($this, 'Elements', $position, $limit,$this->group),$columns); 
         // restoration
 		$this->elementsTypes($elementsTypes);
 		$this->dataAttributes[] = 'elementsTypes';

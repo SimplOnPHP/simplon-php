@@ -609,8 +609,9 @@ echo json_encode($jsInstructions);
 		if(isset($count)) {
 			$this->SimplOn_count->addCount($count);
 		}
+		$columns = array_merge($this->datasWith('list'));
 		$process = new Report(array($this->getClass()), null, null, $group);
-		$tableReport = $process->processRep($this->toArray(), $position, $limit); 
+		$tableReport = $process->processRep($this->toArray(), $columns, $position, $limit); 
 		$totalRecords = $process->total;
 		$links = $this->makePaging($start, $limit, $totalRecords);
 		return $tableReport.$links;
