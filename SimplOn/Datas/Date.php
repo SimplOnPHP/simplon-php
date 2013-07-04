@@ -55,7 +55,7 @@ class Date extends String {
 	 */	
 	function val($val = null) {
             // if $val is defined and isn't null, start to verify the value
-		if(isset($val)) {
+		if(isset($val) && $val) {
 			$val = trim($val);
                         //if $val is empty and is required then throw an exception.
 			if(!$val && $this->required) {

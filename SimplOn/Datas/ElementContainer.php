@@ -230,7 +230,7 @@ class ElementContainer extends Data {
 		    $idField = $array['SimplOn_field_id'];
 		    $simplonClass = $array['SimplOn_class'];
 		    $column = $array[$this->colmn];
-		    $ret.='<div class="check">''<input class="'
+		    $ret.='<div class="CheckBox"><input class="'
 					.$this->getClass().
 					'" name="'.$this->name().'[]'.
 					'"value="'.$array[$idField].

@@ -40,7 +40,7 @@ tr:nth-child(even) {background: #f6f6f6;}
 	height: auto;
 }
 
-.Report.CheckBox{
+.CheckBox{
 	display: inline-block;
 	width: 23%;
 }
