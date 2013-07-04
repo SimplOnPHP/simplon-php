@@ -35,6 +35,16 @@ textarea{
 
 tr:nth-child(even) {background: #f6f6f6;}
 
+.ArrayInteger{
+	width: 130px;
+	height: auto;
+}
+
+.Report.CheckBox{
+	display: inline-block;
+	width: 23%;
+}
+
 .section {
 	margin: 20px 5px
 }
