@@ -34,11 +34,11 @@ class ControlSelect extends ComplexData {
 			$view = false,
 			$search = true;
 	               
-	function val($sources = null){
-		if(isset($sources)){
+	function val($sources = null) {
+		if (isset($sources)) {
 			$this->val = $sources;
 			return $this->val; 
-		}else{
+		} else {
 			return $this->val;
 		}
 	}
@@ -59,22 +59,21 @@ class ControlSelect extends ComplexData {
 		return $array_css;
 	}
 
-
 	public function showSearch() {
 		$datas = $this->sources;
 		$select = '';
 		$select = '<label for="'.$this->htmlId().'">'.$this->label().': </label>'.
-				'<select id="'.$this->htmlId().'" class="'.$this->htmlClasses().'" name="'.$this->name().'[]'.'" multiple>';
+				  '<select id="'.$this->htmlId().'" class="'.$this->htmlClasses().'" name="'.$this->name().'[]'.'" multiple>';
 		foreach ($datas as $label => $data){
-		        $select .= '<option value="'.$data.'"'.((is_array($this->val))
-			  ? ((in_array($data, $this->val)) ? 'selected' : '')
-			  : '').'>'.$label.'</option>';
+			$select .= '<option value="'.$data.'"'.((is_array($this->val))
+				? ((in_array($data, $this->val)) ? 'selected' : '')
+				: '').'>'.$label.'</option>';
 		}
 		$select .= '</select>';
 		return $select;
 	}
 	
-	public function addCount($sources=  array()){
+	public function addCount($sources=  array()) {
 		$counter = 0;
 		foreach ($sources as $value) {
 			$this->parent->addOnTheFlyAttribute('count'.$counter , new \SimplOn\Datas\Count('count('.$value.')',$value));
