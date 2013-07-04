@@ -44,15 +44,15 @@ class Date extends String {
             $validationDate = 'Invalid date received!',
             $isnotNumeric = 'Is necessary introduce a numeric value';
                 
-/**
- * 
- * function val - This function allows validate the date format and if it's true
- * return the same date if it's not throw and exception.
- * 
- * @param string $val 
- * @return string
- * @throws \SimplOn\DataValidationException
- */	
+	/**
+	 * 
+	 * function val - This function allows validate the date format and if it's true
+	 * return the same date if it's not throw and exception.
+	 * 
+	 * @param string $val 
+	 * @return string
+	 * @throws \SimplOn\DataValidationException
+	 */	
 	function val($val = null) {
             // if $val is defined and isn't null, start to verify the value
 		if(isset($val)) {
@@ -67,12 +67,12 @@ class Date extends String {
                          */
                         else {
 				try {
-                                    if(is_numeric($val)) {
+					if(is_numeric($val)) {
 						$dateObj = new \DateTime();
 						$dateObj->setTimestamp($val);
 					} else {
-                                            $dateObj = new \DateTime($val);
-                                           // throw new \SimplOn\DataValidationException($this->isnotNumeric);
+						$dateObj = new \DateTime($val);
+						// throw new \SimplOn\DataValidationException($this->isnotNumeric);
 					}
 				} catch(\Exception $e) {
 					throw new \SimplOn\DataValidationException($this->validationDate);
@@ -86,28 +86,28 @@ class Date extends String {
 			return $this->val;
 		}
 	}
-/*
- * function getCSS get the stylesheet to show calendars
- */
+	/**
+	 * function getCSS get the stylesheet to show calendars
+	 */
 	public function getCSS($method) {
 		$array_css = parent::getCSS($method);
 		$local_css = CSS::getPath('01-jquery-ui.css');
 		$array_css[] = $local_css;
 		return $array_css;
 	}
-/**
- * function showView - This function shows the date selected in the input 
- * to be displayed in the view .
- * 
- * @return string
- */	
+	/**
+	 * function showView - This function shows the date selected in the input 
+	 * to be displayed in the view .
+	 * 
+	 * @return string
+	 */	
 	function showView($template = null){
 		return $this->viewVal;
 	}
 	
 	public function showInput($fill) {
             return 
-            ($this->label() ? '<label for="'.$this->htmlId().'">'.$this->label().': </label>' : '') .
+            ($this->label() ? '<label for="'.$this->htmlId().'">'.$this->label().': </label><br>' : '') .
             '<input id="'.$this->htmlId().'" class="'.$this->htmlClasses('date').'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->viewVal.'"':'').' type="text" autocomplete="off"/>';
 	}
 }

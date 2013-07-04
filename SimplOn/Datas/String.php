@@ -44,7 +44,7 @@ class String extends Data {
         
 	public function showInput($fill) {
             return 
-            ($this->label() ? '<label for="'.$this->htmlId().'">'.$this->label().': </label>' : '') .
+            ($this->label() ? '<label for="'.$this->htmlId().'">'.$this->label().': </label><br>' : '') .
             '<input id="'.$this->htmlId().'" class="'.$this->htmlClasses().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="text" />';
 	}
 }

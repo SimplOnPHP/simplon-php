@@ -106,7 +106,7 @@ protected
 		}
         $data_id = 'SimplOn_'.$this->instanceId();
 		return 
-            ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
+            ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label><br>' : '') .
             '<input id="'.$data_id.'" class="'.$this->htmlClasses().'"  name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="password" />';
 	}
 	

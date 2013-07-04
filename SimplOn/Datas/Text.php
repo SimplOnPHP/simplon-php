@@ -37,7 +37,7 @@ class Text extends Data
 	function showInput($fill)
 	{
 		$data_id = 'SimplOn_'.$this->instanceId();
-		return  ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
+		return  ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label><br>' : '') .
 				'<textarea id="'.$this->inputName().'" name="'.$this->inputName().'">'.(($fill)? $this->val :'').'</textarea>';
 	}
 }
