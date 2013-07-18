@@ -677,7 +677,13 @@ echo json_encode($jsInstructions);
 		$labelsAndNames = array_combine($label, $dataName);
 		return $labelsAndNames;
 	}
-
+	/**
+	 * storeAllFlags 
+	 * 
+	 * Stores all flags default data in an array
+	 * 
+	 * @return array
+	 */
 	function storeAllFlags() {
 		$type = '\\SimplOn\\Datas\\NumericId';
 		foreach ($this->dataAttributes() as $dataName) {
@@ -696,6 +702,17 @@ echo json_encode($jsInstructions);
 		$flagStock = array_combine($flagsName, $flagsStatus);
 		return $flagStock;
 	}
+	/**
+	 * changeCurrentFlags
+	 * 
+	 * Change the flag indicated by the parameter 'flag' of all data 
+	 * in the array 'chosenDatas' actually providing the parameter 'status' 
+	 * flag change.
+	 * 
+	 * @param array $chosenDatas
+	 * @param string $flag
+	 * @param string $status
+	 */
 
 	function changeCurrentFlags($chosenDatas = array(), $flag, $status = true) {
 		$type = '\\SimplOn\\Datas\\NumericId';
@@ -717,7 +734,13 @@ echo json_encode($jsInstructions);
 			}
 		}
 	}
-
+	/**
+	 * restoreAllFlags
+	 *
+	 * Restore the flags of all the data with their original value in the Search view.
+	 * 
+	 * @param array $flagStock
+	 */
 	function restoreAllFlags($flagStock = array()) {
 		foreach ($flagStock as $dataName => $value) {
 			$this->{'O' . $dataName}()->search($value);
