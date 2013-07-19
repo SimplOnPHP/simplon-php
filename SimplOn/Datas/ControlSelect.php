@@ -33,7 +33,15 @@ class ControlSelect extends ComplexData {
 	protected
 			$view = false,
 			$search = true;
-	               
+	/**
+	 * val
+	 * 
+	 * this function verifies if $sources is defined and isn't null
+	 * if true saves it in the variable $sources and returns if not returns null.
+	 * 
+	 * @param string $sources
+	 * @return string
+	 */
 	function val($sources = null) {
 		if (isset($sources)) {
 			$this->val = $sources;
@@ -42,7 +50,14 @@ class ControlSelect extends ComplexData {
 			return $this->val;
 		}
 	}
-
+	/**
+	 * getJS
+	 * 
+	 * get the javascript file for the correct operation of the selection box.
+	 * 
+	 * @param type $method
+	 * @return array
+	 */
 	public function getJS($method) {
         $array_js = parent::getJS($method);
 		$select_js1 = JS::getPath("11-ui.multiselect.js");
@@ -51,14 +66,27 @@ class ControlSelect extends ComplexData {
 		$array_js[] = $select_js2;
 		return $array_js;
 	}
-    
+	/**
+	 * getCSS
+	 * 
+	 * get the stylesheet to show selection box.
+	 * 
+	 * @param type $method
+	 * @return type
+	 */
 	public function getCSS($method) {
 		$array_css = parent::getCSS($method);
 		$local_css = CSS::getPath('01-jquery-ui.css');
 		$array_css[] = $local_css;
 		return $array_css;
 	}
-
+	/**
+	 * showSearch
+	 * 
+	 * Displays the selection box in the search view all item data.
+	 * 
+	 * @return string
+	 */
 	public function showSearch() {
 		$datas = $this->sources;
 		$select = '';
@@ -72,7 +100,13 @@ class ControlSelect extends ComplexData {
 		$select .= '</select>';
 		return $select;
 	}
-	
+	/**
+	 * addCount
+	 * 
+	 * Add a data type count into the element.
+	 * 
+	 * @param array $sources
+	 */
 	public function addCount($sources=  array()) {
 		$counter = 0;
 		foreach ($sources as $value) {
