@@ -225,7 +225,7 @@ class ElementContainer extends Data {
 		$parnt = $this->parent();
 		$element->parent($parnt);
 		$opt = $element->processCheckBox();
-		$ret = '<br>'.$this->colmn.'<br>';
+		$ret = '<br>'.$this->label().'<br>';
 		foreach ($opt as $array) {
 		    $idField = $array['SimplOn_field_id'];
 		    $simplonClass = $array['SimplOn_class'];
@@ -238,7 +238,7 @@ class ElementContainer extends Data {
 					.((is_array($this->val))
 					? ((in_array($array[$idField], $this->val)) ? 'Checked' : '')
 					: '').
-					'/> '.$column.'</div>';
+					'/><span class="name-column">'.$column.'</span></div>';
 		}
 		return  $ret;
 	}

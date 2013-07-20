@@ -4,13 +4,17 @@ body {
 
 form{
 	display: block;
-	width: 60%;
 	margin: 0 auto;
+	width: 75%;
+}
+
+input[type='checkbox']{
+	display: inline-block;
 }
 
 select{
-	width: 300px; 
 	height: 150px;
+	width: 300px; 
 }
 
 table {
@@ -18,8 +22,8 @@ table {
 }
 
 th {
-	border: 1px solid #666;
 	background: #666;
+	border: 1px solid #666;
 	color: white;
 }
 
@@ -36,13 +40,26 @@ textarea{
 tr:nth-child(even) {background: #f6f6f6;}
 
 .ArrayInteger{
-	width: 130px;
 	height: auto;
+	width: 130px;
+}
+
+.buttons{
+	display: block;
+	text-align: center;
+	width: 100%;
 }
 
 .CheckBox{
 	display: inline-block;
 	width: 23%;
+}
+
+.name-column{
+	display: inline-block;
+	text-align: justify;
+	vertical-align: top;
+	width: 80%;
 }
 
 .section {

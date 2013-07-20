@@ -609,7 +609,6 @@ class Element extends BaseObject {
 	 * @return string
 	 */
 	function processReport($start, $limit = null){
-		
 		$this->changeCurrentFlags(null,'search');
 		$labelsNames = $this->getLabelsAndNames();
 		if ($start < 1) {
@@ -1098,7 +1097,6 @@ class Element extends BaseObject {
 					break;
 				}
 			}
-
 			// create and fill file
 			$html = '';
 			if ($with_form) {
@@ -1112,7 +1110,6 @@ class Element extends BaseObject {
 			foreach ($this as $keydata => $data) {
 				if ($data instanceof Data && $data->hasMethod($vcsl) && $data->$vcsl()) {
 					$html.= '<div class="' . $data->htmlClasses() . '">';
-
 					if ($with_form) {
 						$data_id = 'SimplOn_' . $data->instanceId();
 						$dompart = \phpQuery::newDocumentHTML($data->$caller_method());
@@ -1123,19 +1120,17 @@ class Element extends BaseObject {
 					} else {
 						$html.= $data->$caller_method();
 					}
-
 					$html.= '</div>';
 				}
 			}
 			if ($with_form) {
-				$html.= '<button type="submit">' . $VCSL . '</button>'
-				. '<button class="SimplOn cancel-form">Cancel</button>'
+				$html.= '<div clas="buttons"><button type="submit">' . $VCSL . '</button>'
+				. '<button class="SimplOn cancel-form">Cancel</button></div>'
 				. '</div></fieldset></form>';
 			} else {
 				$html.= '</div>';
 			}
 			$dom['body'] = $html;
-
 			// save file
 			if (!empty($template_file))
 			Main::createFile($template_file, $dom . '');
@@ -1157,17 +1152,15 @@ class Element extends BaseObject {
 			if (!isset($data[4])) {
 				$vladu = $domNode . '';
 			}
-                        if(isset($data[4]) && $data[4]){
+			if (isset($data[4]) && $data[4]) {
 				$data = $this->{'O' . $data[4]}();
 				if ($data instanceof Data && $data->hasMethod($caller_method))
-				$domNode->html($data->$caller_method($domNode) ? : '');
+					$domNode->html($data->$caller_method($domNode) ? : '');
 			}
 		}
-
 		$dom['body']
 		->prepend(@$add_html['header']? : '')
 		->append(@$add_html['footer']? : '');
-
 		/*
 		switch($partOnly) {
 		case 0:
@@ -1202,7 +1195,6 @@ class Element extends BaseObject {
 		$a_js[] = $local_js;
 
 		// adds
-
 		foreach ($this->dataAttributes() as $data)
 		foreach ($this->{'O' . $data}()->getJS($method) as $local_js)
 		if ($local_js)
