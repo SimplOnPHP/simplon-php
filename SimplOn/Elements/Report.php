@@ -28,36 +28,90 @@ use
 	\SimplOn\Datas,
 	\SimplOn\Datas\DArray,
 	\SimplOn\Datas\Link,
+	\SimplOn\Elements\Search,
 	\SimplOn\Main;
 
-class Report extends \SimplOn\Elements\Search{
+class Report extends Search{
 	
 	public $total;
 	protected $group;
 
 	public function __construct($id_or_elementsTypes = null, $storage = null, $specialDataStorage = null, $group = array() ) {
 		$this->group = $group;
-		parent::__construct($id_or_elementsTypes, $storage, $specialDataStorage);
+		$this->construct($id_or_elementsTypes, $specialDataStorage);
+		//Asings the storage element for the SimplOnelement. (a global one : or a particular one)
+		if (!$specialDataStorage) {
+			$this->dataStorage = Main::dataStorage();
+		} else {
+			$this->dataStorage=&$specialDataStorage;
+		}
+		//On heirs put here the asignation of SimplOndata and attributes
+		if (is_array($id_or_elementsTypes)) {
+			if (array_values($id_or_elementsTypes) === $id_or_elementsTypes) {
+				$this->elementsTypes = new DArray('', 'vclsR', $id_or_elementsTypes);
+			} else {
+				$this->fillFromArray($id_or_elementsTypes);
+			}
+		} else if (isset($id_or_elementsTypes)) {
+			$id = $id_or_elementsTypes;
+			$this->dataStorage->ensureElementStorage($this);
+			$this->fillFromDSById($id);
+		}
+		//checking if there is already a dataStorage and storage for this element
+		//if there is a storage and an ID it fills the element with the proper info.
+		if (!$this->storage()) {
+			$storages = array();
+			foreach ($this->elementsTypes() as $elementType) {
+				$dummy_class = new $elementType;
+				$storages[$elementType] = $dummy_class->storage();
+			}
+			$this->storage($storages);
+		}
+		$this->getFields();
+		// Tells the SimplOndata whose thier "container" in case any of it has context dependent info or functions.
+		$this->assignAsDatasParent();
+		$this->assignDatasName();
 	}
 	
 	 protected function getFields() {
-		$fields = parent::getFields();
-		return $fields;
+		$fields = array();
+		$dataObjects = array();
+		foreach ($this->elementsTypes() as $class) {
+			$new = new $class;
+			$new->changeCurrentFlags(null,'search');
+			foreach ($new->dataAttributes() as $dataName) {
+				$data = $new->{'O'.$dataName}();
+				@$fields[$class][$dataName] = $data->getClass();
+				if (!isset($dataObjects[$dataName])) {
+					$dataObjects[$dataName] = $data;
+				}
+			}
+		}
+		if (count($fields) > 1) {
+			$rintersect = new \ReflectionFunction('array_intersect_assoc');
+			$fields = $rintersect->invokeArgs($fields);
+		} else {
+			$fields = end($fields);
+		}
+		foreach ($fields as $dataName => $dataClass) {
+			$this->$dataName = $dataObjects[$dataName];
+		}
 	}
 	
 	public function processRep($params = null, $columns = null, $position, $limit) {
-		if(is_array($params))
+		if (is_array($params)) {
 			try{
 				$this->fillFromArray($params);
 			}catch(\SimplOn\ElementValidationException $ev){}
-		else
+		} else {
 			try{
 				$this->fillFromRequest();
 			}catch(\SimplOn\ElementValidationException $ev){}			
-
+		}
 		// mutilation
-		if(is_array($this->dataAttributes)) 
-				$this->dataAttributes = array_diff($this->dataAttributes, array('elementsTypes'));
+		if (is_array($this->dataAttributes)) {
+			$this->dataAttributes = array_diff($this->dataAttributes, array('elementsTypes'));
+		}
 		$elementsTypes = $this->elementsTypes();
 		$this->elementsTypes = null;
 		//@review the use of $this->datastorage -- such variable must be aasigned to the element DataStorage at some point or it will search on the incorrect DA if the Element's DS is not the default DS
@@ -70,4 +124,3 @@ class Report extends \SimplOn\Elements\Search{
 		return $return;
 	}
 }
-
