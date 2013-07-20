@@ -18,21 +18,21 @@
 */
 namespace SimplOn\Datas;
 /**
- * Count data type
+ * Sum data type
  * 
- * This data receives a string which is used in COUNT() to be used in database statements.
+ * This data receives a string which is used in SUM() to be used in database statements.
  * 
  * @author López Santiago Daniel <http://www.behance.net/zesk8>
  * @copyright (c) 2013, López Santiago Daniel
  * @category Data
  */
-class Count extends ComplexData {
+class Sum extends ComplexData {
 	
 	protected
 		$list = true,
 		$fetch = true;
     
-    /**
+	/**
 	 * val
 	 * 
 	 * Store the value recived in $this->val.
@@ -42,10 +42,10 @@ class Count extends ComplexData {
 	 * @throws \SimplOn\DataValidationException
 	 */
 	function val($val = null){
-		if (isset($val)) {
+		if (isset($val) ) {
 			if (is_numeric($val) && is_int($val*1)) {
 				$this->val = intval($val);
-            } else {
+			} else {
 				throw new \SimplOn\DataValidationException($this->validationNaN);
 			}
 		} else {
@@ -57,15 +57,15 @@ class Count extends ComplexData {
 	 * 
 	 * doRead
 	 * 
-	 * Create the syntax of a "count" like this: "COUNT(item) as dataName", which 
-	 * will be used in the database statements to count results.
+	 * Create the syntax of a "sum" like this: "SUM(item) as dataName", which 
+	 * will be used in the database statements to sum results.
 	 * 
 	 * @return array
 	 */
 	public function doRead(){
-		$countItem = $this->sources;
+		$sumItem = $this->sources;
 		return ($this->fetch())
-			? array(array('COUNT('.$countItem.') as '.$this->name(), $this->getClass()))
+			? array(array('SUM('.$sumItem.') as '.$this->name(), $this->getClass()))
 			: null;
 	}
 }
