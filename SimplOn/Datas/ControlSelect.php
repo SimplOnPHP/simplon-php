@@ -50,6 +50,7 @@ class ControlSelect extends ComplexData {
 			return $this->val;
 		}
 	}
+
 	/**
 	 * getJS
 	 * 
@@ -66,6 +67,7 @@ class ControlSelect extends ComplexData {
 		$array_js[] = $select_js2;
 		return $array_js;
 	}
+
 	/**
 	 * getCSS
 	 * 
@@ -80,6 +82,7 @@ class ControlSelect extends ComplexData {
 		$array_css[] = $local_css;
 		return $array_css;
 	}
+
 	/**
 	 * showSearch
 	 * 
@@ -100,6 +103,7 @@ class ControlSelect extends ComplexData {
 		$select .= '</select>';
 		return $select;
 	}
+
 	/**
 	 * addCount
 	 * 
@@ -114,6 +118,21 @@ class ControlSelect extends ComplexData {
 			$counter +=1;
 		}
 	}
+
+	/**
+	 * addSum
+	 * 
+	 * Add a data type sum into the element.
+	 * 
+	 * @param array $sources
+	 */
+	public function addSum($sources = array()) {
+		$counter = 0;
+		foreach ($sources as $value) {
+			$this->parent->addOnTheFlyAttribute('sum'.$counter , new \SimplOn\Datas\Sum('total('.$value.')',$value));
+			$counter +=1;
+		}
+	}	
 }
 
         
