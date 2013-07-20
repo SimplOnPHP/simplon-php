@@ -31,73 +31,73 @@ use \SimplOn\Datas,
 \SimplOn\Elements\CSS;
 
 /**
-* This is the core element to build the site. Elements are the way to indicate the system all data that conforms it.
-* Each Element represents a data set.
-*
-* In practical terms Elements are just Objets with extended capabilities to handle some common tasks like:
-* Print their contents, Store their contents, find and retrieve the proper data from a dataStorage, etc.
-*
-* Elements are programmed and used like any other regular object except that,
-* in order to make their special features work, some of their attributes must be SimplON Data objects.
-*
-* @author RSL
-*/
+ * This is the core element to build the site. Elements are the way to indicate the system all data that conforms it.
+ * Each Element represents a data set.
+ *
+ * In practical terms Elements are just Objets with extended capabilities to handle some common tasks like:
+ * Print their contents, Store their contents, find and retrieve the proper data from a dataStorage, etc.
+ *
+ * Elements are programmed and used like any other regular object except that,
+ * in order to make their special features work, some of their attributes must be SimplON Data objects.
+ *
+ * @author RSL
+ */
 class Element extends BaseObject {
 
 	/**
-* Name of the Data attribute that represents
-* the ID field of the Element
-* (ie. SQL primary key's column name).
-* @todo enable handle of multiple id fields, that should be automatically
-* detected, as those should be all instances of \SimplOn\Data\Id).
-* @var string
-*/
+	 * Name of the Data attribute that represents
+	 * the ID field of the Element
+	 * (ie. SQL primary key's column name).
+	 * @todo enable handle of multiple id fields, that should be automatically
+	 * detected, as those should be all instances of \SimplOn\Data\Id).
+	 * @var string
+	 */
 	protected $field_id;
 
 	/**
-* What DataStorage to use.
-* @var SimplOn\DataStorages\DataStorage
-*/
+	 * What DataStorage to use.
+	 * @var SimplOn\DataStorages\DataStorage
+	 */
 	protected $dataStorage;
 
 	/**
-* Name of the storage associated to this Element
-* (ie. SQL table name, MongoDB collection name).
-* @var string
-*/
+	 * Name of the storage associated to this Element
+	 * (ie. SQL table name, MongoDB collection name).
+	 * @var string
+	 */
 	protected $storage;
 
 	/**
-* Criteria to use for searching.
-* @example (.Data1) AND (Data2 == "Hello")
-* @var string
-*/
+	 * Criteria to use for searching.
+	 * @example (.Data1) AND (Data2 == "Hello")
+	 * @var string
+	 */
 	protected $filterCriteria;
 	protected $deleteCriteria;
 
 	/**
-* Represents the nesting level of the element (1 is the ancestor element,
-* greater values means deeper nesting).
-* Used in the rendering process.
-* @var integer
-*/
+	 * Represents the nesting level of the element (1 is the ancestor element,
+	 * greater values means deeper nesting).
+	 * Used in the rendering process.
+	 * @var integer
+	 */
 	protected $nestingLevel = 1;
 	protected $parent;
 	//------------------------------------------- ???
 	/**
-* Flag to avoid the system to validate
-* DataStorage more than once.
-* @var boolean
-*/
+	 * Flag to avoid the system to validate
+	 * DataStorage more than once.
+	 * @var boolean
+	 */
 	protected $storageChecked;
 	protected $excetionsMessages = array();
 	var $quickDelete;
 	//------------------------------------------Performance
 	/**
-* Stores a list of Element's attributes
-* of type Data for better performance.
-* @var array containing objects of type SimplOn\Datas\Data
-*/
+	 * Stores a list of Element's attributes
+	 * of type Data for better performance.
+	 * @var array containing objects of type SimplOn\Datas\Data
+	 */
 	protected $dataAttributes;
 	protected $formMethods = array('create', 'update', 'delete', 'search');
 	//-----------------------------------------------------------------------------------------
@@ -108,14 +108,14 @@ class Element extends BaseObject {
 	protected $permissions;
 
 	/**
-* - Calls user defined constructor.
-* - Adds default Element's actions.
-* - Validates DataStorages.
-* - Fills its Datas' values if possible (requires a valid ID or array of values).
-* - Fills some of its Datas' meta-datas (parent, names).
-* @param mixed $id_or_array ID of the Element or array of Element's Datas values.
-* @param DataStorage $specialDataStorage DataStorage to use in uncommon cases.
-*/
+	 * - Calls user defined constructor.
+	 * - Adds default Element's actions.
+	 * - Validates DataStorages.
+	 * - Fills its Datas' values if possible (requires a valid ID or array of values).
+	 * - Fills some of its Datas' meta-datas (parent, names).
+	 * @param mixed $id_or_array ID of the Element or array of Element's Datas values.
+	 * @param DataStorage $specialDataStorage DataStorage to use in uncommon cases.
+	 */
 	public function __construct($id_or_array = null, $storage = null, $specialDataStorage = null) {
 		$this->sonMessage = new \SimplOn\Datas\Message();
 
@@ -168,28 +168,28 @@ class Element extends BaseObject {
 	}
 
 	/**
-* User defined constructor, called within {@link __constructor()},
-* useful to declare specific Data attributes.
-* @param mixed $id_or_array ID of the Element or array of Element's Datas values.
-* @param SimplOn\DataStorages\DataStorage $specialDataStorage DataStorage to use in uncommon cases.
-*/
+	 * User defined constructor, called within {@link __constructor()},
+	 * useful to declare specific Data attributes.
+	 * @param mixed $id_or_array ID of the Element or array of Element's Datas values.
+	 * @param SimplOn\DataStorages\DataStorage $specialDataStorage DataStorage to use in uncommon cases.
+	 */
 	public function construct($id_or_array = null, &$specialDataStorage = null) {
 
 	}
 
 	/**
-* @todo
-*
-* check why this can't be changed by
-* $this->field_id = $this->attributesTypes('\\SimplOn\\Datas\\Id');
-* $this->field_id = $this->field_id[0];
-* at the _construct Method
-*
-* Change the hole field_id concept from string to array
-*
-* @param type $val
-* @return type
-*/
+	 * @todo
+	 *
+	 * check why this can't be changed by
+	 * $this->field_id = $this->attributesTypes('\\SimplOn\\Datas\\Id');
+	 * $this->field_id = $this->field_id[0];
+	 * at the _construct Method
+	 *
+	 * Change the hole field_id concept from string to array
+	 *
+	 * @param type $val
+	 * @return type
+	 */
 	public function field_id($val = null) {
 		if (!$this->field_id) {
 			$this->field_id = $this->attributesTypes('\\SimplOn\\Datas\\Id');
@@ -213,12 +213,12 @@ class Element extends BaseObject {
 	}
 
 	/**
-* Allows some simplicity for coding and declarations, auto makes getters and setters
-* so that any Data’s attribute value data->val() can be transparently accessed as a normal
-* element attribute by Element->data(); and load all other BasicObject SimplON functionality
-* @see SimplOn.BaseObject::__call()
-*
-*/
+	 * Allows some simplicity for coding and declarations, auto makes getters and setters
+	 * so that any Data’s attribute value data->val() can be transparently accessed as a normal
+	 * element attribute by Element->data(); and load all other BasicObject SimplON functionality
+	 * @see SimplOn.BaseObject::__call()
+	 *
+	 */
 	public function __call($name, $arguments) {
 		if (@$this->$name instanceof Data) {
 			if ($arguments) {
@@ -241,10 +241,10 @@ class Element extends BaseObject {
 					}
 					break;
 					/*
-case 'F':
-if($arguments){ $this->$Xname->val($arguments[0]); }
-else{ return $this->$Xname->field(); }
-break; */
+				case 'F':
+					if($arguments){ $this->$Xname->val($arguments[0]); }
+					else{ return $this->$Xname->field(); }
+					break; */
 				case 'L':
 					if ($arguments) {
 						$this->$Xname->val($arguments[0]);
@@ -275,11 +275,11 @@ break; */
 
 	// -- SimplON key methods
 	/**
-* Assigns to each Data attribute it's corresponding value
-* from an array of values.
-*
-* @param array $array_of_data
-*/
+	 * Assigns to each Data attribute it's corresponding value
+	 * from an array of values.
+	 *
+	 * @param array $array_of_data
+	 */
 	public function fillFromArray(&$array_of_data) {
 		$filled = 0;
 		if (is_array($array_of_data)) {
@@ -310,19 +310,19 @@ break; */
 	}
 
 	/**
-*
-* NOTE: This method is not a simple redirection to $this->fillFromArray($_REQUEST) because the file upload requeires the $_FILES array
-* Thus the redirection from fillFromRequest to fillFromArray is made at the SimplOnData and there for any SimplOnData that needs to
-* distinguish between both can do it.
-*
-*/
+	 *
+	 * NOTE: This method is not a simple redirection to $this->fillFromArray($_REQUEST) because the file upload requeires the $_FILES array
+	 * Thus the redirection from fillFromRequest to fillFromArray is made at the SimplOnData and there for any SimplOnData that needs to
+	 * distinguish between both can do it.
+	 *
+	 */
 	public function fillFromRequest() {
 		//try{
 		$this->fillFromArray($_REQUEST);
 		//}catch(\SimplOn\ElementValidationException $ev){}
 		/**
-* COMPLETE THE PART TO HANDLE FILES
-*/
+		 * COMPLETE THE PART TO HANDLE FILES
+		 */
 	}
 
 	public function fillFromPost() {
@@ -335,14 +335,14 @@ break; */
 
 	//------------Data Storage
 	/**
-* Retrieves the element's Datas values from the DataSotarage,
-* using the recived Id or the element's id if no id is provided.
-*
-* @param mixed $id the id of the element whose data we whant to read from de DS
-* @throws Exception
-*
-* @todo: in  arrays format ????
-*/
+	 * Retrieves the element's Datas values from the DataSotarage,
+	 * using the recived Id or the element's id if no id is provided.
+	 *
+	 * @param mixed $id the id of the element whose data we whant to read from de DS
+	 * @throws Exception
+	 *
+	 * @todo: in  arrays format ????
+	 */
 	public function fillFromDSById($id = null) {
 		if (isset($id)) {
 			$this->setId($id);
@@ -385,9 +385,8 @@ break; */
 	}
 
 	/* @todo determine if this method is neceary or not
-updateInDS // este debe ser automatico desde el save si se tiene id se genera
-*/
-
+	 * updateInDS // este debe ser automatico desde el save si se tiene id se genera
+	 */
 	function validateForDB() {
 		@$excetionsMessages = $this->requiredCheck($this->excetionsMessages);
 		if (!empty($excetionsMessages)) {
@@ -560,23 +559,29 @@ updateInDS // este debe ser automatico desde el save si se tiene id se genera
 	}
 
 	/*
-function processSelection(){
+	function processSelection(){
 
-$parentClass = $_??????['parentClass'];
+	$parentClass = $_??????['parentClass'];
 
-//-------------------
-$jsInstructions = array(
-'' => ,
-'b' => ,
-'c' => ,
-'d' => ,
-'e' => ,
-);
-echo json_encode($jsInstructions);
-}
-*/
+	//-------------------
+	$jsInstructions = array(
+	'' => ,
+	'b' => ,
+	'c' => ,
+	'd' => ,
+	'e' => ,
+	);
+	echo json_encode($jsInstructions);
+	}
+	*/
+
+	/**
+	 *  processCheckBox
+	 * 
+	 *  Obtain an array with all results from Element's table to be used in ElementContainer. 
+	 */
 	function processCheckBox(){
-	return $this->dataStorage->readElements($this, 'array', null, null, null);
+		return $this->dataStorage->readElements($this, 'array', null, null, null);
 	} 
 
 	function processSelect() {
@@ -587,28 +592,46 @@ echo json_encode($jsInstructions);
 		$colums = array_merge($this->datasWith("list"), array("selectAction"));
 		return $search->processSearch($this->toArray(), $colums);
 	}
-	
+
+	/**
+	 * 
+	 * processReport
+	 * 
+	 * Turn on the search flag from all datas to display them in search form and 
+	 * add 4 controlSelect one to list the results, one to count the results, one 
+	 * to group results and one to sum the results. 
+	 * When the form is sent, processReport analyzes data sent and verifies that 
+	 * data will be listed and finally send data to "Report" class which will 
+	 * return results from the database to display them in showReport.
+	 * 
+	 * @param int $start
+	 * @param int $limit
+	 * @return string
+	 */
 	function processReport($start, $limit = null){
-		$storeFlags = $this->storeAllFlags();
+		
 		$this->changeCurrentFlags(null,'search');
 		$labelsNames = $this->getLabelsAndNames();
 		if ($start < 1) {
 			$start = 1;
 		}
 		$position = ($start - 1) * $limit;
+		$this->addOnTheFlyAttribute('SimplOn_list_datas', new Datas\ControlSelect('List', $labelsNames));
 		$this->addOnTheFlyAttribute('SimplOn_count', new Datas\ControlSelect('Count', $labelsNames));
 		$this->addOnTheFlyAttribute('SimplOn_group', new Datas\ControlSelect('Group', $labelsNames));
+		$this->addOnTheFlyAttribute('SimplOn_sum', new Datas\ControlSelect('Sum', $labelsNames));
 		$this->assignDatasName(); 
 		$this->fillFromRequest();
+		$listDatas = $this->SimplOn_list_datas->val();
 		$count = $this->SimplOn_count->val();
 		$group = $this->SimplOn_group->val();
-		if ($count !== null) {
+		$sum = $this->SimplOn_sum->val();
+		if ($listDatas !== null) {
 			$this->changeCurrentFlags(null,'list',false);
-			$this->changeCurrentFlags($count,'list');
+			$this->changeCurrentFlags($listDatas,'list');
 		}
-		if(isset($count)) {
-			$this->SimplOn_count->addCount($count);
-		}
+		if(isset($count)) $this->SimplOn_count->addCount($count);
+		if(isset($sum)) $this->SimplOn_sum->addSum($sum);
 		$columns = array_merge($this->datasWith('list'));
 		$process = new Report(array($this->getClass()), null, null, $group);
 		$tableReport = $process->processRep($this->toArray(), $columns, $position, $limit); 
@@ -616,7 +639,19 @@ echo json_encode($jsInstructions);
 		$links = $this->makePaging($start, $limit, $totalRecords);
 		return $tableReport.$links;
 	}
- 
+
+	/**
+	 * 
+	 * processAdmin
+	 * 
+	 * When the form is sent, processAdmin analyzes data sent and verifies that 
+	 * data will be listed and finally send data to "Search" class which will 
+	 * return results from the database to display them in showAdmin.
+	 * 
+	 * @param int $start
+	 * @param int $limit
+	 * @return string
+	 */
 	function processAdmin($start, $limit = null) {
 		if ($start < 1) {
 			$start = 1;
@@ -632,6 +667,20 @@ echo json_encode($jsInstructions);
 		return $tableAdmin.$links;
 	}
 
+	/**
+	 * 
+	 * makePaging
+	 * 
+	 * Create links which will be used in showAdmin and showReport when the results
+	 * exceed the limit established and as needed show results in more than one
+	 * page. 
+	 *   
+	 * 
+	 * @param int $start
+	 * @param int $limit
+	 * @param int $totalRecords
+	 * @return string
+	 */
 	function makePaging($start, $limit, $totalRecords){
 		$links = "";
 		$totalElements = $totalRecords;
@@ -652,6 +701,15 @@ echo json_encode($jsInstructions);
 		return $links;
 	}
 
+	/**
+	 * 
+	 * getLabelsAndNames
+	 * 
+	 * Generate an array where keys are the label from each data and  values are
+	 * the name of each data.
+	 * 
+	 * @return array
+	 */
 	function getLabelsAndNames(){
 		$data = '\\SimplOn\\Datas\\Data';
 		$numId = '\\SimplOn\\Datas\\NumericId';
@@ -677,6 +735,7 @@ echo json_encode($jsInstructions);
 		$labelsAndNames = array_combine($label, $dataName);
 		return $labelsAndNames;
 	}
+
 	/**
 	 * storeAllFlags 
 	 * 
@@ -702,6 +761,7 @@ echo json_encode($jsInstructions);
 		$flagStock = array_combine($flagsName, $flagsStatus);
 		return $flagStock;
 	}
+
 	/**
 	 * changeCurrentFlags
 	 * 
@@ -734,6 +794,7 @@ echo json_encode($jsInstructions);
 			}
 		}
 	}
+
 	/**
 	 * restoreAllFlags
 	 *
@@ -759,14 +820,14 @@ echo json_encode($jsInstructions);
 	}
 
 	/**
-* ????????????????????
-*
-* Possible labels:
-* 	name to refer to a data name;
-* 	.name to refer to a data filterCriteria;
-*  :name to refer to a data value;
-* 	"values" to specify a hard-coded value.
-*/
+	 * ????????????????????
+	 *
+	 * Possible labels:
+	 * 	name to refer to a data name;
+	 * 	.name to refer to a data filterCriteria;
+	 *  :name to refer to a data value;
+	 * 	"values" to specify a hard-coded value.
+	 */
 	public function filterCriteria($filterCriteria = null) {
 		if (isset($filterCriteria))
 		$this->filterCriteria = $filterCriteria;
@@ -833,11 +894,11 @@ echo json_encode($jsInstructions);
 	}
 
 	/**
-* Sets the current instance the as "logical" parent of the Datas.
-* Thus the datas may access other element's datas and methods if requeired
-* Comments: This is useful in many circumstances for example it enables the existence of ComplexData.
-* @see ComplexData
-*/
+	 * Sets the current instance the as "logical" parent of the Datas.
+	 * Thus the datas may access other element's datas and methods if requeired
+	 * Comments: This is useful in many circumstances for example it enables the existence of ComplexData.
+	 * @see ComplexData
+	 */
 	public function assignAsDatasParent(&$parent = null) {
 		if (!isset($parent))
 		$parent = $this;
@@ -852,10 +913,10 @@ echo json_encode($jsInstructions);
 	}
 
 	/**
-* Sets each Data it’s attribute name within the element instance.
-*
-* Comment: Usefull to the generate and handle the filtercriteria
-*/
+	 * Sets each Data it’s attribute name within the element instance.
+	 *
+	 * Comment: Usefull to the generate and handle the filtercriteria
+	 */
 	public function assignDatasName() {
 		foreach ($this as $name => $data) {
 			if (($data instanceof Data) && !$data->name()) {
@@ -867,8 +928,8 @@ echo json_encode($jsInstructions);
 	//----- Display
 
 	/**
-* Default method that will be shown in case no methods have been specified.
-*/
+	 * Default method that will be shown in case no methods have been specified.
+	 */
 	public function index() {
 		if (count(Main::$construct_params)) {
 			return $this->showView();
@@ -973,6 +1034,7 @@ echo json_encode($jsInstructions);
 	}
 	
 	public function showReport($start = 0, $limit = null, $template_file = null, $add_html = array(), $partOnly = false) {
+		$storeFlags = $this->storeAllFlags();
 		if (!isset($limit)) {
 			$limit = Main::$LIMIT_ELEMENTS;
 		}
@@ -982,6 +1044,7 @@ echo json_encode($jsInstructions);
 		"showSearch", null, $this->encodeURL(array(),'showReport'), array('footer' => $this->processReport($start, $limit)), 'body'
 		).'</div>'
 		;
+		$this->restoreAllFlags($storeFlags);
 		return $this->obtainHtml(
 		"showReport", $template_file, null, array_merge($add_html, array('header' => $header)), $partOnly
 		);
@@ -1081,10 +1144,10 @@ echo json_encode($jsInstructions);
 			$dom = $template;
 		}
 		/**
-* @todo change the way HTL is filled instead of cicle triugh the datas
-* and filling the template cicle trough the template and run elment's
-* or data's methods as required.
-*/
+		 * @todo change the way HTL is filled instead of cicle triugh the datas
+		 * and filling the template cicle trough the template and run elment's
+		 * or data's methods as required.
+		 */
 		if ($with_form && $action) {
 			$dom['form.SimplOn.Element.' . $this->getClassName()]->attr('action', $action);
 		}
@@ -1106,19 +1169,19 @@ echo json_encode($jsInstructions);
 		->append(@$add_html['footer']? : '');
 
 		/*
-switch($partOnly) {
-case 0:
-case false:
-return $dom;
+		switch($partOnly) {
+		case 0:
+		case false:
+		return $dom;
 
-case 1:
-case true:
-case 'element':
-return $dom[$this->cssSelector()];
+		case 1:
+		case true:
+		case 'element':
+		return $dom[$this->cssSelector()];
 
-default:
-return $dom[$partOnly];
-} */
+		default:
+		return $dom[$partOnly];
+		} */
 		if (!$partOnly) {
 			return $dom;
 		} else if ($partOnly === true OR $partOnly == 'element') {
@@ -1233,11 +1296,11 @@ return $dom[$partOnly];
 	}
 
 	/**
-* Returns an array representation of the Element assigning each Data's name
-* as the key and the data's value as the value.
-*
-* @return array
-*/
+	 * Returns an array representation of the Element assigning each Data's name
+	 * as the key and the data's value as the value.
+	 *
+	 * @return array
+	 */
 	public function toArray() {
 		foreach ($this->dataAttributes() as $dataName) {
 			$ret[$dataName] = $this->$dataName();
@@ -1246,10 +1309,10 @@ return $dom[$partOnly];
 	}
 
 	/**
-* Applies a method to all the Datas and returns an array containing all the responses.
-*
-* @param string $method must be a method common to all datas
-*/
+	 * Applies a method to all the Datas and returns an array containing all the responses.
+	 *
+	 * @param string $method must be a method common to all datas
+	 */
 	public function processData($method) {
 		$return = array();
 		foreach ($this->dataAttributes() as $dataName) {
@@ -1322,11 +1385,11 @@ return $dom[$partOnly];
 		$validatorObject = new $validatorClass($validator);
                 $rolesArray = $validatorObject->role();
                 $roleNameHierarchy = array();
-                foreach ($rolesArray as $key){
+                foreach ($rolesArray as $key) {
                     $roleNameHierarchy[$key->level()] = $key->name();
                 }
                 asort($roleNameHierarchy);
-                if(isset($_SESSION['simplonUser'])){
+                if (isset($_SESSION['simplonUser'])) {
                         foreach ($roleNameHierarchy as $value) {
                             if (isset($this->permissions[$value])) {
                                     return $this->isAllowed($this->permissions[$value], $method); 
