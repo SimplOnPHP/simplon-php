@@ -1038,7 +1038,6 @@ class Element extends BaseObject {
 			$limit = Main::$LIMIT_ELEMENTS;
 		}
 		$header = '<h1>'.$this->getClass().'</h1>'
-		.'<div id="SimplOn-create-new" class="SimplOn section">'.$this->createAction('', array('Create new %s','getClassName')).'</div>'
 		.'<div id="SimplOn-list" class="SimplOn section">'.$this->obtainHtml(
 		"showSearch", null, $this->encodeURL(array(),'showReport'), array('footer' => $this->processReport($start, $limit)), 'body'
 		).'</div>'

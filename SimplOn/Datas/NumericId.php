@@ -64,6 +64,7 @@ class NumericId extends Id
          */
 	function val($val = null) {
 		if(isset($val)) {
+			$val = (int) $val;
 			if( is_numeric($val) && is_int($val*1) ) 
 				$this->val = intval($val);
 			else

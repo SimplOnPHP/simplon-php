@@ -1,6 +1,9 @@
 /* Multiselect
 ----------------------------------*/
-
+.SimplOn.Data.ControlSelect{
+	display: inline-block;
+	margin: 0 auto;
+}
 .ui-multiselect { border: solid 1px; font-size: 0.8em; }
 .ui-multiselect ul { -moz-user-select: none; }
 .ui-multiselect li { margin: 0; padding: 0; cursor: default; line-height: 20px; height: 20px; font-size: 11px; list-style: none; }
