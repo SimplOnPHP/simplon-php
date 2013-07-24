@@ -740,12 +740,11 @@ class Element extends BaseObject {
 	 */
 	function storeAllFlags() {
 		$type = '\\SimplOn\\Datas\\NumericId';
+		$flagsName = array();
+		$flagsStatus = array();
 		foreach ($this->dataAttributes() as $dataName) {
-			if( !($dataName === 'viewAction') &&
-				!($dataName === 'createAction') &&
-				!($dataName === 'deleteAction') &&    
-				!($dataName === 'updateAction')
-			){
+			$valFetch = $this->{'O' . $dataName}()->fetch();
+			if($valFetch === true){
 				if (!($this->{'O' . $dataName}() instanceof $type)) {
 					$status = $this->{'O' . $dataName}()->search();
 					$flagsName[] = $dataName;
@@ -777,11 +776,8 @@ class Element extends BaseObject {
 			}
 		} else {
 			foreach ($this->dataAttributes() as $dataName) {
-				if(    !($dataName === 'viewAction') &&
-				!($dataName === 'createAction') &&
-				!($dataName === 'deleteAction') &&    
-				!($dataName === 'updateAction')
-				){
+				$valFetch = $this->{'O' . $dataName}()->fetch();
+				if( $valFetch === true){
 					if (!($this->{'O' . $dataName}() instanceof $type)) {
 						$this->{'O' . $dataName}()->$flag($status);
 					}
