@@ -712,26 +712,22 @@ class Element extends BaseObject {
 	function getLabelsAndNames(){
 		$data = '\\SimplOn\\Datas\\Data';
 		$numId = '\\SimplOn\\Datas\\NumericId';
-		$label = array();
-		$dataName = array();
+		$labels = array();
+		$dataNames = array();
 		foreach ($this as $name => $dataObj) {
 			if ($dataObj instanceof $data) {
-				if (	$dataObj->label() !== '' &&
-					$dataObj->label() !== 'sonMessage'&&
-					$dataObj->label() !== null){
-					$label[] = $dataObj->label();
-				}
-				if (!($dataObj instanceof $numId) && 
-					$name !== 'sonMessage'&& 
-					$name !== 'viewAction'&&
-					$name !== 'createAction' &&
-					$name !== 'deleteAction'&&
-					$name !== 'updateAction'){
-					$dataName[] = $name;
+				$valFetch = $this->{'O' . $name}()->fetch();
+				if($valFetch === true) {
+					if ($dataObj->label() !== '' && $dataObj->label() !== null) {
+						$labels[] = $dataObj->label();
+					}
+					if (!($dataObj instanceof $numId)) {
+						$dataNames[] = $name;
+					}
 				}
 			}
 		}
-		$labelsAndNames = array_combine($label, $dataName);
+		$labelsAndNames = array_combine($labels, $dataNames);
 		return $labelsAndNames;
 	}
 
