@@ -5,7 +5,8 @@ use \SimplOn\Elements\Element, \SimplOn\Datas;
 /**
  * Tutorial ejercicio 1.1 HolaMundo
  * 
- * echo "Abriendo Hola Mundo";*/               
+ * echo "Abriendo Hola Mundo";
+ */
 
 class HolaMundo extends Element {
 

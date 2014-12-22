@@ -382,7 +382,7 @@ class Main {
 		//echo "$file_path<br><br>";
 		$exploded_path = explode('/', $file_path);
 		$file = array_pop($exploded_path);
-		$current_path = '';
+		$current_path = '.';
 		foreach ($exploded_path as $dir) {
 			$current_path.= $dir.'/';
 			if($dir && !is_dir($current_path)) {
@@ -392,7 +392,7 @@ class Main {
 		}
 		
 		if(isset($data))
-			return file_put_contents($file_path, $data, $flags);
+			return file_put_contents('.'.$file_path, $data, $flags);
 		
 		return true;
 	}

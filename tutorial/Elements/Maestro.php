@@ -3,5 +3,3 @@
 class Maestro extends Persona{
 	
 }
-
-?>

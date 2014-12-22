@@ -23,5 +23,3 @@ class Alumno extends Persona{
 	}
 	
 }
-
-?>

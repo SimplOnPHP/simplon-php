@@ -10,4 +10,3 @@ class Persona extends \SimplOn\Elements\Element{
     }
     
 }
-?>

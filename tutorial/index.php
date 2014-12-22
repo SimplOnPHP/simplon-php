@@ -13,7 +13,7 @@ SimplOn\Main::run(array(
 	'GENERIC_TEMPLATES_PATH' => realpath('Templates'),
 	'MASTER_TEMPLATE' => realpath('../SimplOn').'/Renderers/Html5.html',
 		
-	'DEFAULT_ELEMENT' => 'Persona',
+	'DEFAULT_ELEMENT' => '\Tutorial\Elements\Student',
 	'DEFAULT_METHOD' => 'index',
 	
 	'DEFAULT_RENDERER' => new SimplOn\Renderers\Html5(),
@@ -29,7 +29,6 @@ SimplOn\Main::run(array(
 	'JS_FLAVOUR' => 'jQuery',
 	
 	'DEV_MODE' => true,
-	// MySql('localhost','your database','your user','your password')
 	'DATA_STORAGE' => new SimplOn\DataStorages\MySql('localhost','tutorial','root',''),
 
 	'LIMIT_ELEMENTS' => '20',
