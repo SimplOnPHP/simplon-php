@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>SimplOn</title>
+<link type="text/css" rel="stylesheet" href="/tutorial/CSS/jQuery/Libs/SimplOn.css">
+<link type="text/css" rel="stylesheet" href="/tutorial/CSS/jQuery/Libs/anytime.compressed.css">
+<link type="text/css" rel="stylesheet" href="/tutorial/CSS/jQuery/Libs/colorbox.css">
+<script type="text/javascript" src="/tutorial/JS/jQuery/Libs/00_jquery-1.7.2.min.js"></script><script type="text/javascript" src="/tutorial/JS/jQuery/Libs/05_anytime.compressed.js"></script><script type="text/javascript" src="/tutorial/JS/jQuery/Libs/05_jquery-ui-1.8.19.custom.min.js"></script><script type="text/javascript" src="/tutorial/JS/jQuery/Libs/05_jquery.colorbox-min.js"></script><script type="text/javascript" src="/tutorial/JS/jQuery/Libs/05_jquery.form.js"></script><script type="text/javascript" src="/tutorial/JS/jQuery/Libs/05_jquery.validate.min.js"></script><script type="text/javascript" src="/tutorial/JS/jQuery/Libs/10_SimplON.js"></script><script type="text/javascript" src="/tutorial/JS/jQuery/Inits/SimplOn-Datas-Email.js"></script>
+</head>
+<body><form class="SimplOn Element SNL-1 Student update" action="/tutorial/Tutorial-Elements-Student/1!processUpdate" method="post"><fieldset>
+<legend>Update Student</legend>
+<div class="SimplOn Element SNL-1 Student ">
+<div class="SimplOn Data SNL-1 Message sonMessage  "></div>
+<div class="SimplOn Data SNL-1 NumericId id required  "></div>
+<div class="SimplOn Data SNL-1 String full_name  ">
+<label for="SimplOn_0000000057e1900d000000005a726329">Full name: </label><br><input id="SimplOn_0000000057e1900d000000005a726329" class="SimplOn Data SNL-1 String full_name  " name="full_name" value="Luca Lauretta" type="text">
+</div>
+<div class="SimplOn Data SNL-1 ElementsContainer emails  "> <span class="SimplOn label">Emails</span>: <ul><li>EmailAddress <a class="SimplOn lightbox" href="/tutorial/Tutorial-Elements-Student/1!emails!showSelect/%22Tutorial%255CElements%255CEmailAddress%22">List</a>  <a class="SimplOn lightbox" href="/tutorial/Tutorial-Elements-EmailAddress!showCreate/%22%22/%22/tutorial/Tutorial-Elements-EmailAddress%21processCreate/%2522/tutorial/Tutorial-Elements-Student/1%2521emails%2521makeSelection%2522%22">Add</a> </li></ul>
+<div class="SimplOn Container elements-box">
+                
+                    <div class="SimplOn preview element-box 2">
+                        <div class="SimplOn actions">
+                            <a class="SimplOn lightbox" href="/tutorial/Tutorial-Elements-EmailAddress/2!showUpdate/%22%22/%22/tutorial/Tutorial-Elements-EmailAddress/2%21processUpdate/%2522/tutorial/Tutorial-Elements-Student/1%2521emails%2521makeUpdate/2/Tutorial%2525255CElements%2525255CEmailAddress%2522%22">Edit</a>
+                            <a class="SimplOn delete" href="#">X</a>
+                        </div>
+                        <div class="SimplOn view"><div class="SimplOn Element SNL-2 EmailAddress ">
+<div class="SimplOn Data SNL-2 Message sonMessage  "></div>
+<div class="SimplOn Data SNL-2 String label  ">Pro</div>
+<div class="SimplOn Data SNL-2 Email address  ">luca@lauretta.info</div>
+</div></div>
+                        <input class="SimplOn input" name="emails[]" type="hidden" value="2|Tutorial\Elements\EmailAddress" id="SimplOn_0000000057e1900c000000005a726329">
+</div>
+            
+
+                    <div class="SimplOn preview element-box 1">
+                        <div class="SimplOn actions">
+                            <a class="SimplOn lightbox" href="/tutorial/Tutorial-Elements-EmailAddress/1!showUpdate/%22%22/%22/tutorial/Tutorial-Elements-EmailAddress/1%21processUpdate/%2522/tutorial/Tutorial-Elements-Student/1%2521emails%2521makeUpdate/1/Tutorial%2525255CElements%2525255CEmailAddress%2522%22">Edit</a>
+                            <a class="SimplOn delete" href="#">X</a>
+                        </div>
+                        <div class="SimplOn view"><div class="SimplOn Element SNL-2 EmailAddress ">
+<div class="SimplOn Data SNL-2 Message sonMessage  "></div>
+<div class="SimplOn Data SNL-2 String label  ">Personal</div>
+<div class="SimplOn Data SNL-2 Email address  ">dubrox@hotmail.com</div>
+</div></div>
+                        <input class="SimplOn input" name="emails[]" type="hidden" value="1|Tutorial\Elements\EmailAddress" id="SimplOn_0000000057e1900c000000005a726329">
+</div>
+            
+            </div>
+		</div>
+<div clas="buttons">
+<button type="submit">Update</button><button class="SimplOn cancel-form">Cancel</button>
+</div>
+</div>
+</fieldset></form>
+</body>
+</html>
