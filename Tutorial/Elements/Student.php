@@ -10,7 +10,8 @@ use SimplOn\Elements\Element;
 class Student extends Element {
     function construct() {
         $this->id = new NumericId();
-        $this->full_name = new String('Full name', 'S');
+        $this->first_name = new String('First name', 'S');
+        $this->last_name = new String('Last name', 'S');
         $this->emails = new ElementsContainer(array(new EmailAddress()), 'Emails');
     }
 }
