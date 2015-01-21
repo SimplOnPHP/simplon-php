@@ -17,8 +17,8 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace SimplOn\Elements;
-use \SimplOn\Main,
-	\SimplOn\Elements\Element;
+
+use \SimplOn\Main;
 
 class CSS extends Element {
 	const
@@ -80,7 +80,7 @@ class CSS extends Element {
 		}
 		return self::$files_exists[$token_id];
 	}
-	
+
 	static function getLibs($flavour = null) {
 		if(!$flavour) $flavour = Main::${ self::type .'_FLAVOUR'};
 		$bases = array(

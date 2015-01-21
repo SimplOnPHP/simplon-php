@@ -17,11 +17,13 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace SimplOn\Datas;
+
+use SimplOn\Elements\PivotTable;
 use \SimplOn\Main;
+use \SimplOn\Elements\Element;
 
 
 /**
- * 
  * Encapsulates an Element so it acts as a Data. 
  * 
  * @author RSL
@@ -32,36 +34,36 @@ class ElementsContainer extends Data {
         
 		/**
 		 * Logic parent
-		 * @var SimplOn\Elements\Element
+		 * @var Element
 		 */
 		$parent, 
             
 		/**
 		 * List of Elements
-		 * @var array of SimplOn\Elements\Element
+		 * @var array of Element
 		 */
 		$elements = array(),
         
 		/**
 		 * Pivot element (for pivot tables)
-		 * @var SimplOn\Elements\Element
+		 * @var Element
 		 */
-		$pivot, 
-        
+		$pivot,
+
+        /**
+         * @var array of Elements instances or names
+         */
         $allowedClassesInstances = array();
 	
 	public function __construct( array $allowedClassesInstances, $label=null, $flags=null, $element_id=null) {
-		
-        if( is_string($allowedClassesInstances[0]) ){
-            foreach($allowedClassesInstances as $class){
-                $this->allowedClassesInstances[$class] = new $class;
-            }  
-        }else if( $allowedClassesInstances[0] instanceof \SimplOn\Elements\Element ){
-            foreach($allowedClassesInstances as $classInstance){
-                $this->allowedClassesInstances[$classInstance->getClass()] = $classInstance;
+        foreach($allowedClassesInstances as $e) {
+            if (is_string($e) && class_exists($e)) {
+                $this->allowedClassesInstances[$e] = new $e;
+            } else if( $e instanceof Element ) {
+                $this->allowedClassesInstances[$e->getClass()] = $e;
+            } else {
+                // error elements must be an array of valid classes names or Elements
             }
-        }else{
-             // error elements must be an array of valid classes names or Elements
         }
 
 		parent::__construct($label,$flags,$element_id);
@@ -69,9 +71,11 @@ class ElementsContainer extends Data {
 	
 	public function getJS($method) {
         $a_js = array();
-        foreach($this->allowedClassesInstances as $classInstance)
+        foreach($this->allowedClassesInstances as $classInstance) {
+            /** @var Element $classInstance */
             $a_js = array_merge($classInstance->getJS($method), $a_js);
-            
+        }
+
 		return array_map(
 			function($fp) {
 				return str_replace(Main::$REMOTE_ROOT, Main::$LOCAL_ROOT, $fp);
@@ -79,17 +83,20 @@ class ElementsContainer extends Data {
             $a_js
 		);
 	}
-	
-    
-    
+
+
+    /**
+     * @param Element $parent
+     * @return Element
+     */
     function parent(&$parent = null){
-        if(!$parent){
+        if($parent === null){
             return $this->parent;
         } else {
-            $this->parent=$parent;
+            $this->parent = $parent;
             
             if(!$this->pivot){
-               $this->pivot = new \SimplOn\Elements\PivotTable(null, 'Pivot_'.strtr($this->parent->getClass(), '\\', '_').'_'.$this->name); 
+               $this->pivot = new PivotTable(null, 'Pivot_'.strtr($this->parent->getClass(), '\\', '_').'_'.$this->name);
             }
             
             foreach($this->elements as $element){

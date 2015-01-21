@@ -56,7 +56,7 @@ class Element extends BaseObject {
 
 	/**
 	 * What DataStorage to use.
-	 * @var SimplOn\DataStorages\DataStorage
+	 * @var \SimplOn\DataStorages\DataStorage
 	 */
 	protected $dataStorage;
 
@@ -171,10 +171,9 @@ class Element extends BaseObject {
 	 * User defined constructor, called within {@link __constructor()},
 	 * useful to declare specific Data attributes.
 	 * @param mixed $id_or_array ID of the Element or array of Element's Datas values.
-	 * @param SimplOn\DataStorages\DataStorage $specialDataStorage DataStorage to use in uncommon cases.
+	 * @param \SimplOn\DataStorages\DataStorage $specialDataStorage DataStorage to use in uncommon cases.
 	 */
-	public function construct($id_or_array = null, &$specialDataStorage = null) {
-
+	public function construct() {
 	}
 
 	/**
@@ -651,7 +650,7 @@ class Element extends BaseObject {
 	 * @param int $limit
 	 * @return string
 	 */
-	function processAdmin($start, $limit = null) {
+	function processAdmin($start = 1, $limit = null) {
 		if ($start < 1) {
 			$start = 1;
 		}			
@@ -1175,6 +1174,12 @@ class Element extends BaseObject {
 		}
 	}
 
+	/**
+	 * @param $method
+	 * @param string $returnFormat
+	 * @param bool $compress
+	 * @return array|string
+	 */
 	public function getJS($method, $returnFormat = 'array', $compress = false) {
 		$class = $this->getClass('-');
 

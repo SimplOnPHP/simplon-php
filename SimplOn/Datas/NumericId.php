@@ -1,22 +1,7 @@
 <?php
-/*
-	Copyright © 2011 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
-	
-	This file is part of “SimplOn PHP”.
-	
-	“SimplOn PHP” is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation version 3 of the License.
-	
-	“SimplOn PHP” is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License
-	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
-*/
 namespace SimplOn\Datas;
+use SimplOn\Exception;
+
 /**
  * NumericId data type
  * 
@@ -34,19 +19,20 @@ class NumericId extends Id
      * auto incremented or not 
      */
 	public $autoIncrement = true;
+
 	/**
-         * function showInput - this function verifies  if $this->val() return an
-         * empty val or not, if return an empty val the throw an exception.
-         * 
-         * @param type $fill
-         * @throws \SimplOn\Exception
-         */
+	 * function showInput - this function verifies  if $this->val() return an
+	 * empty val or not, if return an empty val the throw an exception.
+	 *
+	 * @param mixed $fill
+	 * @throws Exception
+	 */
 	public function showInput($fill)
 	{
 		if($this->val())
 		{
 		} else {
-			throw new \SimplOn\Exception('Cannot show this field with empty value!');
+			throw new Exception('Cannot show this field with empty value!');
 			
 		}
 	}	
@@ -54,14 +40,14 @@ class NumericId extends Id
 	public function label($label = null) {}
 	
 	/**
-         * 
-         * function val - verifies if $val is an number and if is an integer 
-         * then stores $val into $this->val and if isn't a number then display an
-         * error message.
-         * 
-         * @param int $val
-         * @return int
-         */
+	 *
+	 * function val - verifies if $val is an number and if is an integer
+	 * then stores $val into $this->val and if isn't a number then display an
+	 * error message.
+	 *
+	 * @param int $val
+	 * @return int
+	 */
 	function val($val = null) {
 		if(isset($val)) {
 			$val = (int) $val;
@@ -69,8 +55,7 @@ class NumericId extends Id
 				$this->val = intval($val);
 			else
 				user_error('Non-numeric value received.');
-		} else {
-			return $this->val;
 		}
+		return $this->val;
 	}
 }
