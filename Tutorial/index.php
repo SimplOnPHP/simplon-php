@@ -2,7 +2,7 @@
 require '../SimplOn/Main.php';
 SimplOn\Main::run(array(
 
-	'DEFAULT_ELEMENT' => '\Tutorial\Elements\Index',
+	'DEFAULT_ELEMENT' => '\Tutorial\Elements\Student',
 
 	'DEV_MODE' => true,
 
