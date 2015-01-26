@@ -38,7 +38,7 @@ class SimplOnLink extends ComplexData {
 		$this->method = $method;//method name to access
 		$this->method_params = $method_params;//parameters to pass to method
 		
-		parent::__construct($label,$sources,$flags,null,$searchOp);
+		parent::__construct($label,$sources,$flags,$searchOp);
 	}
         /**
          * 
