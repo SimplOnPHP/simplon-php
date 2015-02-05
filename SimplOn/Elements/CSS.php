@@ -18,7 +18,7 @@
 */
 namespace SimplOn\Elements;
 
-use \SimplOn\Main;
+use SimplOn\Main;
 
 class CSS extends Element {
 	const
@@ -82,7 +82,10 @@ class CSS extends Element {
 	}
 
 	static function getLibs($flavour = null) {
-		if(!$flavour) $flavour = Main::${ self::type .'_FLAVOUR'};
+		if(!$flavour) {
+			$main = 'SimplOn\Main';
+			$flavour = $main::${ self::type .'_FLAVOUR'};
+		}
 		$bases = array(
 			'SimplOn' => Main::$SimplOn_PATH,
 			'Site' => Main::$LOCAL_ROOT,
