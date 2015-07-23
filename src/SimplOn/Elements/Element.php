@@ -1058,10 +1058,10 @@ class Element extends BaseObject {
 			// get default path
 			$template_file = $this->templateFilePath($VCSL);
 
-			$template = file_exists($template_file) ? \phpQuery::newDocumentFileHTML($template_file) : '';
+			$template = file_exists($template_file) ? \phpQuery::newDocumentFileHTML(realpath($template_file)) : '';
 		} else if (file_exists($template)) {
 			$template_file = $template;
-			$template = \phpQuery::newDocumentFileHTML($template);
+			$template = \phpQuery::newDocumentFileHTML(realpath($template));
 		} else if (Main::hasNoHtmlTags($template)) {
 			$template_file = $template;
 			$template = '';
@@ -1075,7 +1075,7 @@ class Element extends BaseObject {
 			if (empty($template_file))
 			$template_file = $this->templateFilePath($VCSL);
 
-			$dom = \phpQuery::newDocumentFileHTML(Main::$MASTER_TEMPLATE);
+			$dom = \phpQuery::newDocumentFileHTML(realpath(Main::$MASTER_TEMPLATE));
 			$dom['head']->append(
 			$this->getCSS($caller_method, 'html') .
 			$this->getJS($caller_method, 'html')
@@ -1279,8 +1279,12 @@ class Element extends BaseObject {
 	}
 
 	public function templateFilePath($show_type, $alternative = '', $short = false, $template_type = 'html') {
-		return ($this->parent) ? $this->parent->templateFilePath($show_type, $alternative, $short, $template_type) : ($short ? '' : Main::$GENERIC_TEMPLATES_PATH) . '/' . $show_type . '/' . $this->getClassName() . $alternative . '.' . $template_type;
+		$path = ($this->parent)
+			? $this->parent->templateFilePath($show_type, $alternative, $short, $template_type)
+			: ($short ? '' : Main::$GENERIC_TEMPLATES_PATH)
+				. '/' . $show_type . '/' . $this->getClassName() . $alternative . '.' . $template_type
 		;
+		return $path;
 	}
 
 	/**
