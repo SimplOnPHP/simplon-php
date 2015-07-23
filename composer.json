@@ -6,7 +6,8 @@
   "homepage": "http://simplonphp.com",
   "description": "The SimplOn PHP Framework",
   "require": {
-    "php": ">=5.3"
+    "php": ">=5.3",
+    "electrolinux/phpquery": "0.9.6"
   },
   "autoload": {
     "psr-4": {
