@@ -185,12 +185,12 @@ class Main {
 				}
 			} else {
 				header('HTTP/1.1 403 Access forbidden');
-				header('SimplOn: '.self::$class.' is not an Element class.');
+				echo 'SimplOn: '.self::$class.' is not an Element class.';
 				return;
 			}
 		} else {
 			header('HTTP/1.1 404 File not found');
-			header('SimplOn: '.self::$class.' is not a valid class name.');
+			echo 'SimplOn: '.self::$class.' is not a valid class name.';
 			return;
 		}
 	}
