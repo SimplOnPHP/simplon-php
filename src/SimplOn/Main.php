@@ -295,6 +295,7 @@ class Main {
 	static function decodeURL() {
 		$string_delimiter = '"';
 		$server_request = urldecode(substr($_SERVER['REQUEST_URI'], strlen(self::$REMOTE_ROOT)));
+		if(strpos($server_request, '/') !== 0) $server_request = '/' . $server_request;
         $qs = self::$URL_METHOD_SEPARATOR;
 		$sd = $string_delimiter;
 		$offset = 0;
@@ -302,11 +303,11 @@ class Main {
 		
 		$parameterDecoder = function($what, $encapsulated = false) use($sd, $qs, $server_request, &$offset) {
 			$regexes = array(
-				'class' => '\/ (?<raw>[^'.$sd.$qs.'\/]+) ',
-				'construct_params' => '(?:\/(?: (?<raw>[^'.$sd.$qs.'\/]+) | '.$sd.'(?<string>[^'.$sd.']*)'.$sd.' ))',
-				'dataName' => '\/?'.$qs.' (?<raw>[^'.$sd.$qs.'\/]+) (?='.$qs.')',
-				'method' => '\/?'.$qs.' (?<raw>[^'.$sd.$qs.'\/]+) ',
-				'method_params' => '(?:\/(?: (?<raw>[^'.$sd.$qs.'\/]+) | '.$sd.'(?<string>[^'.$sd.']*)'.$sd.' ))',
+				'class' => '\/(?<raw>[^'.$sd.$qs.'\/]+)',
+				'construct_params' => '(?:\/(?:(?<raw>[^'.$sd.$qs.'\/]+)|'.$sd.'(?<string>[^'.$sd.']*)'.$sd.'))',
+				'dataName' => '\/?'.$qs.'(?<raw>[^'.$sd.$qs.'\/]+)(?='.$qs.')',
+				'method' => '\/?'.$qs.'(?<raw>[^'.$sd.$qs.'\/]+)',
+				'method_params' => '(?:\/(?:(?<raw>[^'.$sd.$qs.'\/]+)|'.$sd.'(?<string>[^'.$sd.']*)'.$sd.'))',
 			);
 			if(preg_match('/^'. $regexes[$what] .'/x', substr($server_request, $offset), $matches, PREG_OFFSET_CAPTURE)) {
 				$offset+= $matches[0][1] + strlen($matches[0][0]);
