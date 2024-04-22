@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+		<link rel="stylesheet" href="../css/simplon-base.css">
+		<link rel="stylesheet" href="../css/simplon-auto.css">
+
+        <link rel="stylesheet" href="../css/DataTime-tempus-dominus.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+ 
+        <script type="text/javascript" src="../js/00_jquery-1.7.2.min.js"></script>
+        <script type="text/javascript" src="../js/05_jquery-ui-1.8.19.custom.min.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.2/dist/umd/popper.min.js"
+        crossorigin="anonymous"></script>
+        <script src="../js/SD_DateTime_tempus-dominus.js"></script>
+        <script src="../js/SD_DateTime_jQuery-provider.js"></script>
+
+
+		<title>SimplOn</title>
+
+	</head>
+	<body>
+        <section class="showEmbeded">
+            $viewVal 
+        </section>
+        <section class="showView showList">
+            <div class="$htmlClasses">
+                $viewVal
+            </div>   
+        </section>
+        <section class="showInput showUpdate showFixedValue">
+            <div class="SD_withLabel $htmlClasses">
+                <label for="$htmlId" >$label:<span class="$SRrequiredText ">*</span></label>
+                <input id="$htmlId" class="dateTimepicker" name="$name" value="$viewVal" type="text" required="$SRrequiredText " />
+                <script>
+                    $('#$htmlId').tempusDominus({
+                        localization: {
+                           locale: 'es',
+                        },
+                           stepping: 15,
+                    });
+                </script>
+            </div>    
+        </section>
+        <section class="showSearch">
+            <div class="SD_withLabel $htmlClasses">
+                <label for="$htmlId" >$label:</label>
+                <input id="$htmlId" class="datepicker" name="$name" value="$viewVal" type="text"/>
+                <script>
+                    new tempusDominus.TempusDominus(document.getElementById("$htmlId"), {
+                        localization: {
+                           locale: 'es',
+                           useTwentyfourHour: false,
+                        }
+                    });
+                </script>
+            </div>    
+        </section>
+        <section class="showCreate">
+            <div class="SD_withLabel $htmlClasses">
+                <label for="$htmlId" >$label:<span class="$SRrequiredText ">*</span></label>
+                <input id="$htmlId" class="dateTimepicker" name="$name" value="" type="text" required="$SRrequiredText " />
+                <script>
+                    new tempusDominus.TempusDominus(document.getElementById("$htmlId"), {
+                        localization: {
+                           locale: 'es',
+                        }
+                    });
+                </script>
+            </div>    
+        </section>
+	</body>
+</html>

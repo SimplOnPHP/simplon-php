@@ -1,0 +1,11 @@
+
+INCOMPLETE FEATURES
+
+Dynamic ID
+There is a partial implementation to detect fields of class ID and thus use any field name for the ID Field. In conjuntion with this the stringID may eventualy allow to use for example the user's name as ID but as it is now, a numeric ID is necesary for evething to work particuraly Update that is istill not working with string IDs
+
+This is why there are Element's  propeties and methods like:
+fieldID     gives the first data name of type ID
+entry in __call so that calls to id() return/set the fieldID data value if an Id is no set
+
+----------------------

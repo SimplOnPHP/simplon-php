@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+    <link rel="stylesheet" href="./css/simplon-base.css">
+    <link rel="stylesheet" href="./css/simplon-auto.css">
+    <link rel="stylesheet" href="./css/colorbox.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script type="text/javascript" src="./js/00_jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="./js/05_anytime.compressed.js"></script>
+    <script type="text/javascript" src="./js/05_jquery-ui-1.8.19.custom.min.js"></script>
+    <script type="text/javascript" src="./js/05_jquery.colorbox-min.js"></script>
+    <script type="text/javascript" src="./js/05_jquery.form.js"></script>
+    <script type="text/javascript" src="./js/05_jquery.validate.min.js"></script>
+    <script type="text/javascript" src="./js/07_chosen.jquery.min.js"></script>
+    <script type="text/javascript" src="./js/10_SimplON.js"></script>
+    <script type="text/javascript" src="./js/11_SystemMessage.js"></script>
+    <title>$AppName</title>
+    <style>
+
+      header {
+        background-color: var(--secondary);
+        color: var(--secondary-inverse);
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: center;
+        padding: 10px 20px;
+      }
+
+      nav {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: center;
+      }
+
+      .hamburger-menu {
+        display: grid;
+        grid-template-rows: repeat(3, 1fr);
+        grid-gap: 5px;
+        cursor: pointer;
+      }
+
+      .bar {
+        width: 25px;
+        height: 3px;
+        background-color: var(--secondary-inverse);
+        transition: transform 0.3s ease-in-out;
+      }
+
+      .bar:nth-child(2) {
+        align-self: center;
+      }
+
+      .bar:nth-child(3) {
+        align-self: end;
+      }
+
+      .menu {
+        position: fixed;
+        top: 0;
+        right: -200px;
+        width: 200px;
+        height: 100vh;
+        background-color: var(--secondary);
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        justify-items: center;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        transition: right 0.3s ease-in-out;
+      }
+
+      .menu li {
+        margin: 10px 0;
+      }
+
+      .menu li a {
+        color: var(--secondary-inverse);
+        text-decoration: none;
+      }
+
+      .show-menu {
+        right: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="hamburger-menu">
+          <div class="bar">Home</div>
+          <div class="bar">About</div>
+          <div class="bar">Contact</div>
+        </div>
+        <ul class="menu">
+          <li><a href="#">Home</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+        $content
+    </main>
+    <footer>
+        <p>Made With SimplOn PHP</p>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      $(document).ready(function() {
+        const hamburgerMenu = $('.hamburger-menu');
+        const menu = $('.menu');
+
+        hamburgerMenu.on('click', function() {
+          $(this).toggleClass('open');
+          menu.toggleClass('show-menu');
+        });
+      });
+    </script>
+  </body>
+</html>

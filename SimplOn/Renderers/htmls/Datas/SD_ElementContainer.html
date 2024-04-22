@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+		<link rel="stylesheet" href="../css/simplon-base.css">
+		<link rel="stylesheet" href="../css/simplon-auto.css">
+		<title>SimplOn</title>
+        <script>
+        </script>
+	</head>
+	<body>
+        <section class="showView showList showEmbeded">
+            <div class="SD_ElementContainer $htmlClasses">
+                $viewVal
+            </div>   
+        </section>
+        <section class="showSearch">
+            <div class="SimplOn SD_withLabel SD_ElementContainer">
+                <label for="$htmlId" >$label:<span class="$SRrequiredText ">*</span></label>
+                <div class="ElementBox">
+                    <div class="SimplOn options" >
+                        <a class="SimplOn lightbox Action" href="$SRaction_showSearchSelect__1"><img     src="/Imgs/chooseIcon.webp" alt="Choose"></a>
+                    </div> 
+                    <div class="preview">
+                       $showEmbededSearchInput
+                    </div>
+                    <input class="SimplOn input" name="$name" type="hidden" value="$val" /> 
+                    <input class="SimplOn nestingLevel" name="" type="hidden" value="$nestingLevel" /> 
+                </div>
+            </div>           
+        </section>
+        <section class="showInput showUpdate showFixedValue">
+            <div class="SimplOn SD_withLabel SD_ElementContainer">
+                <label for="$htmlId" >$label:<span class="$SRrequiredText ">*</span></label>
+                <div class="ElementBox" >
+                    <div class="SimplOn options $hiddenSelector">
+                        <a class="SimplOn lightbox Action" href="$SRaction_showSelect_id"><img     src="/Imgs/chooseIcon.webp" alt="Choose"></a>
+                        <a class="SimplOn lightbox Action" href="$SRaction_showCreateSelect"><img     src="/Imgs/addIcon.webp" alt="Add"></a>
+                    </div>
+                    <div class="preview" > 
+                        $showEmbededUpdateInput
+                    </div>
+                    <input class="SimplOn input nameREF" name="name" type="hidden" value="$name" />
+                    <input class="SimplOn nestingLevel" name="" type="hidden" value="$nestingLevel" /> 
+
+                </div>
+            </div>           
+        </section>
+        <section class="showCreate">
+            <div class="SimplOn SD_withLabel SD_ElementContainer">
+                <label for="$htmlId" >$label:<span class="$SRrequiredText ">*</span></label>
+                <div class="ElementBox">
+                    <div class="SimplOn options">
+                        <a class="SimplOn lightbox Action" href="$SRaction_showSelect_id"><img     src="/Imgs/chooseIcon.webp" alt="Choose"></a>
+                        <a class="SimplOn lightbox Action" href="$SRaction_showCreateSelect"><img     src="/Imgs/addIcon.webp" alt="Add"></a>
+                    </div> 
+                    <div class="preview">
+                        
+                    </div>
+                    <input class="SimplOn input nameREF" name="name" type="hidden" value="$name" />
+                    <input class="SimplOn nestingLevel" name="" type="hidden" value="$nestingLevel" /> 
+                </div>
+            </div>           
+        </section>
+        <section>
+            <div class="SimplOn SD_ElementContainer ">
+                <div class="SimplOn preview"></div>
+                <div class="SimplOn actions">
+                    <a class="SimplOn Action lightbox" href="$SRaction_showUpdate"><img     src="/Imgs/editIcon.webp" atl="Edit"></a>
+                    <a class="SimplOn Action SD_delete" href=""><img     src="/Imgs/deleteIcon.webp" atl="Delete"></a>
+                </div>
+            </div>
+        </section>
+	</body>
+</html>

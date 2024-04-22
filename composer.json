@@ -11,7 +11,7 @@
   },
   "autoload": {
     "psr-4": {
-      "SimplOn\\": "src/SimplOn/"
+      "SimplOn\\": "SimplOn/"
     }
   }
 }

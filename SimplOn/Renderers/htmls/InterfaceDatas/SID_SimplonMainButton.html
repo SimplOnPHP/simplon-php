@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+		<link rel="stylesheet" href="../css/simplon-base.css">
+		<link rel="stylesheet" href="../css/simplon-auto.css">
+		<title>SimplOn</title>
+        <style>
+            .SD_SimplonMainButton{
+                border: solid var(--form-element-active-border-color) 1px;
+                padding: 1.0rem 1.0rem .5rem 1.0rem;
+                border-radius: calc(var(--border-radius) * 3);
+                box-shadow: var(--contrast) 0 .1rem .3rem 0;
+                width: 8rem;
+                background-image: linear-gradient(var(--muted-border-color), var(--form-element-border-color), var(--muted-border-color));
+                text-align: center;
+                display: block;
+            }
+            .SD_SimplonMainButton:hover{
+                background-image: linear-gradient(var(--form-element-border-color), var(--muted-border-color), var(--form-element-border-color));
+                color: var(--primary-hover);
+            }
+
+            .SD_SimplonMainButton > div{
+                font-size: 0.9rem;
+                font-weight: 600;
+                line-height: 0.9rem;
+                padding:  .25rem 0rem 0rem 0rem;
+            }
+
+
+
+        </style>
+	</head>
+	<body>
+        <section class="showView">
+                <a class="SD_SimplonMainButton $htmlClasses" href="$href">
+                    <img src="$src" />
+                    <div>$content</div>
+                </a> 
+        </section>
+
+	</body>
+</html>

@@ -1,0 +1,58 @@
+C:\xampp\htdocs\SimplOn\DataStorages\SDS_SQL.php					488
+public function filterCriteria($element_or_criteria){
+y
+C:\xampp\htdocs\SimplOn\Elements\SE_Element.php						913
+public function filterCriteria($filterCriteria = null) {
+/**
+	TODO :: FIX REGEXS SO THAT THERE CAN BE TWO DATAS WITH A SHARED SUB STRING in the name in the same element EX: cuenta and cuentaHabiente
+*/
+
+
+Change showEmbededStrip in makeSlection in Element to showEmbeded 1203
+
+
+Fix that Json methods echo directly instead of using Renderer ex: processCreate in SE_Element
+
+
+----------------- Todos
+Make the UpdateLayouts segment/method in the renderer htmlv2 just add or remove the missing or extra datas instead of remaking the whole template. This way customize dtemplates could be preserved.
+
+Make multilingual system and error mesages
+
+----------------- Bugs
+The requiere Validation message is not sent back to the form when updating an embeded element - it updates the element without the required Data
+
+
+When reading AE_fullPage.html and AE_basicPage.html from the Simplon directory it cant because the files there are SE_fullPage.html and SE_basicPage.html -- in general adjust de AE/SE when looking for files at simplon level or leave de AE names even at simplon's dir
+
+
+If tow instances od the same data are in the template reder gets  doplicades values ex:
+      <div class="$htmlClasses EA_apellido">
+        $val
+      </div>
+      <div class="$htmlClasses EA_apellido">
+        $val
+      </div>
+      <div class="$htmlClasses EA_apellido">
+        $val
+      </div>
+Generates:
+      <div class="$EA_apellido">
+        Lopez
+		
+		Lopez
+      </div>
+      <div class="EA_apellido">
+        Lopez
+		
+		Lopez
+      </div>
+Instead of:
+      <div class="EA_apellido">
+        Lopez
+      </div>
+      <div class="EA_apellido">
+        Lopez
+      </div>
+
+

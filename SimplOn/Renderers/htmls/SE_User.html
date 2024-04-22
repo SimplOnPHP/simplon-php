@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title></title>
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+    <link rel="stylesheet" href="/homematch/Layouts/css/simplon-base.css">
+    <link rel="stylesheet" href="/homematch/Layouts/css/simplon-auto.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="/homematch/Layouts/css/colorbox.css">
+    <script type="text/javascript" src="/homematch/Layouts/js/00_jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="/homematch/Layouts/js/05_anytime.compressed.js"></script>
+    <script type="text/javascript" src="/homematch/Layouts/js/05_jquery-ui-1.8.19.custom.min.js"></script>
+    <script type="text/javascript" src="/homematch/Layouts/js/05_jquery.colorbox-min.js"></script>
+    <script type="text/javascript" src="/homematch/Layouts/js/05_jquery.form.js"></script>
+    <script type="text/javascript" src="/homematch/Layouts/js/05_jquery.validate.min.js"></script>
+    <script type="text/javascript" src="/homematch/Layouts/js/07_chosen.jquery.min.js"></script>
+    <script type="text/javascript" src="/homematch/Layouts/js/10_SimplON.js"></script>
+  </head>
+  <body>
+    <section class="SE_User showAdmin">
+      <hr>
+      <div>
+        Crear nuevo $name $createAction
+      </div>
+      <hr>
+      <div>
+        $showSearch___showAdmin
+      </div>
+      <div>
+        $adminTable
+      </div>
+    </section>
+    <section class="SE_User showSearch">
+      <form class="SimplOn Element SNL-1 SE_User Search search" action="$action" method="post">
+        <fieldset>
+          <legend>Buscar User</legend>
+          <div class="SD_withLabel $htmlClasses SD_String EA_userName">
+            <label for="$htmlId">$label:</label> <input id="$htmlId" name="$name" value="$inputVal" type="text">
+          </div>
+          <div class="SD_DorpdownBox SD_withLabel $htmlClasses SD_ElementContainerDropBox EA_userRole">
+            <label for="$htmlId">$label: <span class="$SRrequiredText">*</span></label> <select id="$htmlId" name="$name" class="repeat options">
+              <option class="selectedItem" value="$key" selected>
+                $val
+              </option>
+              <option class="item" value="$key">
+                $val
+              </option>
+              <option value="$key">
+                $val
+              </option>
+            </select>
+          </div>
+          <div class="buttons">
+            <button type="submit">Buscar</button>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+    <section class="SE_User showLogin">
+      <form class="SimplOn Element SNL-1 SE_User Create create" action="$processLoginLink" method="post">
+        <fieldset>
+          <div class="SD_withLabel $htmlClasses EA_userName_showInput">
+            <label for="$htmlId">$label:<span class="$SRrequiredText">*</span></label> <input id="$htmlId" name="$name" value="" type="text" required="$SRrequiredText">
+          </div>
+          <div class="SD_withLabel $htmlClasses EA_password_showInput">
+            <label for="$htmlId">$label:<span class="$SRrequiredText">*</span></label>
+            <div class="password-container">
+              <input id="$htmlId" name="$name" placeholder="(Enter the password)" type="password" required="$SRrequiredText">
+            </div>
+          </div><input class="EA_sourceURL_showInput" name="$name" type="hidden" value="$inputVal">
+          <div class="buttons">
+            <button type="submit">Entrar</button><button onclick="location.href ='$SRBackURL';" class="SimplOn cancel-form">$SRVCSLForPeople_Cancel</button>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+    <section class="SE_User showCreate">
+      <form class="SimplOn Element SNL-1 SE_User Create create" action="$action" method="post">
+        <fieldset>
+          <legend>Crear User</legend>
+          <div class="SD_withLabel $htmlClasses SD_String EA_userName">
+            <label for="$htmlId">$label:<span class="$SRrequiredText">*</span></label> <input id="$htmlId" name="$name" value="" type="text" required="$SRrequiredText">
+          </div>
+          <div class="SD_withLabel $htmlClasses SD_Password EA_password">
+            <label for="$htmlId">$label:<span class="$SRrequiredText">*</span></label>
+            <div class="password-container">
+              <input id="$htmlId" name="$name" placeholder="(Enter the password)" type="password" required="$SRrequiredText">
+            </div>
+            <script>
+                    function togglePasswordVisibility(passwordFieldId) {
+                        var passwordField = document.getElementById(passwordFieldId);
+                        var icon = passwordField.nextElementSibling;
+
+                        if (passwordField.type === "password") {
+                            passwordField.type = "text";
+                            icon.classList.remove("fa-eye");
+                            icon.classList.add("fa-eye-slash");
+                        } else {
+                            passwordField.type = "password";
+                            icon.classList.remove("fa-eye-slash");
+                            icon.classList.add("fa-eye");
+                        }
+                    }
+            </script>
+          </div>
+          <div class="SD_DorpdownBox SD_withLabel $htmlClasses SD_ElementContainerDropBox EA_userRole">
+            <label for="$htmlId">$label:<span class="$SRrequiredText">*</span></label> <select id="$htmlId" name="$name" class="repeat options">
+              <option value="$key">
+                $val
+              </option>
+              <option value="$key">
+                $val
+              </option>
+              <option value="$key">
+                $val
+              </option>
+            </select>
+          </div>
+          <div class="buttons">
+            <button type="submit">Crear</button> <button onclick="location.href ='$SRBackURL';" class="SimplOn cancel-form">$SRVCSLForPeople_Cancel</button>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+    <section class="SE_User showUpdate">
+      <form class="SimplOn Element SNL-1 SE_User Update update" action="$action" method="post">
+        <fieldset>
+          <legend>Actualizar User</legend>
+          <div class="SD_withLabel $htmlClasses SD_String EA_userName">
+            <label for="$htmlId">$label:<span class="$SRrequiredText">*</span></label> <input id="$htmlId" name="$name" value="$inputVal" type="text" required="$SRrequiredText">
+          </div>
+          <div class="SD_withLabel $htmlClasses SD_Password EA_password">
+            <label for="$htmlId">$label:<span class="$SRrequiredText">*</span></label>
+            <div class="password-container">
+              <input id="$htmlId" name="$name" placeholder="(not changed)" type="password">
+            </div>
+            <script>
+                    function togglePasswordVisibility(passwordFieldId) {
+                        var passwordField = document.getElementById(passwordFieldId);
+                        var icon = passwordField.nextElementSibling;
+
+                        if (passwordField.type === "password") {
+                            passwordField.type = "text";
+                            icon.classList.remove("fa-eye");
+                            icon.classList.add("fa-eye-slash");
+                        } else {
+                            passwordField.type = "password";
+                            icon.classList.remove("fa-eye-slash");
+                            icon.classList.add("fa-eye");
+                        }
+                    }
+            </script>
+          </div>
+          <div class="SD_DorpdownBox SD_withLabel $htmlClasses SD_ElementContainerDropBox EA_userRole">
+            <label for="$htmlId">$label: <span class="$SRrequiredText">*</span></label> <select id="$htmlId" name="$name" class="repeat options">
+              <option class="selectedItem" value="$key" selected>
+                $val
+              </option>
+              <option class="item" value="$key">
+                $val
+              </option>
+              <option value="$key">
+                $val
+              </option>
+            </select>
+          </div>
+          <div class="buttons">
+            <button type="submit">Actualizar</button> <button onclick="location.href ='$SRBackURL';" class="SimplOn cancel-form">$SRVCSLForPeople_Cancel</button>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+    <section class="SE_User showView">
+      <div class="$htmlClasses SD_String EA_userName">
+        $viewVal
+      </div>
+      <div class="SD_ElementContainerDropBox $htmlClasses EA_userRole">
+        $viewVal
+      </div>
+      <div class="SNL-1 SID_Menu EA_menu">
+        <div>
+          <div class="links"></div>
+        </div>
+        <div class="hamburgerMenuIcon" onclick='$(".links").toggle();'>
+          <svg class="" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24">
+          <path d="M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z"></path></svg>
+        </div>
+      </div>
+    </section>
+    <section class="SE_User showDelete">
+      <form class="$htmlClasses $getClass delete" action="$action" method="post">
+        <fieldset>
+          <legend>$SRVCSLForPeople_Delete $Name</legend>
+          <div class="border SD_NumericId $htmlClasses">
+            $showView__ <input name="$name" value="$id" type="hidden">
+          </div>
+          <div class="buttons">
+            <button type="submit">$SRVCSLForPeople_Delete</button> <button class="SimplOn cancel-form" onclick="location.href='$SRBackURL';">$SRVCSLForPeople_Cancel</button>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+    <section class="SE_User showDashBoard"></section>
+    <section class="SE_User showDashboard"></section>
+    <section class="SE_User showMenu"></section>
+  </body>
+</html>
