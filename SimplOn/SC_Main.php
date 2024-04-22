@@ -258,7 +258,7 @@ class SC_Main {
 			// }
 		} else {
 			header('HTTP/1.1 404 File not found');
-			echo 'SimplOn: '.self::$class.' is not a valid class name.';
+			trigger_error('SimplOn: '.self::$class.' is not a valid class name.', E_USER_ERROR);
 			return;
 		}
 	}

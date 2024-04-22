@@ -47,7 +47,7 @@ class SD_Alphanumeric extends SD_String {
                 if(ctype_alnum($val))
                     $this->val = $val;
                 else
-                    throw new SC_DataValidationException ($this->noAlphaNumeric)
+                    throw new SC_DataValidationException ($this->noAlphaNumeric);
             }
         }else{
             return $this->val;

@@ -22,15 +22,14 @@ class SDS_MySql extends SDS_SQL
 {
 	/*@var db MySqlDataBase */
     
-	public function __construct($host = 'localhost', $dataBase = 'sample_site', $user = 'root',$password = '') {
+	public function __construct($host = 'localhost', $dataBase = 'sample_site', $user = 'root', $password = '') {
 
         try {    
             $this->db = new \PDO(
-            'mysql:dbname='.$dataBase.';host='.$host,
+            'mysql:host='.$host.';dbname='.$dataBase.';charset=utf8mb4',
             $user,
             $password,
             array(
-                \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES \'UTF8\'',
                 \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
                 \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
             ));

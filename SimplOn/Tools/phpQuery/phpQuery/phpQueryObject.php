@@ -1081,7 +1081,7 @@ class phpQueryObject
 						// 	else
 						// 		return null;'),
 						//fixRSL 2023
-						function($node) {
+						function($node, $param) {
 							$index = pq($node)->prevAll()->size()+1;
 							if ($param == "even" && ($index%2) == 0)
 								return $node;
@@ -1124,7 +1124,8 @@ class phpQueryObject
 						// 				: null;
 						// 	'),
 						//fixRSL 2023
-						function($node) {$prevs = pq($node)->prevAll()->size();
+						function($node, $param) {
+							$prevs = pq($node)->prevAll()->size();
 							$index = 1+$prevs;
 							$b = mb_strlen($param) > 3
 								? $param[3]
@@ -1151,7 +1152,8 @@ class phpQueryObject
 										: null;
 							
 						},
-						new CallbackParam(), $param
+						new CallbackParam(), 
+						$param
 					);
 				else
 					// index
@@ -1166,7 +1168,7 @@ class phpQueryObject
 						// 	else
 						// 		return null;'),
 						//fixRSL 2023
-						function($node) {
+						function($node, $index) {
 							$prevs = pq($node)->prevAll()->size();
 							if ($prevs && $prevs == $index-1)
 								return $node;
@@ -1175,8 +1177,8 @@ class phpQueryObject
 							else
 								return null;
 						},
-								
-						new CallbackParam(), $param
+						new CallbackParam(), 
+						$param
 					);
 				$this->elements = $mapped->elements;
 			break;
@@ -1739,6 +1741,8 @@ class phpQueryObject
 	public function length() {
 		return $this->size();
 	}
+	
+	#[\ReturnTypeWillChange]
 	public function count() {
 		return $this->size();
 	}
@@ -2366,10 +2370,10 @@ class phpQueryObject
 	 * @deprecated
 	 * @param $class
 	 * @param $file
-	 * @return unknown_type
+	 * @return bool
 	 */
 	public static function extend($class, $file = null) {
-		return $slef->plugin($class, $file);
+		return phpQuery::plugin($class, $file);
 	}
 	/**
 	 *
@@ -3055,6 +3059,7 @@ class phpQueryObject
 	/**
    * @access private
 	 */
+	#[\ReturnTypeWillChange]
 	public function rewind(){
 		$this->debug('iterating foreach');
 //		phpQuery::selectDocument($this->getDocumentID());
@@ -3068,14 +3073,16 @@ class phpQueryObject
 		$this->current = 0;
 	}
 	/**
-   * @access private
+	 * @access private
 	 */
+	#[\ReturnTypeWillChange]
 	public function current(){
 		return $this->elementsInterator[ $this->current ];
 	}
 	/**
    * @access private
 	 */
+	#[\ReturnTypeWillChange]
 	public function key(){
 		return $this->current;
 	}
@@ -3090,7 +3097,8 @@ class phpQueryObject
 	 * @see phpQueryObject::_next()
 	 * @return phpQueryObject|QueryTemplatesSource|QueryTemplatesParse|QueryTemplatesSourceQuery
 	 */
-	public function next($cssSelector = null){
+	#[\ReturnTypeWillChange]
+	 public function next($cssSelector = null){
 //		if ($cssSelector || $this->valid)
 //			return $this->_next($cssSelector);
 		$this->valid = isset( $this->elementsInterator[ $this->current+1 ] )
@@ -3107,26 +3115,30 @@ class phpQueryObject
 	/**
    * @access private
 	 */
+	#[\ReturnTypeWillChange]
 	public function valid(){
 		return $this->valid;
 	}
 	// ITERATOR INTERFACE END
 	// ARRAYACCESS INTERFACE
 	/**
-   * @access private
+   	 * @access private
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetExists($offset) {
 		return $this->find($offset)->size() > 0;
 	}
 	/**
    * @access private
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetGet($offset) {
 		return $this->find($offset);
 	}
 	/**
    * @access private
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetSet($offset, $value) {
 //		$this->find($offset)->replaceWith($value);
 		$this->find($offset)->html($value);
@@ -3134,6 +3146,7 @@ class phpQueryObject
 	/**
    * @access private
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($offset) {
 		// empty
 		throw new SC_Exception("Can't do unset, use array interface only for calling queries and replacing HTML.");

@@ -92,7 +92,7 @@ class SD_DateTime extends SD_String {
 
 				// $this->viewVal save the the date with format to show in the view
 				$this->viewVal = $dateObj->format($this->viewFormat);
-			}]
+			}
 		} else {
 			return $this->val;
 		}
