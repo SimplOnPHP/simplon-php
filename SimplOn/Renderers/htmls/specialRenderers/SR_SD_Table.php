@@ -17,7 +17,7 @@
         $data0 = current($data);
      
         $newVal = [];
-        if($data0 instanceof SE_Element){
+        if($data0 instanceof SC_Element){
             $data0 = SD_Table_addColumns($data0,$Data->columnsToAdd());
             $datasWithList=array_merge($data0->datasWith('list'), $Data->columnsToList() );
             if($Data->rowsTitles()){$rowVal[] = '&nbsp;';}
@@ -65,7 +65,7 @@
     }
 
         function SD_Table_addColumns( $arrayOrElement, array $columnsToAdd){
-            if($arrayOrElement instanceof SE_Element){
+            if($arrayOrElement instanceof SC_Element){
                 foreach ($columnsToAdd as $key=>$val){
                     if(is_string($val)){
                         $arrayOrElement->{'O'.$val}()->dataFlags('L');

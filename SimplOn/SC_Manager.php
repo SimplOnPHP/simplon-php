@@ -19,7 +19,7 @@ class SC_Manager extends SC_BaseObject{
 
 
                 $rc = new \ReflectionClass($class);
-                /** @var SE_Element $obj */
+                /** @var SC_Element $obj */
                 $obj = $rc->newInstanceArgs();
                 $redender = $GLOBALS['redender'];
                 $links .= '<div><a target="vista" href="'.$redender->encodeURL($obj,array(),'showAdmin').'">'.$obj->getClassNameWords().'</a></div>';

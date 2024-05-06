@@ -1,20 +1,8 @@
 <?php
 /*
-	Copyright © 2011 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+	Copyright © 2024 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
 	
-	This file is part of “SimplOn PHP”.
-	
-	“SimplOn PHP” is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation version 3 of the License.
-	
-	“SimplOn PHP” is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License
-	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
+	This file is part of “SimplOn PHP” a Data Oriented Aproach free software development framework: you can redistribute it and/or modify it under the terms of the MIT License.
 */
 
 
@@ -37,7 +25,7 @@ class SC_BaseObject
 	}
 	
 	/**
-	 * Returns the object class
+	 * Returns the object's class
 	 *
 	 * @return string Class of the object
 	 */
@@ -49,9 +37,9 @@ class SC_BaseObject
 	
 	
 	/**
-	 * Returns the object class
+	 * Returns the object's class without the prefixes AE_, SC_, SE_, SD_, AD_, etc.
 	 *
-	 * @return string Class of the object
+	 * @return string Class of the object without the prefixes AE_, SC_, SE_, SD_, AD_, etc.
 	 */
 	public function getClassNameWords($getPrefix = false)
 	{
@@ -134,24 +122,16 @@ class SC_BaseObject
 		throw new SC_Exception('The method: '.$name.' is not defined in the object: ' . get_class($this));
     }
 	
-	/*
-	function __get($property) {
-		echo 'get '.$property.'; ';
-		// @todo: optimize this
-		return $this->__call($property, array());
-	}
-	
-	function __set($property, $value) {
-		echo 'set '.$property.'='.$value .'; ';
-		// @todo: optimize this
-		return $this->$property($value);
-	}
-	*/
-	
+	/**
+	 * Run time id of the object used to creat ids to link things in the interface like Labels and Inputs
+	 */
 	public function instanceId() {
 		return 'objID-'.spl_object_id($this);
 	}
 	
+	/**
+	 * Class and instance id
+	 */
 	public function ObjectId() {
 		return $this->getClassName() . '-' . $this->instanceId();
 	}

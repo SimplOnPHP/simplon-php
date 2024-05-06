@@ -21,7 +21,7 @@
  * @author Luca
  *
  */
-class SE_Collection extends SE_Element
+class SE_Collection extends SC_Element
 {
 	
 	/*

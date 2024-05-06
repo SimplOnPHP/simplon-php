@@ -17,7 +17,7 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-class SE_CSS extends SE_Element {
+class SE_CSS extends SC_Element {
 	const
 		mime = 'text/css', 
 		type = 'CSS', 

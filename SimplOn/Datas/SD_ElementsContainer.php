@@ -28,7 +28,7 @@ class SD_ElementsContainer extends SD_Data {
         
 		/**
 		 * Logic parent
-		 * @var SE_Element
+		 * @var SC_Element
 		 */
 		$parent, 
             
@@ -40,7 +40,7 @@ class SD_ElementsContainer extends SD_Data {
         
 		/**
 		 * Pivot element (for pivot tables)
-		 * @var SE_Element
+		 * @var SC_Element
 		 */
 		$pivot,
 
@@ -53,7 +53,7 @@ class SD_ElementsContainer extends SD_Data {
         foreach($allowedClassesInstances as $e) {
             if (is_string($e) && class_exists($e)) {
                 $this->allowedClassesInstances[$e] = new $e;
-            } else if( $e instanceof SE_Element ) {
+            } else if( $e instanceof SC_Element ) {
                 $this->allowedClassesInstances[$e->getClass()] = $e;
             } else {
                 // error elements must be an array of valid classes names or Elements
@@ -66,13 +66,13 @@ class SD_ElementsContainer extends SD_Data {
 	public function getJS($method) {
         $a_js = array();
         foreach($this->allowedClassesInstances as $classInstance) {
-            /** @var SE_Element $classInstance */
+            /** @var SC_Element $classInstance */
             $a_js = array_merge($classInstance->getJS($method), $a_js);
         }
 
 		return array_map(
 			function($fp) {
-				return str_replace(SC_Main::$REMOTE_ROOT, SC_Main::$LOCAL_ROOT, $fp);
+				return str_replace(SC_Main::$WEB_ROOT, SC_Main::$LOCAL_ROOT, $fp);
 			},
             $a_js
 		);
@@ -148,7 +148,7 @@ class SD_ElementsContainer extends SD_Data {
                         // @todo: understand why the client sends an array with weirdly repeated elements
                         $this->elements[$str_or_elm] = new $class($id);
                         $this->elements[$str_or_elm]->parent($this->parent);
-                    } else if($str_or_elm instanceof SE_Element) {
+                    } else if($str_or_elm instanceof SC_Element) {
                         $str_or_elm->parent($this->parent);
                         $this->elements[] = $str_or_elm;
                     }
@@ -224,25 +224,7 @@ class SD_ElementsContainer extends SD_Data {
             return '';
         }
 	}
-    /// use a search element and add the onthefly params to the search element
-  	// public function showSelect($class = null) {
-    //     $element = new $class();
-    //     $element->fillFromRequest();
-    //     $parent = $this->parent();
-    //     $element->parent($parent);
-        
-    //     $element->addData('parentClass' , new SD_Hidden(null,'CUSf', $this->parent->getClassName() )    );
-    //     $element->addData('dataName' , new SD_Hidden(null,'CUSf', $this->name() )    );
-    //     $element->addData('parentId' , new SD_Hidden(null,'CUSf', $this->parent->getId() )    );
-    //     $element->addData('selectAction' , new SD_SelectAction('', array('Select')) );
-   
-    //     return $element->obtainHtml(
-    //             "showSearch", 
-    //             $element->templateFilePath('Search'), 
-    //             $this->encodeURL('showSelect', array($class) ),
-    //             array('footer' => $element->processSelect())
-    //     );
-	// }
+
     
     function nestingLevelFix(&$dom) {
         $startingNestingLevel = $this->parent->nestingLevel();

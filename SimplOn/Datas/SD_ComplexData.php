@@ -29,7 +29,7 @@ class SD_ComplexData extends SD_Data {
      * @var boolean $view, $create, $update, $list, $fetch, $required and $search
      * are flags and are defined in  SD_Data.
      * 
-     * @var SE_Element $parent - is a reference to parent element of this data.  
+     * @var SC_Element $parent - is a reference to parent element of this data.  
      */
 		
 	protected
@@ -41,7 +41,7 @@ class SD_ComplexData extends SD_Data {
 		$required = false,
 		$search = false,
 		$sources = array(),
-		/** @var SE_Element $parent  */
+		/** @var SC_Element $parent  */
 		$parent = null;
 	
 		

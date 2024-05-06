@@ -1,22 +1,9 @@
 <?php
 /*
-	Copyright © 2011 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+	Copyright © 2024 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
 	
-	This file is part of “SimplOn PHP”.
-	
-	“SimplOn PHP” is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation version 3 of the License.
-	
-	“SimplOn PHP” is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License
-	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
+	This file is part of “SimplOn PHP” a Data Oriented Aproach free software development framework: you can redistribute it and/or modify it under the terms of the MIT License.
 */
-
 
 /*! \mainpage SimplOn PHP
  *
@@ -64,67 +51,56 @@
 
 spl_autoload_register( __NAMESPACE__ . '\\SC_Main::load_obj');
 
-
-
+/**
+ *  SC_Main Is the calss to initialize everithing deccode de URL and execute the software.
+ */
 class SC_Main {
 	const DEFAULT_INI = 'dof.ini';
 
 	static
-		$LOCAL_ROOT,
-		$REMOTE_ROOT,
+	//Things likely to be defined for each App
+
+		$App_Name,
+
+		$LOCAL_ROOT,		//Servers path to main public dir
+		$WEB_ROOT,			//Web URL to main web dir
+		$SimplOn_PATH,		//Servers path to simplon dir
+		$App_PATH,			//Servers path to Application dir
+		$App_web_root,		//Web URL to Application web dir
+
+		$Layouts_Processing,	//Specifies what to do with Elements Layouts options are: (Always)OverWrite Update(just outdated parts)  Preserve(do not change anything)
+
+		$DEFAULT_ELEMENT,
+		$DEFAULT_METHOD = 'showAdmin',
+
+		$DEV_MODE = false,		
+		$PERMISSIONS = false,		//The class that will haldel the permisions for example SE_User
+		$LOAD_ROLE_CLASS = false,	//Wether or not to load the subclass of the premissions element usually a user's role
+
+		$DATA_STORAGE,
+		$DEFAULT_RENDERER,
+	
+	//Things rarely to be redefined
+
 		$VCRSL,
 		$VCRSLMethods = array('view','create','update','required','search','list','embeded'),
 		$VCRSLFormMethods = array('create','update','search'),
-		$SimplOn_PATH,
-		$App_PATH,
-		$App_web_root,
-		$App_Name,
-		$Element_Layouts,
-		$GENERIC_TEMPLATES_PATH,
-		$MASTER_TEMPLATE,
+		
+		$URL_METHOD_SEPARATOR = '!',	
 
-		$CREATE_LAYOUT_TEMPLATES,
-		$OVERWRITE_LAYOUT_TEMPLATES,
-		$USE_LAYOUT_TEMPLATES,
-		
-		$DEFAULT_RENDERER,
-		
-		$DEFAULT_ELEMENT,
-		$DEFAULT_METHOD = 'index',
-		$URL_METHOD_SEPARATOR = '!',
-
-		$CREATE_FROM_TEMPLATES,
-		$OVERWRITE_FROM_TEMPLATES,
-		$USE_FROM_TEMPLATES,
-		
-		$JS_FLAVOUR = 'jQuery',
-		$CSS_FLAVOUR = 'jQuery',
-		
-	
-		$PERMISSIONS = false,
-		$LOAD_ROLE_CLASS = false,
         $DEFAULT_PERMISSIONS,
 	
-		$DEV_MODE = false,
-
-		$DATA_STORAGE,
 			
 		$QUICK_DELETE = false,
         
-		$LIMIT_ELEMENTS,
+		$LIMIT_ELEMENTS = 20,
+	
+	//Working stuff
         //super array to alter classes atributes on the fly must be in the format "class" -> array("data1name"=>$data1)
 		$SystemMessage = '',
         $onTheFlyAttributes = array();
 	
-	static	
-		$AUTOLOAD_DIRS = array(
-			'.',
-			'DataStorages',
-			'Datas',
-			'Elements',
-			'Utilities',
-		);
-		
+
 	static
 		$class,
 		$method,
@@ -138,18 +114,126 @@ class SC_Main {
 	 * @param mixed	$ini	Can be either the path to a ini file or an array with configuration parameters.
 	 * @return unknown_type
 	 */
-	function __construct($ini = null) {
-		self::setup($ini);
+	static function setup($ini = null) {
+		if(file_exists(self::DEFAULT_INI))
+			self::fillFromArray(parse_ini_file(self::DEFAULT_INI));
+
+		if(isset($ini)) {
+			if(is_array($ini)) {
+				self::fillFromArray($ini);
+			} else if(is_string($ini) && file_exists($ini)) {
+				self::fillFromArray(parse_ini_file($ini));
+			}
+		}
+			
+		if(self::$DEV_MODE) {
+			error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+			ini_set('display_errors', true);
+		} else {
+			error_reporting(0);
+			ini_set('display_errors', false);
+		}
+
+		//$redender = $GLOBALS['redender'];
+		self::decodeURL();
 	}
-	
-	
+	/**
+	 * Gets URL and breaks it into the class andd method that needs to be executed as well as the message that has to be displayed
+	 * 
+	 */
+	static function decodeURL($e = '') {
+
+		$string_delimiter = '\'';
+
+        $qs = self::$URL_METHOD_SEPARATOR;
+  
+        //If there is previos URL store it to be able to do Back
+		if (isset($_SERVER['HTTP_REFERER'])) {
+            $server_referal = explode($qs.$qs,$_SERVER['HTTP_REFERER']);
+        } else {
+            $server_referal = array();
+            $server_referal[0] = '';
+        }
+        $GLOBALS['BackURL']=$server_referal[0];
+
+		$server_URI = substr($_SERVER['REQUEST_URI'], strlen(self::$App_web_root));
+
+        // Look if there is a double $qs and take whats at the end as mmesage
+        $server_request = explode($qs.$qs,$server_URI);
+        if (isset($server_request[1])) {$this->setMessage(urldecode($server_request[1]));}
+        $server_request = $server_request[0];
+
+        //process the rest of the URL to extract The calss and method
+		$server_request = urldecode(substr($server_request, strlen(self::$WEB_ROOT)));
+		if(strpos($server_request, '/') !== 0) $server_request = '/' . $server_request;
+        $qs = self::$URL_METHOD_SEPARATOR;
+		$sd = $string_delimiter;
+		$offset = 0;
+		
+		$parameterDecoder = function($what, $encapsulated = false) use($sd, $qs, $server_request, &$offset) {
+			$regexes = array(
+				'class' => '\/(?<raw>[^'.$sd.$qs.'\/]+)',
+				'construct_params' => '(?:\/(?:(?<raw>[^'.$sd.$qs.'\/]+)|'.$sd.'(?<string>[^'.$sd.']*)'.$sd.'))',
+				'dataName' => '\/?'.$qs.'(?<raw>[^'.$sd.$qs.'\/]+)(?='.$qs.')',
+				'method' => '\/?'.$qs.'(?<raw>[^'.$sd.$qs.'\/]+)',
+				'method_params' => '(?:\/(?:(?<raw>[^'.$sd.$qs.'\/]+)|'.$sd.'(?<string>[^'.$sd.']*)'.$sd.'))',
+			);
+			if(preg_match('/^'. $regexes[$what] .'/x', substr($server_request, $offset), $matches, PREG_OFFSET_CAPTURE)) {
+				$offset+= $matches[0][1] + strlen($matches[0][0]);
+				$raw = @$matches['raw'][0];
+				$string = @$matches['string'][0];
+				
+				if(empty($raw) && empty($string)) {
+					$return = '';
+				} elseif(!empty($raw) && empty($string)) {
+					if($raw == 'null') {
+						$return = null;
+					} elseif($raw == 'false') {
+						$return = array(false);
+					} elseif(is_numeric($raw)) {
+						$return = floatval($raw) == intval($raw)
+							? intval($raw)
+							: floatval($raw);
+					} else {
+						$return = $raw;
+					}
+				} elseif(empty($raw) && !empty($string)) {
+					$return = urldecode($this->fixCode($string, false));
+				}
+				return $encapsulated
+					? array($return)
+					: $return;
+			} else {
+				return false;
+			}
+		};
+		
+		self::$class = strtr($parameterDecoder('class'),'-','\\') ?: self::$DEFAULT_ELEMENT;
+		//self::$class = self::$DEFAULT_ELEMENT; //debug
+		self::$construct_params = array();
+		while(($param = $parameterDecoder('construct_params', true)) !== false) {
+			self::$construct_params[] = $param[0];
+		}
+		
+		self::$dataName = $parameterDecoder('dataName');
+		self::$method = $parameterDecoder('method') ?: self::$DEFAULT_METHOD;
+		
+		self::$method_params = array();
+		while(($param = $parameterDecoder('method_params', true)) !== false) {
+			self::$method_params[] = $param[0];
+		}
+	}
+		
+	/**
+	 * Loads de Ini parameters
+	 * Instanciates the class and runs the method
+	 */
 	static function run($ini = null) {
 
         if (session_status() !== PHP_SESSION_ACTIVE) { session_start(); }
-
+	
 		self::setup($ini);
-		//self::$PERMISSIONS = new \ReflectionClass(class_exists(self::$PERMISSIONS) ? self::$PERMISSIONS : '\\SimplOn\\Elements\\'.self::$PERMISSIONS);
-		//self::$PERMISSIONS = self::$PERMISSIONS->newInstanceArgs(array($_SESSION["permissionID"]));
+
 		$permissionsClass = self::$PERMISSIONS; // Get the class name from the static property
 		self::$PERMISSIONS = new $permissionsClass(); //set the object
 	
@@ -159,7 +243,6 @@ class SC_Main {
 			$permissionsClass = 'AE_'.ucfirst($role);
 			self::$PERMISSIONS = new $permissionsClass($_SESSION["permissionID"]); //set the object
 		}
-		
 		$results = self::$DATA_STORAGE->readElements(self::$PERMISSIONS);
 
 		//if there is no user in the database allow a temporary admin that can create users
@@ -170,7 +253,6 @@ class SC_Main {
 
 		if(class_exists(self::$class) || class_exists('\\SimplOn\\Elements\\'.self::$class)) {
 			//$cp = self::$construct_params;
-
 
 			//Load the sub class of the User (or permisssions class) if it exisists
 			if(self::$LOAD_ROLE_CLASS && isset($role)){
@@ -189,7 +271,7 @@ class SC_Main {
 				&&
 				($obj = $rc->newInstanceArgs(self::$construct_params))
 				&&
-				($obj instanceof SE_Element)
+				($obj instanceof SC_Element)
 			){
 				if(is_object(self::$PERMISSIONS) && (self::$class !='JS' && self::$class!='CSS')   ){
 					$mode='';
@@ -217,94 +299,32 @@ class SC_Main {
 					echo call_user_func_array(array($obj, self::$method), self::$method_params);
 				}
 			}
-
-            //     if(self::$PERMISSIONS && (self::$class !='JS' && self::$class!='CSS')   ){
-					
-			// 		if(!@$_SESSION['simplonUser'] && !(self::$class == self::$PERMISSIONS && self::$method =='processValidation')  ){
-			// 			//ask for credentials
-			// 			$class = '\\'.self::$PERMISSIONS;
-			// 			$validator = new $class(); //$user is the default validator class
-			// 			$_SESSION['url']=$_SERVER['REQUEST_URI'];
-			// 			echo $validator->showValidation();
-			// 		}else{
-			// 			if (isset($_SERVER['HTTP_REFERER'])){ $_SESSION['url']=$_SERVER['HTTP_REFERER']; }
-			// 					//Validate user's permissions
-			// 			if( $obj->allow(@$_SESSION['simplonUser'],self::$method) ) {
-			// 				if(self::$dataName) {
-			// 					$obj = $obj->{self::$dataName};
-			// 				}
-			// 				echo call_user_func_array(array($obj, self::$method), self::$method_params);
-			// 			}else{
-			// 				//header('HTTP/1.1 403 Access forbidden');
-			// 				//header('SimplOn: You don\'t have permissions to see this page.');
-            //                 echo '<h1>Access forbidden</h1>';
-			// 				return;
-			// 			}
-			// 		}
-			// 	}else{
-			// 		if(self::$dataName) {
-            //             $obj = $obj->{self::$dataName};
-			// 		}
-			// 		echo call_user_func_array(array($obj, self::$method), self::$method_params);
-			// 	}
-			// } elseif( $obj->hasMethod(self::$method) ){ //Not Element but object to do whatever you want
-
-			// 	echo call_user_func_array(array($obj, self::$method), self::$method_params);
-	
-			// }else{
-			// 	header('HTTP/1.1 403 Access forbidden');
-			// 	echo 'SimplOn: '.self::$class.' is not an SE_Element class.';
-			// 	return;
-			// }
 		} else {
 			header('HTTP/1.1 404 File not found');
 			trigger_error('SimplOn: '.self::$class.' is not a valid class name.', E_USER_ERROR);
 			return;
 		}
 	}
-
-    
+ 
+	//Since SC_Main is static and accesible to all elements is a good place to save Data that are aded on the run time. 
+	/**
+	 * Asings a Data to a specific class during run time, this way classes can be modified on run time. In adiont to what creativity can arrise, this is necesary in some aspects of rendering and data storaging.
+	 */
 	static function addData($class,$attributeName,$attribute) {
 		self::$onTheFlyAttributes[$class][$attributeName]=$attribute;
 	}
-    
+	/**
+	 * Returns all the atributes tha have been dinamically added to a specific class
+	 */
     static function getOnTheFlyAttributes($class) {
 		return @self::$onTheFlyAttributes[$class] ?: array();
 	}
-    
-	static function setup($ini = null) {
-		if(file_exists(self::DEFAULT_INI))
-			self::fromArray(parse_ini_file(self::DEFAULT_INI));
-		
-		if(isset($ini)) {
-			if(is_array($ini)) {
-				self::fromArray($ini);
-			} else if(is_string($ini) && file_exists($ini)) {
-				self::fromArray(parse_ini_file($ini));
-			}
-		}
-			
-		/* sets defaults 
-		foreach(self as $var => $val) {
-			if(!isset($$var)) {
-				switch($var) {
-					case 'DEFAULT_RENDERER': self::$DEFAULT_RENDERER = new SR_Html5(); break;
-				}
-			}
-		}*/
-		
-		if(self::$DEV_MODE) {
-			error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_USER_DEPRECATED);
-			ini_set('display_errors', true);
-		} else {
-			error_reporting(0);
-			ini_set('display_errors', false);
-		}
-		
-		$redender = $GLOBALS['redender'];
-		$redender->decodeURL();
-	}
-	
+
+	/**
+	 * Returns the Data Storage
+	 * 
+	 * Since self::$DATA_STORAGE can be either the proper Data Storage objecct or an array with the connection type and dat if it's the later it istanciates a proper Data Storage object
+	 */
 	static function dataStorage() {
 		if(is_array(self::$DATA_STORAGE)) {
 			$d = self::$DATA_STORAGE;
@@ -313,206 +333,24 @@ class SC_Main {
 		return self::$DATA_STORAGE;
 	}
 	
-	// static function parameterEncoder($p) {
-	// 	if(is_string($p)) {
-	// 		$string_delimiter = '"';
-	// 		$p = self::fixCode(urlencode($p));
-	// 		return $string_delimiter. $p .$string_delimiter;
-	// 	} else {
-	// 		return urlencode($p);
-	// 	}
-	// }
-	
-	// static function encodeURL($class = null, $construct_params = null, $method = null, $method_params = null, $dataName = null) {
-	// 	$url = '';
-	// 	if(isset($class)) {
-	// 		// class
-	// 		$url.= self::$REMOTE_ROOT . '/' . self::fixCode(strtr($class,'\\','-'));
-
-	// 		// construct params
-	// 		if(!empty($construct_params) && is_array($construct_params)) {
-	// 			$url.= '/' . implode('/',array_map(
-	// 				array('self','parameterEncoder'), 
-	// 				$construct_params
-	// 			));
-	// 		}
-			
-	// 		if(isset($dataName) && isset($method)) {
-	// 			// Data name
-	// 			$url.= self::$URL_METHOD_SEPARATOR . $dataName;
-	// 		}
-			
-	// 		if(isset($method)) {
-	// 			// method
-	// 			$url.= self::$URL_METHOD_SEPARATOR . $method;
-				
-	// 			// method params
-	// 			if(!empty($method_params) && is_array($method_params)) {
-	// 				$url.= '/' . implode('/',array_map(
-	// 					array('self','parameterEncoder'), 
-	// 					$method_params
-	// 				));
-	// 			}
-	// 		}
-	// 	}
-		
-	// 	return $url;
-
-
-	// }
-	
-	// static function decodeURL() {
-	// 	$string_delimiter = '\'';
-	// 	$server_request = urldecode(substr($_SERVER['REQUEST_URI'], strlen(self::$REMOTE_ROOT)));
-	// 	if(strpos($server_request, '/') !== 0) $server_request = '/' . $server_request;
-    //     $qs = self::$URL_METHOD_SEPARATOR;
-	// 	$sd = $string_delimiter;
-	// 	$offset = 0;
-		
-		
-	// 	$parameterDecoder = function($what, $encapsulated = false) use($sd, $qs, $server_request, &$offset) {
-	// 		$regexes = array(
-	// 			'class' => '\/(?<raw>[^'.$sd.$qs.'\/]+)',
-	// 			'construct_params' => '(?:\/(?:(?<raw>[^'.$sd.$qs.'\/]+)|'.$sd.'(?<string>[^'.$sd.']*)'.$sd.'))',
-	// 			'dataName' => '\/?'.$qs.'(?<raw>[^'.$sd.$qs.'\/]+)(?='.$qs.')',
-	// 			'method' => '\/?'.$qs.'(?<raw>[^'.$sd.$qs.'\/]+)',
-	// 			'method_params' => '(?:\/(?:(?<raw>[^'.$sd.$qs.'\/]+)|'.$sd.'(?<string>[^'.$sd.']*)'.$sd.'))',
-	// 		);
-	// 		if(preg_match('/^'. $regexes[$what] .'/x', substr($server_request, $offset), $matches, PREG_OFFSET_CAPTURE)) {
-	// 			$offset+= $matches[0][1] + strlen($matches[0][0]);
-	// 			$raw = @$matches['raw'][0];
-	// 			$string = @$matches['string'][0];
-				
-	// 			if(empty($raw) && empty($string)) {
-	// 				$return = '';
-	// 			} else if(!empty($raw) && empty($string)) {
-	// 				if($raw == 'null') {
-	// 					$return = null;
-	// 				} else if($raw == 'false') {
-	// 					$return = array(false);
-	// 				} else if(is_numeric($raw)) {
-	// 					$return = floatval($raw) == intval($raw)
-	// 						? intval($raw)
-	// 						: floatval($raw);
-	// 				} else {
-	// 					$return = $raw;
-	// 				}
-	// 			} else if(empty($raw) && !empty($string)) {
-	// 				$return = urldecode(SC_Main::fixCode($string, false));
-	// 			}
-	// 			return $encapsulated
-	// 				? array($return)
-	// 				: $return;
-	// 		} else {
-	// 			return false;
-	// 		}
-	// 	};
-		
-	// 	self::$class = strtr($parameterDecoder('class'),'-','\\') ?: SC_Main::$DEFAULT_ELEMENT;
-	// 	//self::$class = SC_Main::$DEFAULT_ELEMENT; //debug
-	// 	self::$construct_params = array();
-	// 	while(($param = $parameterDecoder('construct_params', true)) !== false) {
-	// 		self::$construct_params[] = $param[0];
-	// 	}
-		
-	// 	self::$dataName = $parameterDecoder('dataName');
-	// 	self::$method = $parameterDecoder('method') ?: SC_Main::$DEFAULT_METHOD;
-		
-	// 	self::$method_params = array();
-	// 	while(($param = $parameterDecoder('method_params', true)) !== false) {
-	// 		self::$method_params[] = $param[0];
-	// 	}
-	// }
-	
-	// static function fixCode($string, $encoding = true) {
-
-	// 	return $encoding  
-	// 		? strtr($string, array(
-	// 			'%2F' => '/',
-	// 			'%2522' => '%252522',
-	// 			'%22' => '%2522',
-	// 			'%255C' => '%25255C',
-	// 			'%5C' => '%255C',
-	// 		))
-	// 		: strtr($string, array(
-	// 			'%2522' => '%22',
-	// 			'%252522' => '%2522',
-	// 			'%255C' => '%5C',
-	// 			'%25255C' => '%255C',
-	// 		));
-	// }
-	
-	
-	static function fromArray(array $ini) {
+	/**
+	 * Loads all the staic constants from ana array
+	 */
+	static function fillFromArray(array $ini) {
 		foreach($ini as $const => $value)
 			self::$$const = $value;
 	}
 	
-	static function createFile($file_path, $data = null, $flags = null) {
-		// @todo: implement with RecursiveDirectoryIterator
-		//echo "$file_path<br><br>";
-
-		$exploded_path = explode('/', $file_path);
-		$file = array_pop($exploded_path);
-		$current_path = '.';
-		foreach ($exploded_path as $dir) {
-			$current_path.= $dir.'/';
-			if($dir && !is_dir($current_path)) {
-				if(!mkdir($current_path))
-					throw new SC_Exception('Cannot create the following directory: '. $current_path);
-			}
-		}
-				
-		///rsl2022 quick and dirty fix to remove .// in paths
-		$file_path = str_replace('.//','./',$file_path);
-		
-
-		if(isset($data))
-			return file_put_contents($file_path, $data, $flags);
-		
-		return true;
-	}
-	
 	/**
-	 * Credits to Jennifer: http://www.php.net/manual/en/language.operators.type.php#103205
-	 */
-	public function instance_of($object, $class){
-	    if(is_object($object)) return $object instanceof $class;
-	    if(is_string($object)){
-	        if(is_object($class)) $class=get_class($class);
-	
-	        if(class_exists($class)) return is_subclass_of($object, $class) || $object==$class;
-	        if(interface_exists($class)) {
-	            $reflect = new ReflectionClass($object);
-	            return !$reflect->implementsInterface($class);
-	        }
-	
-	    }
-	    return false;
-	}
-	
-	static function localToRemotePath($file_path) {
-		$ret=str_replace(array(SC_Main::$LOCAL_ROOT, SC_Main::$SimplOn_PATH), SC_Main::$REMOTE_ROOT, $file_path);
-		
-		///rsl2022 quick and dirty fix to .\\ in file paths
-		$ret = str_replace('.\\','./',$ret);
-
-		return $ret;
-	}
-	
-	/**
-	 * Includes a (class)file looking for it in the following order 1.- Site directory, 2.- Site template directory, 3.- SimplOn directory
-	 */	
-	
+	 * Loads objects looking for the file by looking into the first letters of the class name
+	 */		
 	 static function load_obj( $classToLoad ){
 		global $simplon_root;
 		global $app_root;
-		$redenderSubDir = $GLOBALS['redenderSubDir'];
-
 
 		$ClassKind = explode('_',$classToLoad)[0];
 	 
-		if($ClassKind == 'SC'){ 								//Simplon Core
+		if($ClassKind == 'SC'){ 							//Simplon Core
 			require_once($simplon_root.'/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'SE') {						//Simplon Elements
 			require_once($simplon_root.'/Elements/'.$classToLoad.'.php');
@@ -522,24 +360,15 @@ class SC_Main {
 			require_once($simplon_root.'/DataStorages/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'SR') {						//Simplon Render
 			require_once($simplon_root.'/Renderers/'.$classToLoad.'.php');
-		}elseif ($ClassKind == 'SID') {						//Simplon Render
+		}elseif ($ClassKind == 'SID') {						//Simplon Interface Data
 			require_once($simplon_root.'/InterfaceDatas/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'AE') {						//App Element
 			require_once($app_root.'/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'AD') {						//App Datas
 			require_once($app_root.'/Datas/'.$classToLoad.'.php');
-		}elseif ($ClassKind == 'ARID') {						//Simplon Render
+		}elseif ($ClassKind == 'AID') {						//App Interface Data
 			require_once($app_root.'/InterfaceDatas/'.$classToLoad.'.php');
 		}
-	 
 	}
 
-    
-    static function loadDom($template) {
-        return is_file($template) ? \phpQuery::newDocumentFile($template) : \phpQuery::newDocument($template);
-    }
-    
-    static function hasNoHtmlTags($string) {
-        return strpos($string, '<') === false;
-    }
 }

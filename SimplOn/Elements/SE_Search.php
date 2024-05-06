@@ -26,7 +26,7 @@
  * Solve brain-blowing problem of fields with same name and different
  * Search flag :S 
  */
-class SE_Search extends SE_Element
+class SE_Search extends SC_Element
 {
 	public $total;
 
@@ -140,29 +140,8 @@ class SE_Search extends SE_Element
 	public function select($template_file = '') {
 		return $this->showSearch($template_file);
 	}
+   
 
-
-	public function showSearch($template = NULL, $partOnly = false, $action = NULL, $nextStep = NULL)
-	{
-		//$this->fillFromRequest();
-            return 
-                $this->obtainHtml(__FUNCTION__, $this->templateFilePath('Search', '_'.implode('-', $this->elementsTypes())), null)
-                . 
-                $this->processSearch()
-            ;
-	}
-
-        
-	public function showSelect($template_file = null, $action = null, $previewTemplate = null, $sid = null)
-	{
-		//$this->fillFromRequest();
-            return 
-                $this->obtainHtml(__FUNCTION__, $this->templateFilePath('Search', '_'.implode('-', $this->elementsTypes())), null)
-                . 
-                $this->processSearch(null,null)
-            ;
-	}        
- 
 	///RSL 2022 --- Fix para poder leer los datos sin sacar la tabla
 	public function getResults($params = null, $columns = null, $position = 1, $limit = null){
 

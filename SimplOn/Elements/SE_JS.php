@@ -17,7 +17,7 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-class SE_JS extends SE_Element {
+class SE_JS extends SC_Element {
 	const
 		mime = 'text/javascript', 
 		type = 'JS', 

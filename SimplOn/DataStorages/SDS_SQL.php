@@ -105,11 +105,11 @@ abstract class SDS_SQL extends SDS_DataStorage
 		return $conditions;
 	}
 	
-	public function isSetElementStorage(SE_Element &$element) {
+	public function isSetElementStorage(SC_Element &$element) {
 		return in_array(strtolower($element->storage()), array_map('strtolower', $this->db->query('SHOW TABLES', \PDO::FETCH_COLUMN,0)->fetchAll()));
 	}
 	
-	public function alterTable(SE_Element $element) {
+	public function alterTable(SC_Element $element) {
 		// Verify that we have the same Datas in the element and in the DB
 		$dbColumns = array();
 		$dbIndexes = array();
@@ -162,7 +162,7 @@ abstract class SDS_SQL extends SDS_DataStorage
 	}
 	
 	//@todo: in  arrays format
-	public function isValidElementStorage(SE_Element &$element) {
+	public function isValidElementStorage(SC_Element &$element) {
         
 		// Verify that we have the same Datas in the element and in the DB
 		$dbColumns = $this->db->query('SHOW COLUMNS FROM `'.$element->storage().'`', \PDO::FETCH_COLUMN,0)->fetchAll();
@@ -245,11 +245,11 @@ abstract class SDS_SQL extends SDS_DataStorage
 
 
 	/**
-	 * @param SE_Element $element
+	 * @param SC_Element $element
 	 * 
 	 * @return [type]
 	 */
-	public function createTable( SE_Element $element) {
+	public function createTable( SC_Element $element) {
 		
         /**
          * At this point the table is created with the minimum columns (primary keys)
@@ -275,11 +275,11 @@ abstract class SDS_SQL extends SDS_DataStorage
 	}
 	
 	/**
-	 * @param SE_Element $element
+	 * @param SC_Element $element
 	 * 
 	 * @return [type]
 	 */
-	public function ensureElementStorage( SE_Element &$element) {
+	public function ensureElementStorage( SC_Element &$element) {
 		if($element->storageChecked()) {
 			$return = $element->storageChecked();
 		} else {
@@ -303,7 +303,7 @@ abstract class SDS_SQL extends SDS_DataStorage
 		return $return;
 	}
 
-	public function getDataTypes(SE_Element &$element) {
+	public function getDataTypes(SC_Element &$element) {
 		// @todo: check
 		$result = array();
 		$typesMap = array_reverse(self::$typesMap, true);
@@ -327,12 +327,12 @@ abstract class SDS_SQL extends SDS_DataStorage
 		return $result;
 	}
 	
-	public function delete(SE_Element &$element) {
+	public function delete(SC_Element &$element) {
         $query_string = 'DELETE FROM '.$element->storage().' WHERE '.$this->filterCriteria($element->deleteCriteria());
 		return $this->db->prepare($query_string)->execute($this->obtainValues($element, $query_string));
 	}
 	
-	public function deleteElement(SE_Element &$element) {
+	public function deleteElement(SC_Element &$element) {
 		$fieldId = $element->fieldId();
 		return $this->db->prepare('
 			DELETE FROM '.$element->storage().' WHERE '.$fieldId.' = :'.$fieldId.'
@@ -341,7 +341,7 @@ abstract class SDS_SQL extends SDS_DataStorage
 		));
 	}
 	
-	function createElement (SE_Element &$element) {
+	function createElement (SC_Element &$element) {
 		$datas = $element->processData('doCreate');
 
 		$new_datas = array();
@@ -381,7 +381,7 @@ abstract class SDS_SQL extends SDS_DataStorage
 	}
 	
 	
-	function updateElement(SE_Element &$element) {
+	function updateElement(SC_Element &$element) {
 		// @todo: evaluate if it's more convenient to merge the array
 		$fieldId = $element->fieldId();;
 		foreach($element->processData('doUpdate') as $datas){
@@ -402,7 +402,7 @@ abstract class SDS_SQL extends SDS_DataStorage
 		')->execute($values);
 	}
 
-	public function readElements(SE_Element &$element, $returnAs = 'array', $position = null, $limit = null, $group = null){
+	public function readElements(SC_Element &$element, $returnAs = 'array', $position = null, $limit = null, $group = null){
 		
 		if(isset($group)){
 			$group = implode(',', $group);
@@ -527,7 +527,7 @@ abstract class SDS_SQL extends SDS_DataStorage
 		return preg_replace($patterns, $subs, $filterCriteria);
 	}
 
-    function obtainValues(SE_Element &$element, $query_string) {
+    function obtainValues(SC_Element &$element, $query_string) {
         $values = array();
 		foreach($element->processData('doSearch') as $dataInfo){
 			foreach($dataInfo as $fieldInfo){
@@ -546,7 +546,7 @@ abstract class SDS_SQL extends SDS_DataStorage
         return $values;
     }
 
-	function countElements(SE_Element &$element, $group=null){
+	function countElements(SC_Element &$element, $group=null){
 		if (isset($group)) {
 			$group = implode(',', $group);
 		}

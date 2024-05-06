@@ -162,7 +162,7 @@ abstract class SD_Data extends SC_BaseObject {
 	$name,
 
     
-	/** @var SE_Element $parent  */
+	/** @var SC_Element $parent  */
     $parent,
 
     $autoIncrement=false,
@@ -396,8 +396,6 @@ abstract class SD_Data extends SC_BaseObject {
 
 	}
 
-
-	
 	public function getJS($method) {
 		$class = $this->getClass('-');
 		// gets class' js file
@@ -410,8 +408,7 @@ abstract class SD_Data extends SC_BaseObject {
 					$a_js[] = $local_js;
 
 		}
-		//var_dump($a_js);
-		//$a_js = array_unique(array_map(array('SC_Main', 'localToRemotePath'), $a_js));
+
 		return $a_js;
 
 	}

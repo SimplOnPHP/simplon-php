@@ -29,13 +29,13 @@ class SD_ElementContainer extends SD_Data {
 	protected 
 		/**
 		 * Logic parent
-		 * @var SE_Element
+		 * @var SC_Element
 		 */
 		$parent, 
             
 		/**
 		 * Encapsulated element
-		 * @var SE_Element
+		 * @var SC_Element
 		 */
 		$element,
 		/*
@@ -48,7 +48,7 @@ class SD_ElementContainer extends SD_Data {
 
 		$this->column = $column;
 
-		if($element instanceof SE_Element){
+		if($element instanceof SC_Element){
 			if($element_id){$element->setId($element_id);}
 			$this->element($element);
 		}else{
@@ -57,7 +57,7 @@ class SD_ElementContainer extends SD_Data {
 
 			if(in_array($element,$GLOBALS['callersStack'])){
 
-				$element = new SE_ElementContainerIDPlaceHolder();
+				$element = new SC_ElementContainerIDPlaceHolder();
 				$this->element($element);
 			}else{
 
@@ -90,7 +90,7 @@ class SD_ElementContainer extends SD_Data {
 	public function getJS($method) {
 		return array_map(
 			function($fp) {
-				return str_replace(SC_Main::$REMOTE_ROOT, SC_Main::$LOCAL_ROOT, $fp);
+				return str_replace(SC_Main::$WEB_ROOT, SC_Main::$LOCAL_ROOT, $fp);
 			},
 			$this->element->getJS($method)
 		);
@@ -130,7 +130,7 @@ class SD_ElementContainer extends SD_Data {
     //         $template = $this->element->showView($template[$this->cssSelector().' '.$this->element->cssSelector()],true);
     //     } else {
     //        // creates a dummy template
-    //        /** @var SE_Element $element */
+    //        /** @var SC_Element $element */
 	// 	   $element = $this->element->getClass();
     //        $element = new $element($this->element->getId());
     //        $template = $element->showView(null, true);
@@ -164,7 +164,7 @@ class SD_ElementContainer extends SD_Data {
             $template = $this->element->showEmbeded($template[$this->cssSelector().' '.$this->element->cssSelector()],true);
         } else {
            // creates a dummy template
-           /** @var SE_Element $element */
+           /** @var SC_Element $element */
 		   $element = $this->element->getClass();
            $element = new $element($this->element->getId());
            $template = $element->showEmbeded(null, true);
@@ -297,55 +297,6 @@ class SD_ElementContainer extends SD_Data {
 		}
 	}
 
-
-	// function showSearch() {
-	// 	$class = $this->element;
-	// 	$element = new $class();
-	// 	$element->fillFromRequest();
-	// 	$parent = $this->parent();
-	// 	$element->parent($parent);
-	// 	/** @var SE_Element $element 
-	// 	 *  @var SE_Element[] $options 
-	// 	*/
-	// 	$options = $element->Elements();
-	// 	$ret = '<div class="SimplOn Data Input '.$this->getClass().'">
-	// 				<label>'.$this->label().':</label>
-	// 				<div class="Options">';
-	// 				foreach ($options as $option) {
-	// 					$ret.='<div class="CheckBox"><input id='.$option->fieldId().' class="'
-	// 							.$this->getClass().
-	// 							'" name="'.$this->name().'[]'.
-	// 							'"value="'.$option->getId().
-	// 							'"type="radio" '
-	// 							.((is_array($this->val()))
-	// 							? ((in_array($option->getId(), $this->val())) ? 'Checked' : '')
-	// 							: '').
-	// 							'/><label for='.$option->fieldId().'>'.$option->showEmbededStrip().'</label>
-	// 							</div>';
-	// 				}
-	// 				$ret.='
-	// 				</div>
-	// 			</div>';
-	// 	return  $ret;
-	// }
-    
-  	// public function showSelect($class = null)
-	// {
-    //     $element = $this->element->getClass();
-    //     $element = new $element();
-    //     $element->fillFromRequest();
-    //     $element->addData('parentClass' , new SD_Hidden(null,'CUSf', $this->parent->getClass())    );
-    //     $element->addData('dataName' , new SD_Hidden(null,'CUSf', $this->name(), '' )    );
-    //     $element->addData('parentId' , new SD_Hidden(null,'CUSf', $this->parent->getId() )    );
-    //     $element->addData('selectAction' , new SD_SelectAction('', array('Select')) );
-
-    //     return $element->obtainHtml(
-    //             "showSearch", 
-    //             $element->templateFilePath('Search'), 
-    //             $this->encodeURL('showSelect'),
-    //             array('footer' => $element->processSelect())
-    //     );
-	// }
 	
 	public function doSearch(){
 		$value = $this->val();
@@ -414,12 +365,9 @@ class SD_ElementContainer extends SD_Data {
     // }
 
     function makeSelection($id){
-        /*@var parentElement SE_Element */
-        //$orig_sid = SC_Main::$globalSID;
+        /*@var parentElement SC_Element */
         $this->element->fillFromDSById($id);
-        //$parentElement = new $parentClass();
-        //SC_Main::$globalSID = $orig_sid;
-        //$template = $parentElement->templateFilePath('View');
+
         $return = array(
 			'status' => true,
 			'type' => 'commands',

@@ -7,7 +7,7 @@ class SD_ElementsContainerMM extends SD_Data {
         
 		/**
 		 * Logic parent
-		 * @var SE_Element
+		 * @var SC_Element
 		 */
 		$parent, 
             
@@ -22,7 +22,7 @@ class SD_ElementsContainerMM extends SD_Data {
         
 		/**
 		 * Pivot element (for pivot tables)
-		 * @var SE_Element
+		 * @var SC_Element
 		 */
 		$pivot,
 
@@ -44,14 +44,14 @@ class SD_ElementsContainerMM extends SD_Data {
         // foreach($allowedClassesInstances as $e) {
         //     if (is_string($e) && class_exists($e)) {
         //         $this->allowedClassesInstances[$e] = new $e;
-        //     } else if( $e instanceof SE_Element ) {
+        //     } else if( $e instanceof SC_Element ) {
         //         $this->allowedClassesInstances[$e->getClass()] = $e;
         //     } else {
         //         // error elements must be an array of valid classes names or Elements
         //     }
         // }
 
-		if($element instanceof SE_Element){
+		if($element instanceof SC_Element){
 			if($element_id){$element->setId($element_id);}
 			$this->element($element);
 		}else{
@@ -60,7 +60,7 @@ class SD_ElementsContainerMM extends SD_Data {
 
 			if(in_array($element,$GLOBALS['callersStack'])){
 
-				$element = new SE_ElementContainerIDPlaceHolder();
+				$element = new SC_ElementContainerIDPlaceHolder();
 				$this->element($element);
 			}else{
 

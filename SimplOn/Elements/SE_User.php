@@ -1,6 +1,6 @@
 <?php
 
-class SE_User extends SE_Element
+class SE_User extends SC_Element
 {
 	protected
 		$permissions,
@@ -177,7 +177,7 @@ class SE_User extends SE_Element
 		return parent::processUpdate();
 	}
 
-	public function canEnter(SE_Element $element, string $method = null){
+	public function canEnter(SC_Element $element, string $method = null){
 
 		$premissions = $this->checkPermissions($element->permissions(), $this->userRole->viewVal(), $method);
 

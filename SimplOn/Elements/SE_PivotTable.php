@@ -17,7 +17,7 @@
 	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-class SE_PivotTable extends SE_Element {
+class SE_PivotTable extends SC_Element {
 	public function construct($id = null, &$specialDataStorage = null) {
 	    $this->id = new SD_NumericId();
 	    $this->parentId = new SD_String('','S');

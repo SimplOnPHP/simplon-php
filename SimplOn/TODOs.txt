@@ -1,7 +1,7 @@
 C:\xampp\htdocs\SimplOn\DataStorages\SDS_SQL.php					488
 public function filterCriteria($element_or_criteria){
 y
-C:\xampp\htdocs\SimplOn\Elements\SE_Element.php						913
+C:\xampp\htdocs\SimplOn\Elements\SC_Element.php						913
 public function filterCriteria($filterCriteria = null) {
 /**
 	TODO :: FIX REGEXS SO THAT THERE CAN BE TWO DATAS WITH A SHARED SUB STRING in the name in the same element EX: cuenta and cuentaHabiente
@@ -11,7 +11,7 @@ public function filterCriteria($filterCriteria = null) {
 Change showEmbededStrip in makeSlection in Element to showEmbeded 1203
 
 
-Fix that Json methods echo directly instead of using Renderer ex: processCreate in SE_Element
+Fix that Json methods echo directly instead of using Renderer ex: processCreate in SC_Element
 
 
 ----------------- Todos

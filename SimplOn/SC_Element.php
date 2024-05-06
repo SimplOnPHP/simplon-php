@@ -1,37 +1,26 @@
 <?php
-
 /*
-Copyright © 2011 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
-
-This file is part of “SimplOn PHP”.
-
-“SimplOn PHP” is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation version 3 of the License.
-
-“SimplOn PHP” is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
+	Copyright © 2024 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
+	
+	This file is part of “SimplOn PHP” a Data Oriented Aproach free software development framework: you can redistribute it and/or modify it under the terms of the MIT License.
 */
 
+/*
+Elements are the means by which to indicate to the system all data that conforms to it and what to do with it. Each Element represents a set of related data.
 
-/**
- * This is the core element to build the site. Elements are the way to indicate the system all data that conforms it.
- * Each Element represents a data set.
- *
- * In practical terms Elements are just Objets with extended capabilities to handle some common tasks like:
- * Print their contents, Store their contents, find and retrieve the proper data from a dataStorage, etc.
- *
- * Elements are programmed and used like any other regular object except that,
- * in order to make their special features work, some of their attributes must be SimplON Data objects.
- *
- * @author RSL
+In practical terms, Elements are just objects with extended capabilities to handle some common tasks such as:
+		- Showing their contents,
+		- Storing their contents
+		- Finding and retrieving the proper data from a data storage
+		- Generating forms to create and update them, etc.
+
+Elements are programmed and used like any other regular object except that, in order to make their special features work, some of their attributes must be SimplON's Data objects.
+
+These SimplON Data objects contain metadata about whether or not an attribute must be shown, retrieved, searchable, etc., and combined with some of the element's methods, allow the Renderers and DataStorage Classes to work with any element, generating and updating the interface and storage automatically and seamlessly as the element changes
+
+@author RSL
  */
-class SE_Element extends SC_BaseObject {
+class SC_Element extends SC_BaseObject {
 
 	/**
 	 * Name of the Data attribute that represents
@@ -45,6 +34,9 @@ class SE_Element extends SC_BaseObject {
 
 	/**
 	 * What DataStorage to use.
+	 * 
+	 * By default uses the SC_Main->$DATA_STORAGE
+	 * 
 	 * @var SDS_DataStorage
 	 */
 	protected $dataStorage;
@@ -52,12 +44,18 @@ class SE_Element extends SC_BaseObject {
 	/**
 	 * Name of the storage associated to this Element
 	 * (ie. SQL table name, MongoDB collection name).
+	 * 
+	 * By default uses the class name
+	 * 
 	 * @var string
 	 */
 	protected $storage;
 
 	/**
 	 * Criteria to use for searching.
+	 * 
+	 * By default builds it using the Data attributes' default criteria and the search or delete flags of each
+	 * 
 	 * @example (.Data1) AND (Data2 == "Hello")
 	 * @var string
 	 */
@@ -70,7 +68,7 @@ class SE_Element extends SC_BaseObject {
 	 * Used in the rendering process.
 	 * @var integer
 	 */
-	protected $nestingLevel = 1;
+	//protected $nestingLevel = 1;
 	protected $parent;
 	//------------------------------------------- ???
 	/**
@@ -1689,85 +1687,6 @@ function makeSearchAdition(){
 		);
 	}
 
-
-	// /**
-	//  * @param $method
-	//  * @param string $returnFormat
-	//  * @param bool $compress
-	//  * @return array|string
-	//  */
-	// public function getJS($method, $returnFormat = 'array', $compress = false) {
-	// 	$class = $this->getClass('-');
-	// 	$a_js = array();
-	// 	// gets class' js file
-	// 	if($this->jss_to_fectch=="only")
-	// 		$a_js = ($local_js = SE_JS::getPath("$class.js")) ? array($local_js) : array();
-	// 	else{
-	// 		$familyTree = class_parents($this);
-	// 		if($this->jss_to_fectch=="single"){
-	// 			while(($class = array_shift($familyTree)) && empty($a_js)){
-	// 				$class = str_replace('\\', "-", $class);
-	// 				$a_js = ($local_js = SE_JS::getPath("$class.js")) ? array($local_js) : array();
-	// 			}
-	// 		}elseif($this->jss_to_fectch=="all"){
-	// 			foreach($familyTree as $class){
-	// 				$class = str_replace('\\', "-", $class);
-	// 				if($local_js = SE_JS::getPath("$class.js"))
-	// 					$a_js[] = $local_js;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	// gets method's js file
-	// 	if ($local_js = SE_JS::getPath("$class.$method.js"))
-	// 	$a_js[] = $local_js;
-
-	// 	// adds
-	// 	foreach ($this->dataAttributes() as $data)
-	// 	foreach ($this->{'O' . $data}()->getJS($method) as $local_js)
-	// 	if ($local_js)
-	// 	$a_js[] = $local_js;
-
-	// 	sort($a_js);
-	// 	// includes libs
-	// 	$a_js = array_unique(array_merge(SE_JS::getLibs(), $a_js));
-
-	// 	if ($compress) {
-	// 		// @todo: compress in one file and return the file path
-	// 	}
-
-	// 	///RSL2022 fix para que no salgan duplicados parte 1
-	// 	$a_js = array_unique($a_js);
-		
-	// 	// converts to remote paths
-	// 	$a_js = array_unique(array_map(array('SC_Main', 'localToRemotePath'), $a_js));
-	// 	///RSL2022 Quick and dirty fix of \\ issue in links
-	// 	foreach ($a_js as &$valor) {
-	// 		$valor = strtr( $valor, '\\', '/');
-	// 	}
-	// 	switch ($returnFormat) {
-	// 	case 'html':
-	// 		$html_js = '';
-	// 		foreach ($a_js as $js) {
-	// 			///RSL2022 fix para que no salgan duplicados parte 2
-	// 			global $links_a_jss;
-	// 			if (!in_array($js, $links_a_jss)){
-	// 				$links_a_jss[]=$js;
-	// 			}
-	// 		}
-	// 		if(!empty($links_a_jss)){
-	// 			$links_a_jss = array_unique($links_a_jss);
-	// 			foreach ($links_a_jss as $js) {
-	// 				$html_js.= '<script type="text/javascript" src="' . $js . '"></script>' . "\n";	
-	// 			}
-	// 		}
-	// 		return $html_js;
-	// 	default:
-	// 	case 'array':
-	// 		return $a_js;
-	// 	}
-	// }
-
 	public function Name($name = null){
 		if(!$name){
 			if(!$this->Name){
@@ -1779,67 +1698,6 @@ function makeSearchAdition(){
 			return $this->Name;
 		}
 	}
-
-	// public function getCSS($method, $returnFormat = 'array', $compress = false) {
-
-    //     $class = $this->getClassName();
-	// 	// gets component's css file
-	// 	$local_css = SE_CSS::getPath("$class.$method.css");
-
-	// 	$a_css = $local_css ? array($local_css) : array();
-
-	// 	$a_css = array();
-	// 	// gets class' css files
-	// 	if($this->csss_to_fectch=="only")
-	// 				$a_css = ($local_js = SE_CSS::getPath("$class.js")) ? array($local_js) : array();
-	// 	else{
-	// 		$familyTree = class_parents($this);
-	// 		if($this->csss_to_fectch=="single"){
-	// 			while($class = array_shift($familyTree) && empty($a_css)){
-	// 				$class = str_replace('\\', "-", $class);
-	// 				$a_css = ($local_js = SE_CSS::getPath("$class.css")) ? array($local_js) : array();
-	// 			}
-	// 		}elseif($this->csss_to_fectch=="all"){
-	// 			foreach($familyTree as $class){
-	// 				$class = str_replace('\\', "-", $class);
-	// 				if($local_js = SE_CSS::getPath("$class.css"))
-	// 					$a_css[] = $local_js;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	// adds
-	// 	foreach ($this->dataAttributes() as $data)
-	// 	foreach ($this->{'O' . $data}()->getCSS($method) as $local_css)
-	// 	if ($local_css)
-	// 	$a_css[] = $local_css;
-
-	// 	$a_css = array_unique($a_css);
-	// 	sort($a_css);
-	// 	// includes libs
-	// 	$a_css = array_unique(array_merge($a_css, SE_CSS::getLibs()));
-	// 	if ($compress) {
-	// 		// @todo: compress in one file and return the file path
-	// 	}
-	// 	// converts to remote paths
-	// 	$a_css = array_map(array('SC_Main', 'localToRemotePath'), $a_css);
-	// 	///RSL2022 Quick and dirty fix of \\ issue in links
-	// 	foreach ($a_css as &$valor) {
-	// 		$valor = strtr( $valor, '\\', '/');
-	// 	}
-
-	// 	switch ($returnFormat) {
-	// 	case 'html':
-	// 		$html_css = '';
-	// 		foreach ($a_css as $css) {
-	// 			$html_css.= '<link type="text/css" rel="stylesheet" href="' . $css . '" />' . "\n";
-	// 		}
-	// 		return $html_css;
-	// 	default:
-	// 	case 'array':
-	// 		return $a_css;
-	// 	}
-	// }
 
 	function showMultiPicker() {
 		return SC_Main::$DEFAULT_RENDERER->table(array($this->toArray()));
@@ -1853,27 +1711,6 @@ function makeSearchAdition(){
 	function setId($id) {
 		$this->{$this->fieldId()}($id);
 		return $this;
-	}
-
-	//------------------------------- ????
-
-	// function encodeURL(array $construct_params = array(), $method = null, array $method_params = array()) {
-	// 	if (empty($construct_params) && $this->getId()) {
-	// 		$construct_params = array($this->getId());
-	// 	}
-    //     $redender = $GLOBALS['redender'];
-
-	// 	return $redender->encodeURL($this->getClass(), $construct_params, $method, $method_params);
-	// }
-
-	public function templateFilePath($show_type, $alternative = '', $short = false, $template_type = 'html') {
-		$path = ($this->parent)
-			? $this->parent->templateFilePath($show_type, $alternative, $short, $template_type)
-			: ($short ? '' : SC_Main::$GENERIC_TEMPLATES_PATH)
-				. '/' . $show_type . '/' . $this->getClassName() . $alternative . '.' . $template_type
-		;
-		///RSL 2022 fix para que abra los templates
-		return '.'.$path;
 	}
 
 	/**

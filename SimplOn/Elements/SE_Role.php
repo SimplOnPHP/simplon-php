@@ -1,6 +1,6 @@
 <?php
 
-class SE_Role extends SE_Element
+class SE_Role extends SC_Element
 {
 
 	public $permissions = array(

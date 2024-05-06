@@ -7,7 +7,7 @@ class SR_html {
         $App_path,
         $App_web_root,
         $URL_METHOD_SEPARATOR ='!',
-        $REMOTE_ROOT;
+        $WEB_ROOT;
 
     static
         $outputtemplate,
@@ -31,7 +31,7 @@ class SR_html {
         //Fill the template
         if(!file_exists($specialRendererPath)){ //normal 
 
-            if(!$template OR SC_Main::$Element_Layouts=='OverWrite'){
+            if(!$template OR SC_Main::$Layouts_Processing=='OverWrite'){
                 $template = $this->getDataLayout($Data, $method); 
             }
              
@@ -47,7 +47,7 @@ class SR_html {
 
             $specialCheck = $SR_special_Check($Data, $template, $method);
    
-            if (!$template || SC_Main::$Element_Layouts === 'OverWrite') {
+            if (!$template || SC_Main::$Layouts_Processing === 'OverWrite') {
                 $template = $SR_special_Get($Data, $method); 
             } elseif ($specialCheck !== 'Ok') {
                 //TODO: Doing the same that above review what really ned to be done to consider the template and Update 
@@ -238,7 +238,7 @@ class SR_html {
             $dom = $this->createMethodLayout($object,$method, null, $noCancelButton);
             $dom = "<section class='".$object->getClass()." $method'>". $dom->html()."</section>";
             $this->updateLayoutFile($dom,$method, $directlayoutPath);
-        }elseif( SC_Main::$Element_Layouts == 'OverWrite' ){ 
+        }elseif( SC_Main::$Layouts_Processing == 'OverWrite' ){ 
             // If the section has to be overwriten
             if($check == 'Ok-NotVCRSL'){
                 //Preserve de existiong NotVCRSL template
@@ -251,15 +251,15 @@ class SR_html {
                 $dom = "<section class='".$object->getClass()." $method'>". $dom->html()."</section>";
                 $this->updateLayoutFile($dom,$method,$directlayoutPath);
             }
-        }elseif( SC_Main::$Element_Layouts == 'Update' AND !str_starts_with($check,'Ok') ){  
+        }elseif( SC_Main::$Layouts_Processing == 'Update' AND !str_starts_with($check,'Ok') ){  
             // If Update and not in syc with Element or there is no section to render the method create the section
             $dom = $this->updateMethodLayout($object,$method,$changes, null, $noCancelButton);
             $dom = "<section class='".$object->getClass()." $method'>". $dom->html()."</section>";
             $this->updateLayoutFile($dom,$method, $directlayoutPath);
         }elseif(  
-            SC_Main::$Element_Layouts == 'Preserve' 
+            SC_Main::$Layouts_Processing == 'Preserve' 
             OR 
-            (SC_Main::$Element_Layouts == 'Update' AND str_starts_with($check,'Ok') ) 
+            (SC_Main::$Layouts_Processing == 'Update' AND str_starts_with($check,'Ok') ) 
             ){
 
             // if Preserve or template in sync, render the Element with it.
@@ -279,7 +279,7 @@ class SR_html {
 
                 if(is_a($object,'SD_Data')){ $dataPath=DIRECTORY_SEPARATOR.'Datas'; }
                 if(is_a($object,'SID_Data')){ $dataPath=DIRECTORY_SEPARATOR.'InterfaceDatas'; }
-                if(is_a($object,'SE_Element')){ $dataPath=''; }
+                if(is_a($object,'SC_Element')){ $dataPath=''; }
                 if(file_exists($this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.'htmls'.$dataPath.DIRECTORY_SEPARATOR.$object->getClass().'.html')){
                     $ret = $this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.'htmls'.$dataPath.DIRECTORY_SEPARATOR.$object->getClass().'.html';
                 }else{
@@ -307,7 +307,7 @@ class SR_html {
 
                 if(is_a($object,'SID_Data') OR is_a($object,'SID_ComplexData')){ $dataPath=DIRECTORY_SEPARATOR.'InterfaceDatas'; }
 
-                if(is_a($object,'SE_Element')){ $dataPath=''; }
+                if(is_a($object,'SC_Element')){ $dataPath=''; }
 
                 $ancestors = class_parents($object);
                 array_splice($ancestors, -1);
@@ -339,7 +339,7 @@ class SR_html {
             return $ret;
         }
 
-        function checkMethodLayout(SE_Element $object, $dom, $method){
+        function checkMethodLayout(SC_Element $object, $dom, $method){
             if(is_string($dom)){$dom = \phpQuery::newDocumentFileHTML($dom);}
             $methodNode = $dom[".$method"];
             $showType = '';
@@ -389,7 +389,7 @@ class SR_html {
             }
         } 
 
-        function updateMethodLayout(SE_Element $object,$method,$changes,$action=null,$noCancelButton=false){ 
+        function updateMethodLayout(SC_Element $object,$method,$changes,$action=null,$noCancelButton=false){ 
             $dom = \phpQuery::newDocumentFileHTML($this->directlayoutPath($object));
             $methodNode = $dom[".$method"];
 
@@ -507,7 +507,7 @@ class SR_html {
         }
 
 
-        function createMethodLayout(SE_Element $object,$method,$action=null,$noCancelButton=false){ 
+        function createMethodLayout(SC_Element $object,$method,$action=null,$noCancelButton=false){ 
 
             $showType = '';
             if(substr($method, 0 ,4) =='show'){$showType=strtolower(substr($method,4));}
@@ -589,7 +589,7 @@ class SR_html {
 
         function appendMethodLayout($domOrfileContent, $pathOrObject){
 
-            if($pathOrObject instanceof SE_Element){
+            if($pathOrObject instanceof SC_Element){
                 $filePath = $this->layoutPath($pathOrObject);
             }elseif(is_string($pathOrObject)){
                 $filePath = $pathOrObject;
@@ -651,7 +651,7 @@ class SR_html {
 
         function updateLayoutFile($domOrfileContent, $method, $pathOrObject){
 
-            if($pathOrObject instanceof SE_Element){
+            if($pathOrObject instanceof SC_Element){
                 $filePath = $this->layoutPath($pathOrObject);
             }elseif(is_string($pathOrObject)){
                 $filePath = $pathOrObject;
@@ -712,7 +712,7 @@ class SR_html {
         } 
 
         function appendToLayoutFile($domOrfileContent, $pathOrObject){
-            if($pathOrObject instanceof SE_Element){
+            if($pathOrObject instanceof SC_Element){
                 $filePath = $this->layoutPath($pathOrObject);
             }elseif(is_string($pathOrObject)){
                 $filePath = $pathOrObject;
@@ -776,7 +776,7 @@ class SR_html {
         } 
 
         function writeLayoutFile($domOrfileContent, $pathOrObject){
-            if($pathOrObject instanceof SE_Element){
+            if($pathOrObject instanceof SC_Element){
                 $filePath = $this->layoutPath($pathOrObject);
             }elseif(is_string($pathOrObject)){
                 $filePath = $pathOrObject;
@@ -790,7 +790,7 @@ class SR_html {
                 $dom = $domOrfileContent;
             }
 
-            $baseTemplate = \phpQuery::newDocumentFileHTML($this->layoutPath('SE_Element'));
+            $baseTemplate = \phpQuery::newDocumentFileHTML($this->layoutPath('SC_Element'));
             $baseTemplate["body"]=$dom->html();
             // Get The CSS and JS of the base Tamplate
             $this->getStylesAndScriptsLinks($baseTemplate);
@@ -834,7 +834,7 @@ class SR_html {
             file_put_contents($filePath, $fileContent);
         }       
  
-    function fillDatasInElementTemplate(SE_Element $object, phpQueryObject $dom, string $method){
+    function fillDatasInElementTemplate(SC_Element $object, phpQueryObject $dom, string $method){
         $ret = $dom->html();
         $datasInLayout = preg_match_all_callback(
             '/EA_[a-z,_,0-9]+/i',
@@ -944,7 +944,7 @@ class SR_html {
         return $dom;
     }
 
-    function fillVariablesInElementTemplate( SE_Element $element, phpQueryObject $dom, $action=null,$nextStep=null){   
+    function fillVariablesInElementTemplate( SC_Element $element, phpQueryObject $dom, $action=null,$nextStep=null){   
 
         $ret=$dom->html();
         $fixedActionInDom = str_replace('action="%24','action="$',$dom->html());
@@ -996,7 +996,7 @@ class SR_html {
 		$url = '';
 		if(isset($class)) {
 			// class
-			$url.= $this->REMOTE_ROOT . '/' . $this->fixCode(strtr($class,'\\','-'));
+			$url.= $this->App_web_root . '/' . $this->fixCode(strtr($class,'\\','-'));
 			// construct params
 			if(!empty($construct_params) && is_array($construct_params)) {
                 // $tempArr=array_map(
@@ -1036,86 +1036,6 @@ class SR_html {
 		return $url;
 	}
 
-	function decodeURL($e = '') {
-		$string_delimiter = '\'';
-        $qs = SC_Main::$URL_METHOD_SEPARATOR;
-        
-        if (isset($_SERVER['HTTP_REFERER'])) {
-            $server_referal = explode($qs.$qs,$_SERVER['HTTP_REFERER']);
-        } else {
-            $server_referal = array();
-            $server_referal[0] = '';
-        }
-        $GLOBALS['BackURL']=$server_referal[0];
-
-        // Look if there is a double $qs and take whats at the end as mmesage
-        $server_request = explode($qs.$qs,$_SERVER['REQUEST_URI']);
-        if (isset($server_request[1])) {$this->setMessage(urldecode($server_request[1]));}
-        $server_request = $server_request[0];
-        //process the rest of the URL normally
-		$server_request = urldecode(substr($server_request, strlen(SC_Main::$REMOTE_ROOT)));
-		if(strpos($server_request, '/') !== 0) $server_request = '/' . $server_request;
-        $qs = SC_Main::$URL_METHOD_SEPARATOR;
-		$sd = $string_delimiter;
-		$offset = 0;
-		
-		
-		$parameterDecoder = function($what, $encapsulated = false) use($sd, $qs, $server_request, &$offset) {
-			$regexes = array(
-				'class' => '\/(?<raw>[^'.$sd.$qs.'\/]+)',
-				'construct_params' => '(?:\/(?:(?<raw>[^'.$sd.$qs.'\/]+)|'.$sd.'(?<string>[^'.$sd.']*)'.$sd.'))',
-				'dataName' => '\/?'.$qs.'(?<raw>[^'.$sd.$qs.'\/]+)(?='.$qs.')',
-				'method' => '\/?'.$qs.'(?<raw>[^'.$sd.$qs.'\/]+)',
-				'method_params' => '(?:\/(?:(?<raw>[^'.$sd.$qs.'\/]+)|'.$sd.'(?<string>[^'.$sd.']*)'.$sd.'))',
-			);
-			if(preg_match('/^'. $regexes[$what] .'/x', substr($server_request, $offset), $matches, PREG_OFFSET_CAPTURE)) {
-				$offset+= $matches[0][1] + strlen($matches[0][0]);
-				$raw = @$matches['raw'][0];
-				$string = @$matches['string'][0];
-				
-				if(empty($raw) && empty($string)) {
-					$return = '';
-				} elseif(!empty($raw) && empty($string)) {
-					if($raw == 'null') {
-						$return = null;
-					} elseif($raw == 'false') {
-						$return = array(false);
-					} elseif(is_numeric($raw)) {
-						$return = floatval($raw) == intval($raw)
-							? intval($raw)
-							: floatval($raw);
-					} else {
-						$return = $raw;
-					}
-				} elseif(empty($raw) && !empty($string)) {
-					$return = urldecode($this->fixCode($string, false));
-				}
-				return $encapsulated
-					? array($return)
-					: $return;
-			} else {
-				return false;
-			}
-		};
-		
-		SC_Main::$class = strtr($parameterDecoder('class'),'-','\\') ?: SC_Main::$DEFAULT_ELEMENT;
-		//self::$class = SC_Main::$DEFAULT_ELEMENT; //debug
-		SC_Main::$construct_params = array();
-		while(($param = $parameterDecoder('construct_params', true)) !== false) {
-			SC_Main::$construct_params[] = $param[0];
-		}
-		
-		SC_Main::$dataName = $parameterDecoder('dataName');
-		SC_Main::$method = $parameterDecoder('method') ?: SC_Main::$DEFAULT_METHOD;
-		
-		SC_Main::$method_params = array();
-		while(($param = $parameterDecoder('method_params', true)) !== false) {
-			SC_Main::$method_params[] = $param[0];
-		}
-
-
-	}
-
     static function fixCode($string, $encoding = true) {
 		return $encoding  
 			? strtr($string, array(
@@ -1133,21 +1053,19 @@ class SR_html {
 			));
 	}
 
-
-
-    function lookForMethodInElementsTree(SE_Element $element, string $method){
+    function lookForMethodInElementsTree(SC_Element $element, string $method){
         $Tree = class_parents($element);
         $Tree = array_merge(array($element->getClass()), array_values($Tree));
         $i = '0';
         do {   
             
                 
-            if($Tree[$i] != 'SE_Element' ){
+            if($Tree[$i] != 'SC_Element' ){
                 $path = $this->layoutsPath($element);
                 if(file_exists($path)){
                     $Dom = \phpQuery::newDocumentFileHTML($path);
                 }
-            }elseif($Tree[$i] == 'SE_Element'){
+            }elseif($Tree[$i] == 'SC_Element'){
                 $Dom = $this->LoadDefaultLayoutFile();
             }
             $i++;
@@ -1192,7 +1110,7 @@ class SR_html {
             }elseif(file_exists($this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.'htmls'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html')){
                 $ret = $this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.'htmls'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html';
             }
-        }elseif(!is_string($object) && is_a($object,'SE_Element')){
+        }elseif(!is_string($object) && is_a($object,'SC_Element')){
             $ret = $this->App_path.DIRECTORY_SEPARATOR.'Layouts'.DIRECTORY_SEPARATOR.$object->getClass().'.html';
 
         }elseif(is_string($object)){
@@ -1205,8 +1123,8 @@ class SR_html {
 
     /* methods related with getting/generatting the Layouts */
     function  LoadDefaultLayoutFile(){
-        $simplonBase = $this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.'htmls'.DIRECTORY_SEPARATOR.'SE_Element.html';
-        $appBase = $this->App_path.DIRECTORY_SEPARATOR.'Layouts'.DIRECTORY_SEPARATOR.'SE_Element.html';
+        $simplonBase = $this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.'htmls'.DIRECTORY_SEPARATOR.'SC_Element.html';
+        $appBase = $this->App_path.DIRECTORY_SEPARATOR.'Layouts'.DIRECTORY_SEPARATOR.'SC_Element.html';
         if(file_exists($appBase)){ $dom = \phpQuery::newDocumentFileHTML($appBase); }
         else{  $dom = \phpQuery::newDocumentFileHTML($simplonBase);  }
         $this->getStylesAndScriptsLinks($dom);
