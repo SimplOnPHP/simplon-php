@@ -1,3 +1,15 @@
+
+Mention https://tabler.io/icons and use those icons everywhere
+
+
+
+
+
+
+
+
+
+
 C:\xampp\htdocs\SimplOn\DataStorages\SDS_SQL.php					488
 public function filterCriteria($element_or_criteria){
 y

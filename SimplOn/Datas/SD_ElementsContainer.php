@@ -96,10 +96,6 @@ class SD_ElementsContainer extends SD_Data {
             foreach($this->elements as $element){
                 $element->parent($parent);
             }
-        
-            foreach($this->allowedClassesInstances as $classInstance){
-                $classInstance->nestingLevel($parent->nestingLevel()+1);
-            }
         }
     }
     
@@ -124,12 +120,8 @@ class SD_ElementsContainer extends SD_Data {
             return $tempTemplate->html();
         } else {
            // creates a dummy template
-            
-           foreach($this->allowedClassesInstances as $classInstance){
-               $template.= $classInstance->nestingLevel(1)->showView(null, true);
-           }
+
            $dom = \phpQuery::newDocument($template);
-           $this->nestingLevelFix($dom);
            
            return $dom.'';
         }
@@ -168,7 +160,7 @@ class SD_ElementsContainer extends SD_Data {
                 
         foreach($this->allowedClassesInstances as $classInstance){
             $nextStep = $this->encodeURL('makeSelection');
-            $ret.='<li>'.$classInstance->getClassName()
+            $ret.='<li>'.$classInstance->getClass()
                 .' <a class="SimplOn lightbox" href="'.htmlentities($this->encodeURL('showSelect',array($classInstance->getClass()) )).'">List</a> '
                 .' <a class="SimplOn lightbox" href="'.htmlentities($classInstance->encodeURL(array(),'showCreate',array( '', $classInstance->encodeURL(array(), 'processCreate', array($nextStep))  ))).'">Add</a> '
                 .'</li>'
@@ -225,23 +217,8 @@ class SD_ElementsContainer extends SD_Data {
         }
 	}
 
-    
-    function nestingLevelFix(&$dom) {
-        $startingNestingLevel = $this->parent->nestingLevel();
-        foreach($dom['.SimplOn.Element, .SimplOn.Data'] as $node) {
-            $domNode = pq($node);
-            $classes = explode(' ', $domNode->attr('class'));
-            if(substr($classes[2], 0, 4) == 'SNL-') {
-                $nestingLevel = substr($classes[2], 4) + $startingNestingLevel;
-                $classes[2] = 'SNL-' . $nestingLevel;
-                $domNode->attr('class', implode(' ', $classes));
-            }
-        }
-    }
-
     function makeSelection($id, $class){ 
         $element = new $class($id);
-        $element->nestingLevel($this->parent->nestingLevel() + 1);
         $return = array(
 			'status' => true,
 			'type' => 'commands',
@@ -263,7 +240,6 @@ class SD_ElementsContainer extends SD_Data {
 
     function makeUpdate($id, $class){ 
         $element = new $class($id);
-        $element->nestingLevel($this->parent->nestingLevel() + 1);
         $return = array(
             'status' => true,
             'type' => 'commands',

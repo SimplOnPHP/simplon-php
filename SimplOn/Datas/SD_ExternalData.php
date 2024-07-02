@@ -37,10 +37,10 @@ class SD_ExternalData extends SD_ComplexData {
 	}
     
     public function showView($template = NULL, $sources = NULL){
-        /** @var SR_html $redender */
+        /** @var SR_main2 $redender */
         $redender = $GLOBALS['redender'];
         
-        if(!$template){ $template = $redender->getElementTemplate($this->parent, 'showView'); } 
+        if(!$template){ $template = $redender->getElementLayout($this->parent, 'showView'); } 
 
         return $redender->renderData($this->element->{'O'.$this->data}(),'showView',$template,1);
         //return $this->element->{'O'.$this->data}()->showView($template, $sources);

@@ -99,7 +99,7 @@ class SD_DorpdownBox extends SD_String
 	// {
 	// 	$data_id = 'SimplOn_'.$this->instanceId();
 	// 	$ret=($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '');
-	// 	$ret.='<select id="'.$data_id.'"  class="SimplOn '. $this->getClassName() .'" name="'. $this->name() .'" >';
+	// 	$ret.='<select id="'.$data_id.'"  class="SimplOn '. $this->getClass() .'" name="'. $this->name() .'" >';
 	// 	$ret.='<option value="">---</option>';
     //     foreach($this->options as $value){
 	// 		$ret.=($this->showValues ? $value:'').'<option value="'.$value.'"'.' '.(($fill && $this->val==$value)?' selected':'').'>'.$value.'</option>';

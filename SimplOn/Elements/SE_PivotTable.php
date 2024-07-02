@@ -18,6 +18,7 @@
 */
 
 class SE_PivotTable extends SC_Element {
+	static $permissions;
 	public function construct($id = null, &$specialDataStorage = null) {
 	    $this->id = new SD_NumericId();
 	    $this->parentId = new SD_String('','S');

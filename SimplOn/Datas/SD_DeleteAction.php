@@ -53,7 +53,7 @@ class SD_DeleteAction extends SD_ElementLink {
             
             if($parent) {
 			$this->parent = $parent;
-			$this->method = $parent->quickDelete ? 'processDelete' : 'showDelete';
+			$this->method = $parent::$quickDelete ? 'processDelete' : 'showDelete';
 		}
                 
 		return $parent;
@@ -63,20 +63,18 @@ class SD_DeleteAction extends SD_ElementLink {
          * to "<a></a>" tags
          * 
          * @param string $append
-         * @param null $nestingLevel
          * @return string
          */
-	function htmlClasses($append = '', $nestingLevel = null) {
-            return parent::htmlClasses(($this->parent->quickDelete?' ajax lightbox ':' html ').$append, $nestingLevel);;
+	function htmlClasses($append = '') {
+            return parent::htmlClasses(($this->parent::$quickDelete?' ajax lightbox ':' html ').$append);
         }
 	/**
          * function cssSelector - this function specifies the correct css selector for this data
          * 
          * @param string $append
-         * @param null $nestingLevel
          * @return string
          */
-	function cssSelector($append = '', $nestingLevel = null) {
-        return parent::cssSelector(($this->parent->quickDelete?'.ajax':'.lightbox').$append, $nestingLevel);
+	function cssSelector($append = '') {
+        return parent::cssSelector(($this->parent::$quickDelete?'.ajax':'.lightbox').$append);
         }
 }

@@ -251,20 +251,15 @@ abstract class SD_Data extends SC_BaseObject {
 	 */
 	public function construct($label=null, $flags=null, $val=null, $filterCriteria=null) {}
 	
-	
-	
-	function htmlClasses($append = '', $nestingLevel = null) {
-        if(!$nestingLevel && $this->parent ) $nestingLevel = $this->parent->nestingLevel();
+	function htmlClasses($append = '') {
         return ''
-			.' '.'SNL-'.$nestingLevel
 			.' '.($this->required ? 'required ' : '')
 			.' '.($this->fixedValue ? 'disabled ' : '')
 			.' '.$append;
     }
 	
-	function cssSelector($append = '', $nestingLevel = null) {
-        if(!$nestingLevel) $nestingLevel = $this->parent->nestingLevel();
-        return '.SimplOn.Data.SNL-'.$nestingLevel.'.'.$this->getClassName().'.'.$this->name().$append;
+	function cssSelector($append = '') {
+        return '.SimplOn.Data.'.$this->getClass().'.'.$this->name().$append;
     }
 	
 	public function preRead() {}
@@ -439,19 +434,6 @@ abstract class SD_Data extends SC_BaseObject {
 		
 	}
 
-	
-	public function allShow(){
-		$show_methods = array_filter(get_class_methods($this), function ($string){
-			if(substr($string, 0 ,4) =='show' && $string!='showSelect'){return $string;}
-		} );
-		$ret = '';
-		foreach($show_methods as $method){
-			$ret .= $this->{$method}();
-		}
-		return $ret;
-	}
-
-
 	/**
          * showView allows display the value in the views
          * 
@@ -489,7 +471,7 @@ abstract class SD_Data extends SC_BaseObject {
          */
 	// function showEmbeded($template = null){
 	// 	$this->printValInInput = $fill;
-	// 	/**@var SR_html $redender  */
+	// 	/**@var SR_main2 $redender  */
     //     $redender = $GLOBALS['redender'];
 	// 	return $redender->render($this,__FUNCTION__);
 	// }

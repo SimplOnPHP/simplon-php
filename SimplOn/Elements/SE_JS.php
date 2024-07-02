@@ -18,6 +18,7 @@
 */
 
 class SE_JS extends SC_Element {
+	static $permissions;
 	const
 		mime = 'text/javascript', 
 		type = 'JS', 

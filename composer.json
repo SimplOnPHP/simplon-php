@@ -7,7 +7,8 @@
   "description": "The SimplOn PHP Framework",
   "require": {
     "php": ">=5.3",
-    "electrolinux/phpquery": "0.9.6"
+    "electrolinux/phpquery": "0.9.6",
+    "filp/whoops": "^2.15"
   },
   "autoload": {
     "psr-4": {

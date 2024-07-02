@@ -109,7 +109,7 @@ class SE_Report extends SE_Search{
 		//@review the use of $this->datastorage -- such variable must be aasigned to the element DataStorage at some point or it will search on the incorrect DA if the Element's DS is not the default DS
 		$this->total = $this->dataStorage->countElements($this, $this->group);
 
-		$return = SC_Main::$DEFAULT_RENDERER->table_from_elements($this->dataStorage->readElements($this, 'Elements', $position, $limit,$this->group),$columns); 
+		$return = SC_Main::$RENDERER->table_from_elements($this->dataStorage->readElements($this, 'Elements', $position, $limit,$this->group),$columns); 
         // restoration
 		$this->elementsTypes($elementsTypes);
 		$this->dataAttributes[] = 'elementsTypes';

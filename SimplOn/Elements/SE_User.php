@@ -2,15 +2,16 @@
 
 class SE_User extends SC_Element
 {
+	static $permissions;
+	
 	protected
-		$permissions,
 		$asesorCreate,
 		$validationAceptedMessage = 'Welcome:',
 		$validationRejectedMessage = "User and Password don't match Please try again";		
 
 	public function construct($id = null, &$specialDataStorage = null)
 	{
-		$this->permissions = array(
+		self::$permissions = array(
 			'admin' => array('*'=>'allow'),
 			'Asesor' => array(
 				'View'=>array(
@@ -43,10 +44,12 @@ class SE_User extends SC_Element
 		$this->userRole->options();
 
 		$redender = $GLOBALS['redender'];
+
 		$this->processLoginLink = $redender->action($this,'processLogin');
 		//$this->logoutLink = $redender->action($this,'logout');
 
-		$this->formMethods[] = 'login';
+		self::$formMethods = parent::$formMethods ;
+		self::$formMethods[] = 'login';
 
         $this->menu = new SID_Menu([]);
 
@@ -179,14 +182,14 @@ class SE_User extends SC_Element
 
 	public function canEnter(SC_Element $element, string $method = null){
 
-		$premissions = $this->checkPermissions($element->permissions(), $this->userRole->viewVal(), $method);
+		$premissions = $this->checkPermissions($element::$permissions, $this->userRole->viewVal(), $method);
 
 		if(
 			$premissions
 			OR
 			(($method=='showLogin' || $method=='processLogin' || $method=='logout') AND ($element instanceof $this))
 			OR
-			$this->getClassName() == 'AE_EmptyAdmin'
+			$this->getClass() == 'AE_EmptyAdmin'
 		){
 			return true;
 		}else{
@@ -197,11 +200,11 @@ class SE_User extends SC_Element
 	public function setValuesByPermissions(&$element, $mode){
 		$element->datasMode($mode);
 		if(
-			isset($element->permissions()[$this->userRole->viewVal()]) &&
-			isset($element->permissions()[$this->userRole->viewVal()][$mode]) &&
-			is_array($element->permissions()[$this->userRole->viewVal()][$mode])
+			isset($element::$permissions[$this->userRole->viewVal()]) &&
+			isset($element::$permissions[$this->userRole->viewVal()][$mode]) &&
+			is_array($element::$permissions[$this->userRole->viewVal()][$mode])
 		){
-			foreach($element->permissions()[$this->userRole->viewVal()][$mode] as $data=>$value){
+			foreach($element::$permissions[$this->userRole->viewVal()][$mode] as $data=>$value){
 
 				$value = explode("_", $value);
 				$treatment = array_shift($value);
@@ -273,7 +276,7 @@ class SE_User extends SC_Element
 		}	
 	}
 /**
-$this->permissions = array(
+self::$permissions = array(
 	'admin' => array('*'=>'allow'),
 	'Asesor' => array(
 		'View'=>array(

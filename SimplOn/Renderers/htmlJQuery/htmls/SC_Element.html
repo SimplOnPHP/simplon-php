@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html data-theme="light">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+		<link rel="stylesheet" href="./css/simplon-base.css">
+		<link rel="stylesheet" href="./css/simplon-auto.css">
+		<link rel="stylesheet" href="./css/colorbox.css">
+		<link rel="icon" type="image/x-icon" href="/favicon.ico">
+		<script type="text/javascript" src="./js/00_jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="./js/05_anytime.compressed.js"></script>
+		<script type="text/javascript" src="./js/05_jquery-ui-1.8.19.custom.min.js"></script>
+		<script type="text/javascript" src="./js/05_jquery.colorbox-min.js"></script>
+		<script type="text/javascript" src="./js/05_jquery.form.js"></script>
+		<script type="text/javascript" src="./js/05_jquery.validate.min.js"></script>
+		<script type="text/javascript" src="./js/07_chosen.jquery.min.js"></script>
+		<script type="text/javascript" src="./js/10_SimplON.js"></script>
+		<title>$AppName</title>
+		<style>
+		</style>
+	</head>
+	<body>
+		<section class="showAdmin">
+			<hr />
+			<div>
+				Crear nuevo $name $createAction
+			</div>
+			<hr />
+			<div>
+				$showSearch___showAdmin_true
+			</div>
+			<div>
+				$adminTable
+			</div>
+		</section>
+		<section class="showSelect">
+			<hr />
+			<div>
+				Crear nuevo $name $createAction
+			</div>
+			<hr />
+			<div>
+				$showSearch___showSelect
+			</div>
+			<div>
+				$selectTable
+			</div>
+		</section>
+		<section class="showSearchSelect">
+			<hr />
+			<div>
+				Crear nuevo $name $createAction
+			</div>
+			<hr />
+			<div>
+				$showSearch___showSelect
+			</div>
+			<div>
+				$selectTable
+			</div>
+		</section>
+		<section class="showSelectAppend">
+			<hr />
+			<div>
+				Crear nuevo $name $createAction
+			</div>
+			<hr />
+			<div>
+				$showSearch___showSelect
+			</div>
+			<div>
+				$selectAppendTable
+			</div>
+		</section>
+		
+		<section class="$getClassshowEmbededUpdateInput">
+			<div class="containedElement">
+				<div>$showView__</div>
+				<div class="buttons">
+					<a class="SimplOn Action lightbox" href="$SRaction_showUpdateSelect"><img     src="/Imgs/editIcon.webp" atl="Edit"></a>
+					<a class="SimplOn Action SD_delete" href=""><img     src="/Imgs/deleteIcon.webp" atl="Delete"></a>
+					<input class="SimplOn input" name="$elementContainerName" type="hidden" value="$getId" />
+				</div>
+			</div> 
+		</section>
+
+		<section class="$getClassshowEmbededAppendInput">
+			<div class="containedElement">
+				<div>$showView__</div>
+				<div class="buttons">
+					<a class="SimplOn Action SD_delete" href=""><img     src="/Imgs/deleteIcon.webp" atl="Delete"></a>
+					<input class="SimplOn input hidden " name="$elementContainerName" type="checkbox" value="$getId" checked />
+				</div>
+			</div>
+		</section>
+
+		<section class="$getClassshowEmbededSearchInput">
+				$showView
+				<a class="SimplOn Action SD_delete" href=""><img     src="/Imgs/deleteIcon.webp" atl="Delete"></a>
+				<input class="SimplOn input" name="$name" type="hidden" value="$getId" /> 
+		</section>
+
+		<section class="$getClassshowDelete">
+			<form class="$htmlClasses $getClassdelete" action="$action" method="post">
+			  <fieldset>
+				<legend>$SRVCSLForPeople_Delete $Name</legend>
+				<div class="border SD_NumericId $htmlClasses">
+				  $showView__ <input name="$name" value="$id" type="hidden">
+				</div>
+
+				<div class="buttons">
+				  <button type="submit">$SRVCSLForPeople_Delete</button> <button class="SimplOn cancel-form" onclick="location.href='$SRBackURL';" >$SRVCSLForPeople_Cancel</button>
+				</div>
+			  </fieldset>
+			</form>
+		  </section>
+	</body>
+</html>

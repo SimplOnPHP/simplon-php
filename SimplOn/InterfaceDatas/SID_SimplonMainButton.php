@@ -12,7 +12,7 @@ class SID_SimplonMainButton extends SID_ComplexData {
 	public function __construct($class,$method, $content=null, $img=null){
                 $this->method = $method;
                 $this->content = $content;
-                /** @var SR_html $redender */
+                /** @var SR_main2 $redender */
                 $redender = $GLOBALS['redender'];
                 $this->href = $redender->encodeURL($class, null, $this->method, null);
                 if($img){$this->img=$img;}

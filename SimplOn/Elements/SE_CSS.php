@@ -18,6 +18,7 @@
 */
 
 class SE_CSS extends SC_Element {
+	static $permissions;
 	const
 		mime = 'text/css', 
 		type = 'CSS', 

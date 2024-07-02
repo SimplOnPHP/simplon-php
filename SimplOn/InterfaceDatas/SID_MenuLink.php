@@ -19,6 +19,5 @@ class SID_MenuLink extends SID_ComplexData {
         } else {
             throw new SC_DataValidationException("$url is not a valid URL");
         }
-        
 	}
 }

@@ -280,8 +280,8 @@ abstract class SDS_SQL extends SDS_DataStorage
 	 * @return [type]
 	 */
 	public function ensureElementStorage( SC_Element &$element) {
-		if($element->storageChecked()) {
-			$return = $element->storageChecked();
+		if($element->getClass()::$storageChecked) {
+			return $element->getClass()::$storageChecked;
 		} else {
 			if(!$this->isSetElementStorage($element)) {
 				if(SC_Main::$DEV_MODE) {
@@ -298,9 +298,9 @@ abstract class SDS_SQL extends SDS_DataStorage
 			} else {
 				$return = true;
 			}
-			$element->storageChecked($return);
+			$element->getClass()::$storageChecked = $return;
+			return $return;
 		}
-		return $return;
 	}
 
 	public function getDataTypes(SC_Element &$element) {

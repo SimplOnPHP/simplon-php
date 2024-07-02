@@ -103,7 +103,7 @@ class SD_ElementsContainerMM extends SD_Data {
                 $results = new SD_Text('Results','VL','No hay datos que mostrar');
             }
 
-            /** @var SR_html $redender */
+            /** @var SR_main2 $redender */
             $redender = $GLOBALS['redender'];
             return $redender->renderData($results,'showView',null,1);
         }
@@ -133,30 +133,6 @@ class SD_ElementsContainerMM extends SD_Data {
      * @param Element $parent
      * @return Element
      */
-    // function parent(&$parent = null){
-    //     if($parent === null){
-    //         return $this->parent;
-    //     } else {
-    //         $this->parent = $parent;
-            
-    //         if(!$this->pivot){
-    //            $this->pivot = new SE_PivotTable(null, 'Pivot_'.strtr($this->parent->getClass(), '\\', '_').'_'.$this->name);
-    //         }
-            
-    //         foreach($this->elements as $element){
-    //             $element->parent($parent);
-    //         }
-        
-    //         foreach($this->allowedClassesInstances as $classInstance){
-    //             $classInstance->nestingLevel($parent->nestingLevel()+1);
-    //         }
-    //     }
-    // }
-
-    /**
-     * @param Element $parent
-     * @return Element
-     */
     function parent(&$parent = null){
         if($parent === null){
             return $this->parent;
@@ -170,10 +146,6 @@ class SD_ElementsContainerMM extends SD_Data {
             foreach($this->elements as $element){
                 $element->parent($parent);
             }
-        
-            foreach($this->allowedClassesInstances as $classInstance){
-                $classInstance->nestingLevel($parent->nestingLevel()+1);
-            }
         }
     }
 
@@ -183,31 +155,6 @@ class SD_ElementsContainerMM extends SD_Data {
 
 
     }
-
-
-
-    // function makeAppendSelection($id){ 
-    //     $element = new $class($id);
-    //     $element->nestingLevel($this->parent->nestingLevel() + 1);
-    //     $return = array(
-	// 		'status' => true,
-	// 		'type' => 'commands',
-	// 		'data' => array(
-    //             array(
-    //                 'func' => 'appendContainedElement',
-    //                 //'func' => 'prependContainedElement',
-    //                 'args' => array($this->showInputView($element),null,'.preview')
-    //             ),
-    //             array(
-    //                 'func' => 'closeLightbox'
-    //             ),
-    //         )
-    //     );
-        
-    //     header('Content-type: application/json');
-    //     echo json_encode($return);
-    // }
-
 
 	public function doRead(){}
 	public function postRead(){

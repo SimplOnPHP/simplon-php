@@ -33,52 +33,8 @@ class SD_ElementsContainerAddAtView extends SD_ElementsContainer {
 			$ret .= $element->getClass().' ---- showCreate ---- ';
 			//$ret .= $element->showCreate();
 		}
-		
-		
-		
-		return $ret;
-		
-	/*	
-		
-		if($template) {
-           
-           $dom = SC_Main::loadDom($template);
-           $tempTemplate = $dom[$this->cssSelector()];
-           
-           $elementsViews = '';
-           foreach($this->elements as $element){
-               $selector = $element->cssSelector();
-               $tmp = $tempTemplate.'';
-               $elementTemplate=$tempTemplate[$element->cssSelector()];
-               $elementsViews.= $element->showView($elementTemplate,true);
-           }
-           
-           $tempTemplate->html($elementsViews);
-        
-            return $tempTemplate->html();
-        } else {
-           // creates a dummy template
-            
-           foreach($this->allowedClassesInstances as $classInstance){
-               $template.= $classInstance->nestingLevel(1)->showView(null, true);
-           }
-           $dom = \phpQuery::newDocument($template);
-           $this->nestingLevelFix($dom);
-           
-		    foreach($this->allowedClassesInstances as $classInstance){
-				$nextStep = $this->encodeURL('makeSelection');
-				$ret.= $classInstance->showCreate('',$classInstance->encodeURL(array(), 'processCreate', array($nextStep)));
-	//array(),'showCreate',array(null, $classInstance->encodeURL(array(), 'processCreate', array($nextStep))
-	//			
-			
-			
-			}
-		   
-		   
-           return $dom.''.$ret;
-        }
 	
-	 */
+		return $ret;
 	}
 	
 }

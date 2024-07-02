@@ -22,7 +22,7 @@ class SC_Manager extends SC_BaseObject{
                 /** @var SC_Element $obj */
                 $obj = $rc->newInstanceArgs();
                 $redender = $GLOBALS['redender'];
-                $links .= '<div><a target="vista" href="'.$redender->encodeURL($obj,array(),'showAdmin').'">'.$obj->getClassNameWords().'</a></div>';
+                $links .= '<div><a target="vista" href="'.$redender->encodeURL($obj,array(),'showAdmin').'">'.$obj->getClassWords().'</a></div>';
                 // $obj->addData('adminAction',new SD_AdminAction('', array($class)) ) ;
 
                 // echo $obj->adminAction();

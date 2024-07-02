@@ -77,15 +77,19 @@ class SC_Main {
 		$PERMISSIONS = false,		//The class that will haldel the permisions for example SE_User
 		$LOAD_ROLE_CLASS = false,	//Wether or not to load the subclass of the premissions element usually a user's role
 
+		
+		/** @var SDS_DataStorage */
 		$DATA_STORAGE,
-		$DEFAULT_RENDERER,
+
+		/** @var SR_main */
+		$RENDERER,
 	
 	//Things rarely to be redefined
 
 		$VCRSL,
 		$VCRSLMethods = array('view','create','update','required','search','list','embeded'),
-		$VCRSLFormMethods = array('create','update','search'),
-		
+
+
 		$URL_METHOD_SEPARATOR = '!',	
 
         $DEFAULT_PERMISSIONS,
@@ -97,10 +101,8 @@ class SC_Main {
 	
 	//Working stuff
         //super array to alter classes atributes on the fly must be in the format "class" -> array("data1name"=>$data1)
-		$SystemMessage = '',
-        $onTheFlyAttributes = array();
+		$SystemMessage = '';
 	
-
 	static
 		$class,
 		$method,
@@ -160,7 +162,7 @@ class SC_Main {
 
         // Look if there is a double $qs and take whats at the end as mmesage
         $server_request = explode($qs.$qs,$server_URI);
-        if (isset($server_request[1])) {$this->setMessage(urldecode($server_request[1]));}
+        if (isset($server_request[1])) { self::$SystemMessage = urldecode($server_request[1]); }
         $server_request = $server_request[0];
 
         //process the rest of the URL to extract The calss and method
@@ -233,16 +235,16 @@ class SC_Main {
         if (session_status() !== PHP_SESSION_ACTIVE) { session_start(); }
 	
 		self::setup($ini);
-
 		$permissionsClass = self::$PERMISSIONS; // Get the class name from the static property
 		self::$PERMISSIONS = new $permissionsClass(); //set the object
 	
-		if(isset($_SESSION["permissionID"])){
+		if(isset($_SESSION["permissionID"])){				
 			self::$PERMISSIONS->fillFromDSById($_SESSION["permissionID"]); // Instantiate the class
 			$role=self::$PERMISSIONS->OuserRole()->viewVal();
 			$permissionsClass = 'AE_'.ucfirst($role);
 			self::$PERMISSIONS = new $permissionsClass($_SESSION["permissionID"]); //set the object
 		}
+
 		$results = self::$DATA_STORAGE->readElements(self::$PERMISSIONS);
 
 		//if there is no user in the database allow a temporary admin that can create users
@@ -275,16 +277,14 @@ class SC_Main {
 			){
 				if(is_object(self::$PERMISSIONS) && (self::$class !='JS' && self::$class!='CSS')   ){
 					$mode='';
-					if(isset($obj->methodsFamilies()[self::$method])){$mode = $obj->methodsFamilies()[self::$method];}
+					if(isset($obj::$methodsFamilies[self::$method])){$mode = $obj::$methodsFamilies[self::$method];}
 					
 					// If there is a user that can enter
 					if( self::$PERMISSIONS->canEnter($obj,$mode) ){	
-						
 						//if there is a set of values for the Element Datas set them
 						if($mode){
 							self::$PERMISSIONS->setValuesByPermissions($obj, $mode);
 						}
-
 						echo call_user_func_array(array($obj, self::$method), self::$method_params);
 					//if there is a user that can't enter
 					}elseif(self::$PERMISSIONS->logedIn()){
@@ -304,20 +304,6 @@ class SC_Main {
 			trigger_error('SimplOn: '.self::$class.' is not a valid class name.', E_USER_ERROR);
 			return;
 		}
-	}
- 
-	//Since SC_Main is static and accesible to all elements is a good place to save Data that are aded on the run time. 
-	/**
-	 * Asings a Data to a specific class during run time, this way classes can be modified on run time. In adiont to what creativity can arrise, this is necesary in some aspects of rendering and data storaging.
-	 */
-	static function addData($class,$attributeName,$attribute) {
-		self::$onTheFlyAttributes[$class][$attributeName]=$attribute;
-	}
-	/**
-	 * Returns all the atributes tha have been dinamically added to a specific class
-	 */
-    static function getOnTheFlyAttributes($class) {
-		return @self::$onTheFlyAttributes[$class] ?: array();
 	}
 
 	/**
@@ -359,7 +345,8 @@ class SC_Main {
 		}elseif ($ClassKind == 'SDS') {						//Simplon DataStorage
 			require_once($simplon_root.'/DataStorages/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'SR') {						//Simplon Render
-			require_once($simplon_root.'/Renderers/'.$classToLoad.'.php');
+			$GLOBALS['redenderFlavor'];
+			require_once($simplon_root.'/Renderers/'.$GLOBALS['redenderFlavor'].'/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'SID') {						//Simplon Interface Data
 			require_once($simplon_root.'/InterfaceDatas/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'AE') {						//App Element

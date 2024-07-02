@@ -52,71 +52,125 @@ class SC_Element extends SC_BaseObject {
 	protected $storage;
 
 	/**
-	 * Criteria to use for searching.
+	 * Criteria to use for searching in the dataStorage.
 	 * 
-	 * By default builds it using the Data attributes' default criteria and the search or delete flags of each
+	 * By default builds it using the Data attributes' default criteria and the search flags of each
 	 * 
 	 * @example (.Data1) AND (Data2 == "Hello")
 	 * @var string
 	 */
 	protected $filterCriteria;
-	protected $deleteCriteria;
 
 	/**
-	 * Represents the nesting level of the element (1 is the ancestor element,
-	 * greater values means deeper nesting).
-	 * Used in the rendering process.
-	 * @var integer
+	 * Criteria to use for selection on the time of deletion in the dataStorage.
+	 * 
+	 * By default builds it using the Data attributes' default criteria and the delete flags of each
+	 * 
+	 * @example (.Data1) AND (Data2 == "Hello")
+	 * @var string
 	 */
-	//protected $nestingLevel = 1;
+	protected $deleteCriteria;
+
+
+	/**
+	 * Elements can be nested by using a special jkind of data called elementContainer if an element is within anotoher that element that contains the curren element can be adressed by the parent attribute.
+	 * 
+	 * !!!!!!!!!!!!!!!!! NOTE: It's not the same as parent:: THAT is a CALL to the parent class
+	 * 
+	 * @var SC_Element
+	 */
 	protected $parent;
-	//------------------------------------------- ???
+
 	/**
 	 * Flag to avoid the system to validate
 	 * DataStorage more than once.
 	 * @var boolean
 	 */
-	protected $storageChecked;
-	protected $exceptionMessages = array();
-	var $quickDelete;
-	//------------------------------------------Performance
+	public static $storageChecked;
+
 	/**
-	 * Stores a list of Element's attributes
-	 * of type Data for better performance.
+	 * Array with the exception Messages
+	 * 
+	 * Used for example when validating for Storing Data
+	 */
+	protected $exceptionMessages = array();
+
+	/**
+	 * Flag to allow deletion without confirmation
+	 * 
+	 * By default it uses the value of SC_MAIN::$QUICK_DELETE
+	 * 
+	 * @var string
+	 */
+	public static $quickDelete;
+
+	/**
+	 * Stores a list of Element's attributes of type SD_Data.
+	 * 
+	 * TODO: Evalute if can be made static
+	 * 
 	 * @var array containing objects of type SD_Data
 	 */
 	protected $dataAttributes;
-	protected $formMethods = array('create', 'update', 'delete', 'search');
-	//-----------------------------------------------------------------------------------------
-	//------------------------------ METHODS --------------------------------------------------
-	//-----------------------------------------------------------------------------------------
 
-	protected $allowAll = false; // true = AllowAll, false = DenyAll
-	protected $permissions;
+	/** 
+	 * Used to store Data atributes added on the fly for all the instances of the class usually links to actions like edit delete or view.
+	 * 
+	 * TODO: Evalute if can be mixed/integrated with $dataAttributes 
+	 * 
+	 * */
+	static $onTheFlyAttributes = array();
+
+
+	/**
+	 * Array containing the acces rules for the datas and methods.
+	 * 
+	 * 	
+	 * Example:
+		admin' => array('*'=>'allow'),
+			'Asesor' => array(
+				'View'=>array(
+					'updateAction'=>'viwableWhen_id_=_CurrentUserId',
+					'deleteAction'=>'hide',
+				),
+				'Search'=>'allow',
+				'Update'=>array(
+					'asesor'=>'fixed_CurrentUserId',
+				),
+				'Create'=>array(
+					'asesor'=>'fixed_CurrentUserId',
+				),
+				'Delete'=>'deny',
+				),
+			'*' => array('showView'=>'allow','*'=>'deny')
+	 * 
+	 */
+	static $permissions;
+
+	/**
+	 * Determines the kind of permissions that are given to the attributes.
+	 * 
+	 * Depending on the $methodsFamilies array each method is assigned a DatasMode
+	 * View, Update, Create, Delete, Search or the method it self. This way the permissions don't have to be asigned for each method but for DatasMode and special methods.
+	 * 
+	 */
 	protected $datasMode;
-
-	/**
-	 * Stores where t ofetch  
-	 * 			"single"	just one JS file but looking on the tree till find one 
-	 * 			"all" 		all the JSs of the family three 
-	 * 			"onlyLast"	just the one corresponding to the class
-	 */
-	protected $jss_to_fectch = 'single';
-	/**
-	 * Stores where t ofetch  
-	 * 			"single"	just one CSS file but looking on the tree till find one 
-	 * 			"all" 		all the CSSs of the family three 
-	 * 			"onlyLast"	just the one corresponding to the class
-	 */
-	protected $csss_to_fectch = 'single';
 
 	protected $Name;
 
 	protected $nameInParent;
 
+	/**
+	 * How to order the elements when listing them
+	 * 
+	 * 
+	 */
 	protected $OrderCriteria = 'SimplOn_id desc';
 
-	public $methodsFamilies = array(
+	/**
+	 * Keeps the relationship between the methods and the datasMode so that is simplier to write the permissions.
+	 */
+	static $methodsFamilies = array(
 		'showView'=>'View',
 		'showSearch'=>'View',
 		'showAdmin'=>'View',
@@ -156,7 +210,7 @@ class SC_Element extends SC_BaseObject {
 		
 		/** 
 		 * View Update Create Delete Search
-		 * 
+		 * TODO:: Still to be asigned a DataMode methods
 		processSelect
 		showEmbededAppendInput
 		showEmbededSearchInput
@@ -170,8 +224,16 @@ class SC_Element extends SC_BaseObject {
 	);
 
 
-	//Variable to indicate thatt teh whole constructor has finished. Used to avoid cicles with SC_ElementBased PERMISSIONS like SE_User but can be used t prevent other kinbdd if infiiteloops and problems 
+
+	static $formMethods = ['showSearch','showCreate','showUpdate'];
+
+	/**
+	 * Flag to indicate that the whole constructor has finished. Used to avoid cicles with SC_ElementBased PERMISSIONS like SE_User but can be used to prevent other kind of infite loops and problems.
+	 * 
+	*/
 	protected $fullyset = false;
+
+
 	/**
 	 * - Calls user defined constructor.
 	 * - Adds default Element's actions.
@@ -182,9 +244,6 @@ class SC_Element extends SC_BaseObject {
 	 * @param DataStorage $specialDataStorage DataStorage to use in uncommon cases.
 	 */
 	public function __construct($id_or_array = null, $storage = null, $specialDataStorage = null) {
-
-		//$this->sonMessage = new SD_Message();  //RSL 2023 Reactivar esto al pasar a v2 todos los Datas o al menos sonMessage
-
 		//On heirs put here the asignation of SimplOndata and attributes
 		if ($storage)
 		$this->storage($storage);
@@ -200,18 +259,18 @@ class SC_Element extends SC_BaseObject {
 		//Call to "construct" function
 		$this->construct($id_or_array, $storage);
 
-		if (!$this->quickDelete)
-			$this->quickDelete = SC_Main::$QUICK_DELETE;
+		if (!self::$quickDelete)
+			self::$quickDelete = SC_Main::$QUICK_DELETE;
 
-		if (!isset($this->viewAction) && true)
-			$this->viewAction = new SD_ViewAction('', array('<img     src="/Imgs/viewIcon.webp" atl="View">'));
+		if (!isset($this->viewAction))
+			$this->viewAction = new SD_viewAction('', array('<img     src="/Imgs/viewIcon.webp" atl="Edit">'));
 		else 
 			$this->viewAction = new SD_emptyAction('', array(''));
 
 		if (!isset($this->createAction))
 		$this->createAction = new SD_CreateAction('', array('<img     src="/Imgs/addIcon.webp" atl="Create">'));
 	
-		if (!isset($this->updateAction) && True)
+		if (!isset($this->updateAction))
 			$this->updateAction = new SD_UpdateAction('', array('<img     src="/Imgs/editIcon.webp" atl="Edit">'));
 		else 
 			$this->updateAction = new SD_emptyAction('', array(''));
@@ -231,7 +290,7 @@ class SC_Element extends SC_BaseObject {
 		$this->selectAppendAction = new SD_SelectAppendAction('', array('Select'));
 
 
-		//$this->multiSelectAction = new SD_DeleteAction('', array('Select'));
+		$this->multiSelectAction = new SD_DeleteAction('', array('Select'));
 		//Load the attributes on the fly
 		$this->addDatas();
 
@@ -246,8 +305,6 @@ class SC_Element extends SC_BaseObject {
 			$this->dataStorage->ensureElementStorage($this);
 		}
 
-		
-
 		if (is_array($id_or_array)) {
 			$this->fillFromArray($id_or_array);
 		} else if ($id_or_array) {
@@ -259,28 +316,6 @@ class SC_Element extends SC_BaseObject {
 
 		$this->fullyset = true;
 	}
-
-
-	public function permissions($dummy = null){
-		return $this->permissions;
-	}
-
-    public function allShow(){
-        $show_methods = array_filter(get_class_methods($this->nombre), function ($string){
-            if(substr($string, 0 ,4) =='show' && $string!='showSelect'){return $string;}
-        } );
-        $ret = '';
-        foreach($show_methods as $method){
-            $ret .= $this->nombre->{$method}();
-        }
-        return $ret;
-    }
-
-	function elementContainerName(){
-		if( $this->nameInParent() || $this->nameInParent() === 0 ){ return $this->nameInParent(); }else{ return 'placeHolderName'; }
-		
-	}
-
 
 	function attributesOfType($type){
 		$ret = array();
@@ -327,16 +362,20 @@ class SC_Element extends SC_BaseObject {
 			return $this->parent;
 		} else {
 			$this->parent = $parent;
-			$this->nestingLevel($parent->nestingLevel() + 1);
 		}
 	}
 
+	function elementContainerName(){
+		if( $this->nameInParent() || $this->nameInParent() === 0 ){ return $this->nameInParent(); }else{ return 'placeHolderName'; }
+		
+	}
+
+
+
 	/**
-	 * Allows some simplicity for coding and declarations, auto makes getters and setters
-	 * so that any Data’s attribute value data->val() can be transparently accessed as a normal
-	 * element attribute by Element->data(); and load all other BasicObject SimplON functionality
+	 * Allows some simplicity for coding and declarations, auto makes getters and setters so that any Data’s attribute value data->val() can be transparently accessed as a normal element attribute by Element->data(); and load all other BasicObject SimplON functionality.
+	 * 
 	 * @see SimplOn.BaseObject::__call()
-	 *
 	 */
 	public function __call($name, $arguments) {
 		//if( !is_string(SC_Main::$PERMISSIONS) && (SC_Main::$PERMISSIONS !== $this)){SC_Main::$PERMISSIONS->setValuesByPermissions($this, $name );}
@@ -399,16 +438,12 @@ class SC_Element extends SC_BaseObject {
 		}
 	}
 
-	function htmlClasses($append = '', $nestingLevel = null) {
-		if (!$nestingLevel)
-		$nestingLevel = $this->nestingLevel();
-		return 'SimplOn Element ' . 'SNL-' . $nestingLevel . ' ' . $this->getClassName() . ' ' . $append;
+	function htmlClasses($append = '') {
+		return 'SimplOn Element ' . $this->getClass() . ' ' . $append;
 	}
 
-	function cssSelector($append = '', $nestingLevel = null) {
-		if (!$nestingLevel)
-		$nestingLevel = $this->nestingLevel();
-		return '.SimplOn.Element.SNL-' . $nestingLevel . '.' . $this->getClassName() . $append;
+	function cssSelector($append = '') {
+		return '.SimplOn.Element.' . $this->getClass() . $append;
 	}
 
 	// -- SimplON key methods
@@ -868,41 +903,16 @@ class SC_Element extends SC_BaseObject {
 		}
 	}
 
-
-
-	// function showCreate($template = null, $output='AE_fullPage', $messages=null){
-	// 	$redender = $GLOBALS['redender'];
-		
-	// 	$action = $redender->action($this,'processCreate');
-	// 	return $redender->render($this,'showCreate', 'AE_fullPage',$template, $action);
-	// }
-
-
-
 	function showDelete($template = null, $output='AE_fullPage', $messages=null){
-		/** @var SR_html $redender */
+		/** @var SR_main2 $redender */
 		$redender = $GLOBALS['redender'];
 		$action = $redender->action($this,'processDeletePage');
 		return $redender->render($this,'showDelete', 'AE_fullPage',$template, $action);
 	}
 
-	// function processDelete() {
-
-	// 	$redender = $GLOBALS['redender'];
-
-	// 	if ($this->delete()) {
-	// 		$redender->setMessage($this->Name().' borrado correctamente');
-	// 		header('Location: ' . $redender->action($this,'showAdmin','id') );
-	// 	} else {
-	// 		// @todo: error handling
-	// 		$redender->setMessage('No se borró '.$this->Name());
-	// 		header('Location: ' . $redender->action($this,'showAdmin','id') );
-	// 	}
-	// }
-
 	function processDeletePage($nextStep = null, $format = 'json') {
-//esta pendienmte el tema de nexstepo el json y las modalidades de delete
-		/** @var SR_html $redender */
+		//esta pendienmte el tema de nexstep o el json y las modalidades de delete
+		/** @var SR_main2 $redender */
 		$redender = $GLOBALS['redender'];
 		$redender->setMessage($this->Name().' borrado correctamente');
 		if(!$nextStep){ $nextStep = $redender->action($this,'showAdmin','id'); }
@@ -933,11 +943,9 @@ class SC_Element extends SC_BaseObject {
 		}
 	}
 
-
-
 	function processSearch() {
 		try {
-			$search = new SE_Search(array($this->getClass()));
+			//$search = new SE_Search(array($this->getClass()));
 
 			$results = $this->dataStorage->readElements($this, 'Elements', $position, $limit);
 			
@@ -945,7 +953,7 @@ class SC_Element extends SC_BaseObject {
 			// $params = ['simplonCols'=>'show'];
 			$results = new SD_Table('Results',$params,$results);
 
-			/** @var SR_html $redender */
+			/** @var SR_main2 $redender */
 			$redender = $GLOBALS['redender'];
 			return $redender->renderData($results,'showView',null,1);
 			// $results = $search->getResults($this->toArray());
@@ -956,8 +964,6 @@ class SC_Element extends SC_BaseObject {
 			user_error($ev->datasValidationMessages());
 		}
 	}
-
-
 
 	function adminTable( $position = null, $limit = null) {
 		try {
@@ -987,7 +993,7 @@ class SC_Element extends SC_BaseObject {
 			}
 
 
-			/** @var SR_html $redender */
+			/** @var SR_main2 $redender */
 			$redender = $GLOBALS['redender'];
 			return $redender->renderData($results,'showView',null,1);
 
@@ -1010,7 +1016,7 @@ class SC_Element extends SC_BaseObject {
 				$results = new SD_Text('Results','VL','No hay datos que mostrar');
 			}
 
-			/** @var SR_html $redender */
+			/** @var SR_main2 $redender */
 			$redender = $GLOBALS['redender'];
 			return $redender->renderData($results,'showView',null,1);
 
@@ -1036,7 +1042,7 @@ class SC_Element extends SC_BaseObject {
 				$results = new SD_Text('Results','VL','No hay datos que mostrar');
 			}
 
-			/** @var SR_html $redender */
+			/** @var SR_main2 $redender */
 			$redender = $GLOBALS['redender'];
 			return $redender->renderData($results,'showView',null,1);
 
@@ -1059,7 +1065,7 @@ class SC_Element extends SC_BaseObject {
 				$results = new SD_Text('Results','VL','No hay datos que mostrar');
 			}
 
-			/** @var SR_html $redender */
+			/** @var SR_main2 $redender */
 			$redender = $GLOBALS['redender'];
 			return $redender->renderData($results,'showView',null,1);
 
@@ -1143,8 +1149,8 @@ class SC_Element extends SC_BaseObject {
 	function showAdmin($template = null, $output='AE_fullPage', $messages=null){
 		$redender = $GLOBALS['redender'];
 		$this->fillFromRequest();
-		$mode = $this->methodsFamilies()[__FUNCTION__];
-;
+		$mode = self::$methodsFamilies[__FUNCTION__];
+
 		if($mode && is_object(SC_Main::$PERMISSIONS) ){
 			SC_Main::$PERMISSIONS->setValuesByPermissions($this, $mode);
 		}
@@ -1418,7 +1424,7 @@ class SC_Element extends SC_BaseObject {
 
 		foreach ($this as $data) {
 			if ($data instanceof SD_Data) {
-				if ($data->hasMethod('parent')) {
+				if ($data->hasMethod('parent') && empty($data->parent()) ) {
 					$data->parent($parent);
 				}
 			}
@@ -1438,58 +1444,6 @@ class SC_Element extends SC_BaseObject {
 		}
 	}
 
-	//----- Display
-
-	/**
-	 * Default method that will be shown in case no methods have been specified.
-	 */
-	public function index() {
-		if (count(SC_Main::$construct_params)) {
-			return $this->showView();
-		} else {
-			return $this->showAdmin();
-		}
-	}
-
-	// public function showCreate($template_file = null, $action = null, $parentClass = null) {
-		
-	// 	return $this->obtainHtml(__FUNCTION__, $template_file, $action);
-	// }
-
-
-
-	// public function showUpdate($template_file = null, $action = null) {
-    //     // \phpQuery::newDocumentFileHTML(realpath($template_file))
-    //     /**
-    //      * @var SR_html $redender
-    //      */
-    //     $redender = $GLOBALS['redender'];
-	// 	return $redender->render($this,__FUNCTION__);
-	// }
-
-
-	public function showView($template = null, $outputType = 'AE_fullPage') {
-		//if(!$template_file){$template_file=null;}
-        // $template = \phpQuery::newDocumentFileHTML(realpath($template_file))
-        /** @var SR_html $redender */
-        $redender = $GLOBALS['redender'];
-		return $redender->render($this,'showView', $outputType ,$template);
-	}
-
-	public function AppName($template_file = null, $partOnly = false) {
-		return SC_Main::$App_Name;
-	}
-
-
-	// public function showEmbeded($template_file = null, $partOnly = false) {
-	// 	if(!$template_file){$template_file=null;}
-    //     // \phpQuery::newDocumentFileHTML(realpath($template_file))
-    //     /** @var SR_html $redender */
-    //     $redender = $GLOBALS['redender'];
-	// 	return $redender->render($this,'showEmbeded', 'AE_fullPage',$template);
-	// }
-
-
 	public function showEmbededStrip(){
 		/** @var string[] $embeadedDatas */
 		$embeadedDatas = $this->datasWith("embeded");
@@ -1500,20 +1454,12 @@ class SC_Element extends SC_BaseObject {
 		}
 		return trim($ret);
 	} 
-	
-
-
-
-	public function callDataMethod($dataName, $method, array $params = array()) {
-		return call_user_func_array(array($this->{'O' . $dataName}(), $method), $params);
-	}
-
 
 	//RSL 2022 #todo 
 	public function addData($attributeName, SD_Data $attribute = null) {
-		///RSL 2022 fix de error que tronaba en ciertas lecturas por falta name en el traibuto
+		///RSL 2022 fix de error que tronaba en ciertas lecturas por falta name en el atributo
 		$attribute->name($attributeName);
-		SC_Main::addData($this->getClass(), $attributeName, $attribute);
+		self::$onTheFlyAttributes[$attributeName]=$attribute;
 		$this->$attributeName = $attribute;
 		if ($attribute instanceof SD_Data) {
 			if (is_array($this->dataAttributes)) {
@@ -1529,17 +1475,18 @@ class SC_Element extends SC_BaseObject {
 		return $this;
 	}
 
-	public function removeOnTheFlyAttribute($attributeName) {
-		///RSL 2022 fix de error que tronaba en ciertas lecturas por falta name en el traibuto
-
-		$this->$attributeName = null;
-		$this->dataAttributes = $this->attributesTypes();
-
+	public function removeData($attributeName) {
+		if ($attribute instanceof SD_Data) {
+			unset($obj->$attributeName);
+			unset(self::$onTheFlyAttributes[$attributeName]);
+			SC_Main::removeData($this->getClass(), $attributeName);
+			$this->dataAttributes = $this->attributesTypes();
+		}
 		return $this;
 	}
 
 	public function addDatas() {
-		foreach (SC_Main::getOnTheFlyAttributes($this->getClass()) as $attributeName => $attribute) {
+		foreach (self::$onTheFlyAttributes as $attributeName => $attribute) {
 			$this->$attributeName = clone $attribute;
 			if ($attribute instanceof SD_Data) {
 				if (is_array($this->dataAttributes)) {
@@ -1565,126 +1512,77 @@ class SC_Element extends SC_BaseObject {
 		$this->{$this->fieldId()}->clearValue();
 	}
 
-	public function showSelect($template_file = null, $action = null, $previewTemplate = null, $sid = null) {
-		if ($previewTemplate && $sid) {
-			$this->addData('previewTemplate', new SD_Hidden(null, 'CUSf', $previewTemplate, ''));
-			$this->addData('sid', new SD_Hidden(null, 'CUSf', $sid, ''));
-		}
-		$redender = $GLOBALS['redender'];
-		return $redender->render($this,'showSelect', 'AE_basicPage',$template, $action);
-	}
-	public function showSearchSelect($template_file = null, $action = null, $previewTemplate = null, $sid = null) {
-		if ($previewTemplate && $sid) {
-			$this->addData('previewTemplate', new SD_Hidden(null, 'CUSf', $previewTemplate, ''));
-			$this->addData('sid', new SD_Hidden(null, 'CUSf', $sid, ''));
-		}
-		$redender = $GLOBALS['redender'];
-		return $redender->render($this,'showSearchSelect', 'AE_basicPage',$template, $action);
-	}
+	/**
+	 * function makeSelection - this function pass the arguments to javascript file to 
+	 * display the light box.
+	 * @param type $id
+	 */
+	function makeSelection(){
 
-	
-	public function showSelectAppend($template_file = null, $action = null, $previewTemplate = null, $sid = null) {
-		if ($previewTemplate && $sid) {
-			$this->addData('previewTemplate', new SD_Hidden(null, 'CUSf', $previewTemplate, ''));
-			$this->addData('sid', new SD_Hidden(null, 'CUSf', $sid, ''));
-		}
-		$redender = $GLOBALS['redender'];
-		return $redender->render($this,'showSelectAppend', 'AE_basicPage',$template, $action);
-	}
-	
-
-/**
- * function makeSelection - this function pass the arguments to javascript file to 
- * display the light box.
- * @param type $id
- */
-function makeSelection(){
-
-	$return = array(
-		'status' => true,
-		'type' => 'commands',
-		'data' => array(
-			// array(
-			// 	'func' => 'changeValue',
-			// 	'args' => array($this->getId())
-			// ),
-			array(
-				'func' => 'changePreview',
-				'args' => array($this->showEmbededUpdateInput(null,true))
-			),
-			array(
-				'func' => 'closeLightbox'
-			),
-		)
-	);
-	header('Content-type: application/json');
-	echo json_encode($return);
-
-}
-
-function makeAppendSelection(){
-	$return = array(
-		'status' => true,
-		'type' => 'commands',
-		'data' => array(
-			array(
-				'func' => 'appendContainedElement',
-				'args' => array($this->showEmbededAppendInput(null,true))
-			),
-			array(
-				'func' => 'closeLightbox'
-			),
-		)
-	);
-	header('Content-type: application/json');
-	echo json_encode($return);
-
-}
-
-
-
-function makeSearchAdition(){
-
-	$return = array(
-		'status' => true,
-		'type' => 'commands',
-		'data' => array(
-			array(
-				'func' => 'changeValue',
-				'args' => array($this->getId())
-			),
-			array(
-				'func' => 'changePreview',
-				'args' => array($this->showEmbededSearchInput(null,true))
-			),
-			array(
-				'func' => 'closeLightbox'
-			),
-		)
-	);
-	header('Content-type: application/json');
-	echo json_encode($return);
-
-}
-
-
-	public function showReport($start = 0, $limit = null, $template_file = null, $add_html = array(), $partOnly = false) {
-		$redender = $GLOBALS['redender'];
-		if (!isset($limit)) {
-			$limit = SC_Main::$LIMIT_ELEMENTS;
-		}
-		///RSL2022
-		//$caller_method, $template = null, $action = null, $add_html = array(), $partOnly = false
-		
-	
-		$header = '<h1>' . $this->getClass() . '</h1>'
-		. '<div id="SimplOn-list" class="SimplOn section">' . $this->obtainHtml(
-		"showSearch", null, $redender->encodeURL(array(), 'showReport'), array('footer' => $this->processReport($start, $limit)), 'body'
-		) . '</div>'
-		;
-		return $this->obtainHtml(
-		"showReport", $template_file, null, array_merge($add_html, array('header' => $header)), $partOnly
+		$return = array(
+			'status' => true,
+			'type' => 'commands',
+			'data' => array(
+				// array(
+				// 	'func' => 'changeValue',
+				// 	'args' => array($this->getId())
+				// ),
+				array(
+					'func' => 'changePreview',
+					'args' => array($this->showEmbededUpdateInput(null,true))
+				),
+				array(
+					'func' => 'closeLightbox'
+				),
+			)
 		);
+		header('Content-type: application/json');
+		echo json_encode($return);
+
+	}
+
+	function makeAppendSelection(){
+		$return = array(
+			'status' => true,
+			'type' => 'commands',
+			'data' => array(
+				array(
+					'func' => 'appendContainedElement',
+					'args' => array($this->showEmbededAppendInput(null,true))
+				),
+				array(
+					'func' => 'closeLightbox'
+				),
+			)
+		);
+		header('Content-type: application/json');
+		echo json_encode($return);
+
+	}
+
+
+
+	function makeSearchAdition(){
+
+		$return = array(
+			'status' => true,
+			'type' => 'commands',
+			'data' => array(
+				array(
+					'func' => 'changeValue',
+					'args' => array($this->getId())
+				),
+				array(
+					'func' => 'changePreview',
+					'args' => array($this->showEmbededSearchInput(null,true))
+				),
+				array(
+					'func' => 'closeLightbox'
+				),
+			)
+		);
+		header('Content-type: application/json');
+		echo json_encode($return);
 	}
 
 	public function Name($name = null){
@@ -1700,7 +1598,7 @@ function makeSearchAdition(){
 	}
 
 	function showMultiPicker() {
-		return SC_Main::$DEFAULT_RENDERER->table(array($this->toArray()));
+		return SC_Main::$RENDERER->table(array($this->toArray()));
 	}
 
 	function getId() {
@@ -1745,28 +1643,13 @@ function makeSearchAdition(){
 		return $return;
 	}
 
-	public function nestingLevel($nestingLevel = null) {
-		if (isset($nestingLevel)) {
-			$this->nestingLevel = $nestingLevel;
-			foreach ($this->datasWith('parent') as $container) {
-				$this->{'O' . $container}()->parent($this);
-			}
-			return $this;
-		} else {
-			return $this->nestingLevel;
-		}
-	}
-
 	//------------------------------- Performance
-
 	function dataAttributes() {
 		if (!$this->dataAttributes) {
 			$this->dataAttributes = $this->attributesTypes();
 		}
 		return $this->dataAttributes;
 	}
-
-
 
 	// @todo: change name to attributesOfType
 	function attributesTypes($type = 'SD_Data') {
@@ -1798,7 +1681,7 @@ function makeSearchAdition(){
 	 * 
 	 * @return SD_Data[] 
 	 */
-	public function datasWith(string $what) {
+	public function datasWith(string $what,$retType = 'strings') {
 		$output = array();
 		$tempArray = SC_Main::$VCRSLMethods;
 		$tempArray[] = 'parent';
@@ -1806,7 +1689,11 @@ function makeSearchAdition(){
 		if(in_array($what,$tempArray)){
 			foreach ($this->dataAttributes() as $data) {
 				if ($this->$data->$what()) {
-					$output[] = $data;
+					if($retType == 'strings'){
+						$output[] = $data;
+					}elseif($retType == 'objects'){
+						$output[] = $this->$data;
+					}
 				}
 			}
 		}else{
@@ -1827,10 +1714,10 @@ function makeSearchAdition(){
                 asort($roleNameHierarchy);
                 if (isset($_SESSION['simplonUser'])) {
                         foreach ($roleNameHierarchy as $value) {
-                            if (isset($this->permissions[$value])) {
-                                    return $this->isAllowed($this->permissions[$value], $method); 
-                            } elseif (isset($this->permissions['default'])){
-                                    return $this->isAllowed($this->permissions['default'], $method);
+                            if (isset(self::$permissions[$value])) {
+                                    return $this->isAllowed(self::$permissions[$value], $method); 
+                            } elseif (isset(self::$permissions['default'])){
+                                    return $this->isAllowed(self::$permissions['default'], $method);
                             } elseif (isset(SC_Main::$DEFAULT_PERMISSIONS[$value])) {
                                     return $this->isAllowed(SC_Main::$DEFAULT_PERMISSIONS[$value], $method);
                             } else {

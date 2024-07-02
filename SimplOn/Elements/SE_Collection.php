@@ -23,6 +23,7 @@
  */
 class SE_Collection extends SC_Element
 {
+	static $permissions;
 	
 	/*
 

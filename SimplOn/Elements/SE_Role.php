@@ -2,8 +2,7 @@
 
 class SE_Role extends SC_Element
 {
-
-	public $permissions = array(
+	static $permissions = array(
 		'admin' => array('*'=>'allow'),
 		'*' => array('*'=>'deny')
 	);

@@ -14,22 +14,11 @@
 class SC_BaseObject
 {
 	/**
-	 * Returns the object class
-	 *
-	 * @return string Class of the object
-	 */
-	public function getClass($fssafe = '') {
-		return $fssafe
-			? strtr(get_class($this), '\\', $fssafe)
-			: get_class($this);
-	}
-	
-	/**
 	 * Returns the object's class
 	 *
 	 * @return string Class of the object
 	 */
-	public function getClassName()
+	public function getClass()
 	{
 		$class = explode('\\',get_class($this));
 		return end($class);
@@ -41,7 +30,7 @@ class SC_BaseObject
 	 *
 	 * @return string Class of the object without the prefixes AE_, SC_, SE_, SD_, AD_, etc.
 	 */
-	public function getClassNameWords($getPrefix = false)
+	public function getClassWords($getPrefix = false)
 	{
 		$words = get_class($this);
 		if(!$getPrefix){$words = substr($words,3);} 
@@ -133,6 +122,6 @@ class SC_BaseObject
 	 * Class and instance id
 	 */
 	public function ObjectId() {
-		return $this->getClassName() . '-' . $this->instanceId();
+		return $this->getClass() . '-' . $this->instanceId();
 	}
 }

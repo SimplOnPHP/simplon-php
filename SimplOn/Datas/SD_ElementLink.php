@@ -53,7 +53,7 @@ class SD_ElementLink extends SD_SimplOnLink {
          * parent::__construct($label,$sources, $flags, null, $searchop);
          */
 	public function __construct($label, array $sources, $method, array $method_params = array(), $flags=null, $searchOp=null){
-            //var_dump($this->parent->getClassName());
+            //var_dump($this->parent->getClass());
             $class = '';
             $construct_params = array();
                       
@@ -91,21 +91,19 @@ class SD_ElementLink extends SD_SimplOnLink {
          * to "<a></a>" tags
          * 
          * @param string $append
-         * @param null $nestingLevel
          * @return string
          */
-	function htmlClasses($append = '', $nestingLevel = null) {
-        return parent::htmlClasses('Action '.$append, $nestingLevel);
+	function htmlClasses($append = '') {
+        return parent::htmlClasses('Action '.$append);
     }
 	/**
          * 
          * function cssSelector - this function specifies the correct css selector for this data
          * 
          * @param string $append
-         * @param null $nestingLevel
          * @return string
          */
-	function cssSelector($append = '', $nestingLevel = null) {
-        return parent::cssSelector('.Action'.$append, $nestingLevel);
+	function cssSelector($append = '') {
+        return parent::cssSelector('.Action'.$append);
     }
 }

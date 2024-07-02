@@ -59,7 +59,7 @@ class SD_ElementContainerDropBox extends SD_ElementContainer {
 	function showList(){
 		//return $this->options()[$this->val];
 		
-        /** @var SR_html $redender */
+        /** @var SR_main2 $redender */
 		$redender = $GLOBALS['redender'];
 		return call_user_func_array(array($redender, 'renderData'), [$this,'showList']);
 	}

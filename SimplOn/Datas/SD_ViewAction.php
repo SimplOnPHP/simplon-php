@@ -27,13 +27,24 @@
  * @category Data
  */
 class SD_ViewAction extends SD_ElementLink {
-	
-	public function __construct($label, array $sources, $flags=null, $searchOp=null){
-		parent::__construct($label,$sources, 'showView',array(), $flags,null,$searchOp);
-	}
-	
-
-	// public function val($val = null){
-	// 	return null;
-	// }
+    /**
+     * 
+     * function __construct - this construct just especify the method "showCreate"
+     * to create the correct link to method 
+     * 
+     * @param string $label
+     * @param array $sources
+     * @param string $flags
+     * @param null $searchOp
+     */
+    
+    public function __construct($label, array $sources, $flags=null, $searchOp=null){
+    	parent::__construct($label, $sources, 'showView', array(), $flags,null,$searchOp);
+    }
+    
+    public function val($sources = null){
+            $this->parent->clearId();
+            $link = parent::val($sources);
+            return $link;
+    }
 }

@@ -113,38 +113,6 @@ class SD_ElementContainer extends SD_Data {
             $this->element->parent($parent);
         }
     }
-    
-	/**
-         * 
-         * function showView - this function obtains the html content of the son
-         * element for introduce just that part into the parent element in the 
-         * differents templates and modifies the nesting level of the elements.
-         * 
-         * @param string $template
-         * @return string
-         */
-	// function showView($template = null)
-	// {
-    //     if($template) {
-    //         $template = SC_Main::loadDom($template);
-    //         $template = $this->element->showView($template[$this->cssSelector().' '.$this->element->cssSelector()],true);
-    //     } else {
-    //        // creates a dummy template
-    //        /** @var SC_Element $element */
-	// 	   $element = $this->element->getClass();
-    //        $element = new $element($this->element->getId());
-    //        $template = $element->showView(null, true);
-    //     }  
-    //     $template=$template;
-    //     $dom = \phpQuery::newDocument($template);
-        
-    //     if(@$element) {
-    //         $this->nestingLevelFix($dom);
-    //     }
-        
-    //     return $dom.'';
-        
-	// }
 
 	function showList(){
 		return $this->element->showEmbededStrip();
@@ -171,10 +139,6 @@ class SD_ElementContainer extends SD_Data {
         }  
         $template=$template;
         $dom = \phpQuery::newDocument($template);
-        
-        if(@$element) {
-            //$this->nestingLevelFix($dom);
-        }
         
         return $dom.'';
         
@@ -214,7 +178,7 @@ class SD_ElementContainer extends SD_Data {
 				return $this->val;
 			} else return @$this->element->getId();
 		}
-        $this->element->addData('parentClass' , new SD_Hidden(null,'CUSf', $this->parent->getClassName() )    );
+        $this->element->addData('parentClass' , new SD_Hidden(null,'CUSf', $this->parent->getClass() )    );
         $this->element->addData('dataName' , new SD_Hidden(null,'CUSf', $this->name(), '' )   );
         $this->element->addData('parentId' , new SD_Hidden(null,'CUSf', $this->parent->getId())  );
         $this->element->addData('selectAction' , new SD_SelectAction('', array('Select')) );
@@ -227,46 +191,6 @@ class SD_ElementContainer extends SD_Data {
 			return '';
 		}
 	}
-
-
-	/**
-         * function input - this function displies the HTML to list and add new values into 
-         * parent element. 
-         * @param boolean $fill
-         * @return string
-         */
-	// function showInput($fill=true)
-	// {
-    //     $nextStep = $this->encodeURL('makeSelection');
-    //     $addHref = htmlentities(
-	// 		$this->element->encodeURL(
-	// 			array(),
-	// 			'showCreate',
-	// 			array(
-	// 				'',
-	// 				$this->element->encodeURL(
-	// 					array(),
-	// 					'processCreate',
-	// 					array($nextStep)
-	// 				)
-	// 			)
-	// 		)
-	// 	);
-    //     return  '
-    //         <div class="SimplOn label">'.$this->label().':</div>
-	// 		<div class="ElementBox">
-	// 			<div class="SimplOn preview">
-	// 				'.$this->showEmbededUpdateInput().'
-	// 			</div>
-	// 			<div class="SimplOn options">
-	// 				<a class="SimplOn lightbox boton" href="'.htmlentities($this->encodeURL('showSelect')).'"><img src="./Imgs/chooseIcon.webp" alt="Choose"></a>
-	// 				<a class="SimplOn lightbox boton" href="'.$addHref.'"><img src="./Imgs/addIcon.webp" alt="Add"></a>
-	// 			</div>
-	// 		</div>
-    //         <input class="SimplOn input" name="'.$this->name().'" type="hidden" value="'.($fill?$this->val():'').'" />
-	// 	';
-	// }
-
 
     /**
      * function showEmbededUpdateInput - this function works after function showInput, after 
@@ -345,25 +269,6 @@ class SD_ElementContainer extends SD_Data {
 		}
 	}
 	
-    /**
-     * function nestingLevelFix - this function update the nesting level of the elements
-     * every time that a new element is added.
-     * 
-     * @param type $dom
-     */
-    // function nestingLevelFix(&$dom) {
-    //     $startingNestingLevel = $this->parent->nestingLevel();
-    //     foreach($dom['.SimplOn.Element, .SimplOn.Data'] as $node) {
-    //         $domNode = pq($node);
-    //         $classes = explode(' ', $domNode->attr('class'));
-    //         if(substr($classes[2], 0, 4) == 'SNL-') {
-    //             $nestingLevel = substr($classes[2], 4) + $startingNestingLevel;
-    //             $classes[2] = 'SNL-' . $nestingLevel;
-    //             $domNode->attr('class', implode(' ', $classes));
-    //         }
-    //     }
-    // }
-
     function makeSelection($id){
         /*@var parentElement SC_Element */
         $this->element->fillFromDSById($id);

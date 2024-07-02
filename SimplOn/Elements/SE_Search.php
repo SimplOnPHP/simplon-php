@@ -28,6 +28,7 @@
  */
 class SE_Search extends SC_Element
 {
+	static $permissions;
 	public $total;
 
 	///RSL 2022
@@ -154,6 +155,7 @@ class SE_Search extends SC_Element
 				$this->fillFromRequest();
 			}catch(SC_ElementValidationException $ev){}	
 		// mutilation
+
 		if(is_array($this->dataAttributes)) 
 				$this->dataAttributes = array_diff($this->dataAttributes, array('elementsTypes'));
 		$elementsTypes = $this->elementsTypes();
@@ -166,6 +168,7 @@ class SE_Search extends SC_Element
         // restoration
 		$this->elementsTypes($elementsTypes);
 		$this->dataAttributes[] = 'elementsTypes';
+
 		return $this->searchResults;
 	}
         
@@ -174,14 +177,14 @@ class SE_Search extends SC_Element
 		///RSL 2022 agregue esto --- Fix para poder leer los datos sin sacar la tabla
 
 		$this->getResults($params, $columns, $position, $limit);
-		//$return = SC_Main::$DEFAULT_RENDERER->table_from_elements($this->searchResults,$columns); //@review the use of $this->datastorage -- such variable must be aasigned to the element DataStorage at some point or it will search on the incorrect DA if the Element's DS is not the default DS
+		//$return = SC_Main::$RENDERER->table_from_elements($this->searchResults,$columns); //@review the use of $this->datastorage -- such variable must be aasigned to the element DataStorage at some point or it will search on the incorrect DA if the Element's DS is not the default DS
 		/// RSL 2022 quite esto 
-		//$return = SC_Main::$DEFAULT_RENDERER->table_from_elements($this->dataStorage->readElements($this, 'Elements', $position, $limit),$columns); //@review the use of $this->datastorage -- such variable must be aasigned to the element DataStorage at some point or it will search on the incorrect DA if the Element's DS is not the default DS
+		//$return = SC_Main::$RENDERER->table_from_elements($this->dataStorage->readElements($this, 'Elements', $position, $limit),$columns); //@review the use of $this->datastorage -- such variable must be aasigned to the element DataStorage at some point or it will search on the incorrect DA if the Element's DS is not the default DS
 
 		
 		$results = new SD_Table('Results',$params,$this->searchResults);
 
-		/** @var SR_html $redender */
+		/** @var SR_main2 $redender */
 		$redender = $GLOBALS['redender'];
 		return $redender->renderData($results,'showView',null,1);
 
