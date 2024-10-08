@@ -1,0 +1,6 @@
+{
+    "require": {
+        "voku/simple_html_dom": "^4.8",
+        "filp/whoops": "^2.15"
+    }
+}

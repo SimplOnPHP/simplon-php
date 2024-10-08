@@ -32,14 +32,14 @@ class SD_Password extends SD_String {
      *
      * @var boolean $encripttedFlag - this variable indicates if the value introduced 
      * will be encrypted or is encrupted or not.
-     * @var string $valudationCurrent, $validationMatch - these variables are 
+     * @var string $validationCurrent, $validationMatch - these variables are 
      * messages to be use in the exceptions
      * @var boolean $view, $list, $required, $search - these variables are flags 
      * to indicate if this input will be displayed in the different templates
      */
 	protected 
 		$encriptedFlag = False,
-		$valudationCurrent = 'The current password is incorrect',
+		$validationCurrent = 'The current password is incorrect',
 		$validationMatch = "The new password and the validation doesn't match",	
 		$view = False,
 		$list = False,

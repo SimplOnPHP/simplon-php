@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+		<link rel="stylesheet" href="../css/simplon-base.css">
+		<link rel="stylesheet" href="../css/simplon-auto.css">
+		<title>SimplOn</title>
+	</head>
+	<body>
+        <section class="showView showList showEmbeded">
+            <div class="SD_ElementContainerDropBox  ">
+                $label
+                $elements 
+            </div>
+        </section>
+        <section class="showCreate">
+            <div class="SimplOn SD_withLabel SD_ElementsContainerMM">
+                <label for="$htmlId" >$label:<span class="$SRrequiredText ">*</span></label>
+                <div class="ElementBox">
+                    <div class="SimplOn options">
+                        <a class="SimplOn lightbox Action" href="$SRaction_showSelectAppend_id"><img     src="/Imgs/chooseIcon.webp" alt="Choose"></a>
+                        <a class="SimplOn lightbox Action" href="$SRaction_showCreateSelect"><img     src="/Imgs/addIcon.webp" alt="Add"></a>
+                        <input class="SimplOn input nameREF" type="hidden" value="$name" />
+                    </div> 
+                    <div class="preview">
+                        
+                    </div>
+                     
+                </div>
+            </div>           
+        </section>
+        <section class="showInput showUpdate showFixedValue">
+            <div class="SimplOn SD_withLabel SD_ElementsContainerMM">
+                <label for="$htmlId" >$label:<span class="$SRrequiredText ">*</span></label>
+                <div class="ElementBox">
+                    <div class="SimplOn options">
+                        <a class="SimplOn lightbox Action" href="$SRaction_showSelectAppend_id"><img     src="/Imgs/chooseIcon.webp" alt="Choose"></a>
+                        <a class="SimplOn lightbox Action" href="$SRaction_showCreateAppend"><img     src="/Imgs/addIcon.webp" alt="Add"></a>
+                        <input class="SimplOn input nameREF" type="hidden" value="$name" />
+                    </div> 
+                    <div class="preview">
+                        $updateElements
+                    </div>
+                     
+                </div>
+            </div>           
+        </section>
+	</body>
+</html>

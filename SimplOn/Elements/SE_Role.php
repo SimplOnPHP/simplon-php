@@ -2,6 +2,9 @@
 
 class SE_Role extends SC_Element
 {
+	
+	public static $storageChecked;
+
 	static $permissions = array(
 		'admin' => array('*'=>'allow'),
 		'*' => array('*'=>'deny')
@@ -30,5 +33,5 @@ class SE_Role extends SC_Element
 			return $results[0]['id'];
 		}
 	}	
-
+ 
 }

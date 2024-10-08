@@ -126,7 +126,7 @@ abstract class SDS_SQL extends SDS_DataStorage
 				$dbColumns[$dbColumn['Field']] = $dbColumn;
 			}
 		}
-		
+
 		foreach($this->db->query('SHOW INDEXES FROM `'.$element->storage().'`')->fetchAll() as $dbIndex){
 			//if( $dbIndex['Column_name']!=$element->fieldId() && !$element->{'O'.$dbIndex['Column_name']}()->search() ) {
 				// DROP INDEX
@@ -136,7 +136,7 @@ abstract class SDS_SQL extends SDS_DataStorage
 				$dbIndexes[$dbColumn['Column_name']] = $dbIndex;
 			}*/
 		}
-		
+
 		$dbColumnsKeys = array_keys($dbColumns);
 		foreach($elementData as $dataName => $dataType) {
 			$flags = $dataType.' '.($element->{'O'.$dataName}()->required() ? 'NOT NULL' : 'NULL');
@@ -154,10 +154,11 @@ abstract class SDS_SQL extends SDS_DataStorage
 				$alters[] = 'ADD INDEX `Index'.$dataName.'` ('.(($dataType==='text') ? $dataName .= '(200)' : $dataName).' ASC)';
 			}
 		}
-		
+		$alters[] = 'ADD INDEX `Index'.$dataName.'` ('.(($dataType==='text') ? $dataName .= '(200)' : $dataName).' ASC)';
 		$alters[] = 'ADD PRIMARY KEY (`'.$element->fieldId().'`)';
 		
 		$q = 'ALTER TABLE `'.$element->storage().'` '.implode(', ', $alters);
+
 		return $this->db->query($q);
 	}
 	
@@ -282,7 +283,7 @@ abstract class SDS_SQL extends SDS_DataStorage
 	public function ensureElementStorage( SC_Element &$element) {
 		if($element->getClass()::$storageChecked) {
 			return $element->getClass()::$storageChecked;
-		} else {
+		} else {			
 			if(!$this->isSetElementStorage($element)) {
 				if(SC_Main::$DEV_MODE) {
 					$return = $this->createTable($element);

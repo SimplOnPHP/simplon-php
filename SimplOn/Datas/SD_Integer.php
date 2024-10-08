@@ -39,10 +39,10 @@ class SD_Integer extends SD_Data {
 		$list = true;
     /**
      *
-     * @var string $valudationNaN - is a message to display just if the value introduced
+     * @var string $validationNaN - is a message to display just if the value introduced
      * isn't an integer number.
      */
-    public $valudationNaN = 'This field must be an integer number.';
+    public $validationNaN;
     /**
      * function val - This function verifies if the value introduced is an integer number, 
      * if isn't throw an exception.
@@ -51,17 +51,26 @@ class SD_Integer extends SD_Data {
      * @return void
      * @throws SC_DataValidationException 
      */
+
+
+    function __construct($label=null,$campo=null,$inputName=null,$val=null) {
+        $this->validationNaN = L("The value introduced isn't an integer number");
+        parent::__construct($label,$campo,$inputName,$val);
+    }
+
     function val($val = null) {
         // if $val is defined and isn't null, start to verify the value
         if(isset($val)) {
             if(!$this->fixedValue) {
                 //verify if it's a numeric and integer number
-                if(is_numeric($val) && is_int($val*1))
+                if(is_numeric($val) AND is_integer((int)$val)){
+                
                     //if it's true save the value into $var that belongs to Data
-                    $this->val = intval($val);
-                else
+                    $this->val = (int)$val;
+                }else{
                     //if it's false throw an exception
-                    throw new SC_DataValidationException ($this->valudationNaN);
+                    throw new SC_DataValidationException ($this->validationNaN);
+                }
             }
 	    }else{ //if $val is null return the variable
             return $this->val;
@@ -79,7 +88,7 @@ class SD_Integer extends SD_Data {
 //		$ret = parent::validationMessages();
 //		
 //		if( !(is_numeric($this->val) && is_int($this->val*1)) ) {
-//			$ret[]=$this->valudationNaN;
+//			$ret[]=$this->validationNaN;
 //		}
 //		
 //		return $ret;

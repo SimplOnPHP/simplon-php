@@ -1,7 +1,10 @@
 <?php
 
+use voku\helper\HtmlDomParser;
+
 class SE_User extends SC_Element
 {
+	public static $storageChecked;
 	static $permissions;
 	
 	protected
@@ -33,25 +36,25 @@ class SE_User extends SC_Element
         $this->id = new SD_NumericId(null); 
 		$this->userName = new SD_String('User','VCUSLR');
 		$this->password = new SD_Password('Password');
+		$this->role = new SD_Hidden('admin','vcuslerf',$_SERVER['REQUEST_URI']);
 		$this->sourceURL = new SD_Hidden(null,'vcuslerf',$_SERVER['REQUEST_URI']);
 
 		//We need to ensure there is an admin role in the DB
 		$role = new SE_Role();
-		$role->asureRole('admin');
+		///////////$role->asureRole('admin');
 
-		$this->userRole = new SD_ElementContainerDropBox($role,'Rol',null,'RS');
+		$this->userRole = new SD_ElementContainerDropBox($role,'Rol',null,'RSL');
 		//Needed  to load the options before SE_User is created 
-		$this->userRole->options();
+		//$this->userRole->options();
 
-		$redender = $GLOBALS['redender'];
 
-		$this->processLoginLink = $redender->action($this,'processLogin');
-		//$this->logoutLink = $redender->action($this,'logout');
+		$this->processLoginLink = $this->renderer()->action($this,'processLogin');
+		//$this->logoutLink = $this->renderer()->action($this,'logout');
 
-		self::$formMethods = parent::$formMethods ;
-		self::$formMethods[] = 'login';
+		// self::$formMethods = parent::$formMethods ;
+		// self::$formMethods[] = 'login';
 
-        $this->menu = new SID_Menu([]);
+        $this->menu = new SI_SystemMenu([]);
 
 	}
 	
@@ -71,6 +74,8 @@ class SE_User extends SC_Element
 
 			//If something is missing send the message
 			$data = array();
+
+			
 			foreach ($ev->datasValidationMessages() as $key => $value) {
 				$data[] = array(
 				'func' => 'showValidationMessages',
@@ -101,7 +106,7 @@ class SE_User extends SC_Element
 			$_SESSION["userName"] = $this->userName();
 			$_SESSION["userRole"] = $this->userRole->viewVal();	
 
-			if($_REQUEST['sourceURL']){
+			if(is_set($_REQUEST['sourceURL'])){
 				$nextStep = $_REQUEST['sourceURL'];
 			}else{
 				$nextStep = '';
@@ -134,7 +139,7 @@ class SE_User extends SC_Element
 	public function fillFromRequest() {
 		if ($_REQUEST) {
 			$this->fillFromArray($_REQUEST);
-			$this->password->encriptedFlag(False);
+			$this->password->encriptedFlag(False);			
 			return;
 		} else {
 			return false;
@@ -163,8 +168,14 @@ class SE_User extends SC_Element
 			return false;
 		}
 	}
-	
 
+	function showLogin(){		
+		$action = $this->renderer->action($this,'processLogin');
+        $form = new SI_Form([$this->userName,$this->password], $action, 'login', 'showInput');
+		$form->addItem(new SI_SubmitButton(L('Entrar')));
+        return $this->renderer->renderBasicPage($form, 'showLogin', $this);
+	}
+	
 	function processCreate(){
 		if($this->userName() == 'emptyAdmin'){
 			throw new SC_Exception('You can not create a user with the name emptyAdmin');
@@ -332,7 +343,7 @@ self::$permissions = array(
 	}
 
 	public function default(){
-		return $this->showDashboard();
+		return $this->showLogin();
 	}
 
 	

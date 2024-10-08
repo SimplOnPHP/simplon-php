@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+		<link rel="stylesheet" href="../css/simplon-base.css">
+		<link rel="stylesheet" href="../css/simplon-auto.css">
+		<title>SimplOn</title>
+        <style>
+            .SD_Action img.action{
+                height: 1.1rem;
+            }
+
+        </style>
+	</head>
+	<body>
+
+        <section class="showView showEmbeded showList showCreate showInput showSearch showUpdate showFixedValue">
+            <div class="SD_Action">
+               <a href="$val">$text</a>
+            </div>   
+        </section>
+        <section class="showViewIcon showEmbededIcon showListIcon showCreateIcon showInputIcon showSearchIcon showUpdateIcon showFixedValueIcon">
+            <div class="SD_Action">
+               <a href="$val"><img class="action" src="$icon" alt="$text" /></a>
+            </div>   
+        </section>
+	</body>
+</html>

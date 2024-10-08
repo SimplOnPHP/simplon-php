@@ -88,11 +88,11 @@ class SE_Search extends SC_Element
 		$this->getFields();
 		
 		
-		$this->viewAction = new SD_ViewAction('', array('View'));
+		///$this->viewAction = new SD_ViewAction('', array('View'));
 		// @todo: make it possible to create a new SE_Search using an HTML form
-		$this->createAction = new SD_CreateAction('', array('Create'));
-		$this->updateAction = new SD_UpdateAction('', array('Update'));
-		$this->deleteAction = new SD_DeleteAction('', array('Delete'));
+		///$this->createAction = new SD_CreateAction('', array('Create'));
+		///$this->updateAction = new SD_UpdateAction('', array('Update'));
+		///$this->deleteAction = new SD_DeleteAction('', array('Delete'));
 
 		// Tells the SimplOndata whose thier "container" in case any of it has context dependent info or functions.
 		$this->assignAsDatasParent();
@@ -181,14 +181,9 @@ class SE_Search extends SC_Element
 		/// RSL 2022 quite esto 
 		//$return = SC_Main::$RENDERER->table_from_elements($this->dataStorage->readElements($this, 'Elements', $position, $limit),$columns); //@review the use of $this->datastorage -- such variable must be aasigned to the element DataStorage at some point or it will search on the incorrect DA if the Element's DS is not the default DS
 
-		
 		$results = new SD_Table('Results',$params,$this->searchResults);
 
-		/** @var SR_main2 $redender */
-		$redender = $GLOBALS['redender'];
-		return $redender->renderData($results,'showView',null,1);
-
-		//return $return;
+		return $this->renderer()->renderData($results,'showView',null,1);
 	}
 	
 	public function index() {

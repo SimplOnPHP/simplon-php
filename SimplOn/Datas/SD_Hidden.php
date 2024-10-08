@@ -39,21 +39,6 @@ class SD_Hidden extends SD_Data
 		$create = false,
 		$update = true,
 		$required = false;
-	/**
-         * 
-         * function showInput - This function prints the input with the
-         * correct format (class, name) to be used in the forms.
-         * 
-         * @param boolean $fill
-         * @return string
-         */
-	public function showInput($fill=true)
-	{
-		if($this->val())
-		{
-		  return '<input class="SimplOn input '. $this->getClass() .'" name="'. $this->name() .'" '.(($fill)?' value="'.$this->val() .'"':'').' type="hidden" />';
-		} 
-	}
-		
+
 	public function label($flags = null) {}
 }

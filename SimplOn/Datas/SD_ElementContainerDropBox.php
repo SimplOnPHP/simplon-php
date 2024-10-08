@@ -29,7 +29,7 @@ class SD_ElementContainerDropBox extends SD_ElementContainer {
 			$options = array();
 			$options[' '] = '';
 
-			foreach($search->searchResults() as $elementIndex => $element) {	
+			foreach($search->searchResults() as $elementIndex => $element) {
 				$options[$element->getId()] = $element->showEmbededStrip();	
 			}
 			$this->options = $options;
@@ -49,21 +49,15 @@ class SD_ElementContainerDropBox extends SD_ElementContainer {
 		}
 	}
 
+	public function selected($test = null) {
+		return ($test == $this->val);
+	}
+	
 	public function viewVal() {
 		$this->options();
 		if(isset($this->options[$this->val]))
 		{return $this->options[$this->val];}
 	}
-
-	
-	function showList(){
-		//return $this->options()[$this->val];
-		
-        /** @var SR_main2 $redender */
-		$redender = $GLOBALS['redender'];
-		return call_user_func_array(array($redender, 'renderData'), [$this,'showList']);
-	}
-	
 
 
 

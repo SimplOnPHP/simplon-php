@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+	<head>
+
+        <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+        <link rel="stylesheet" href="../css/simplon-base.css">
+        <link rel="stylesheet" href="../css/simplon-auto.css">
+        <link rel="stylesheet" href="../css/colorbox.css">
+        <script type="text/javascript" src="../js/00_jquery-1.7.2.min.js"></script>
+        <script type="text/javascript" src="../js/05_jquery-ui-1.8.19.custom.min.js"></script>
+        <script type="text/javascript" src="../js/11_SystemMessage.js"></script>
+        <style>
+            .page-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.4);
+                z-index: 9998;
+                display: none;
+            }
+            .message{
+                position:absolute;
+                top:50%;
+                left:50%;
+                transform:translate(-50%,-50%);
+                background-color:#4CAF50;
+                color:white;padding:1rem;
+                font-size:0rem;box-shadow:0 0 20px rgba(0,0,0,.5);
+                border-radius:5px;
+                text-align:center;
+                width:0;
+                z-index:9999
+            }
+            .close{
+                position:absolute;
+                top:-.75rem;right:.5rem;
+                color:white;
+                font-weight:bold;cursor:pointer
+            }
+            img.show-message-button{
+                display:inline-block;
+                vertical-align:middle;
+                padding-left: 0.2em;
+                width: 1em;
+                height: 1em;
+                color:black;
+                cursor:pointer;
+                z-index:9999
+            } 
+        </style>
+    </head>
+    <body>
+        <section>
+            <div class="EA_message">
+                <div class="page-overlay">        
+                </div>
+                <div class="message" style="$style">
+                  <span class="messageText"> $message </span>
+                  <span class="close">&times;</span>
+                </div>
+                <img class="show-message-button" src="$icon" alt="">
+            </div>
+        </section>
+	</body>
+</html>
