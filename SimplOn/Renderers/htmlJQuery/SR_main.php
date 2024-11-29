@@ -1,6 +1,8 @@
-<?php 
+<?php
 
-class SR_main extends SC_BaseObject{
+use voku\helper\HtmlDomParser;
+
+class SR_main extends SC_BaseObject {
 
     protected
         $SimplOn_path,
@@ -8,8 +10,9 @@ class SR_main extends SC_BaseObject{
         $App_web_root,
 
         $cssWebRoot,
-        $jsWebRoot,
+        $jsWebRoot, 
         $imgsWebRoot,
+        $imgsPath,
 
         $URL_METHOD_SEPARATOR ='!',
         $WEB_ROOT;
@@ -20,282 +23,185 @@ class SR_main extends SC_BaseObject{
         $csslinks,
         $jslinks = array();
 
+        function render($object, $method = null, $forTemplateOf = null, $template = null){
 
-    function addMethod($name, $method)
-    {
-        $this->{$name} = $method;
-    }
-
-    public function App_web_root($App_web_root)
-    {
-        if($App_web_root){
-            $this->App_web_root =   $App_web_root;
-            $this->cssWebRoot =   $App_web_root.'/Layouts/css';
-            $this->jsWebRoot =    $App_web_root.'/Layouts/js';
-            $this->imgsWebRoot =  $App_web_root.'/Layouts/imgs';
-        }else{
-            return $this->App_web_root;
-        }
-    }
-
-
-    function renderData( $Data, $method, $template = null, $messages = null, $action=null,$nextStep=null){
-        $specialRendererPath = $this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.DIRECTORY_SEPARATOR.'specialRenderers'.DIRECTORY_SEPARATOR.'SR_'.$Data->getClass().'.php';
-
-
-        //Fill the template
-        if(!file_exists($specialRendererPath)){ //normal 
-
-
-            if(!$template OR SC_Main::$Layouts_Processing=='OverWrite' OR SC_Main::$Layouts_Processing=='OnTheFly'){
-                $template = $this->getDataLayout($Data, $method); 
-            }          
-             
-            $ret = $this->fillDataDomWithVariables($Data, $template);
-           
-        }else{      //Special
-
-            require_once($specialRendererPath);
-
-            $className = get_class($Data);
-            $SR_special_Get = $className . '_SR_special_Get';
-            $SR_special_Check = $className . '_SR_special_Check';
-
-            $specialCheck = $SR_special_Check($Data, $template, $method);
-   
-            if (!$template OR SC_Main::$Layouts_Processing === 'OverWrite' OR SC_Main::$Layouts_Processing=='OnTheFly') {
-                $template = $SR_special_Get($Data, $method); 
-            } elseif ($specialCheck !== 'Ok') {
-                //TODO: Doing the same that above review what really ned to be done to consider the template and Update 
-                $template = $SR_special_Get($Data, $method); 
-            }
-            $SR_special_Fill = $Data->getClass().'_SR_special_Fill';
-
-            $ret = $SR_special_Fill($Data, $template);
-        }
-        
-        return $ret;
-    }    
-
-    function render( $object, $method, $output = 'AE_fullPage', $template = null, $action=null,$nextStep=null,$noCancelButton=false){
-
-        //Clean the Sysmessage so it's not added to the URLs
-       $SystemMessage = SC_Main::$SystemMessage;
-        SC_Main::$SystemMessage='';   
-        
-       // get (or make) the template
-       if(!$template){ $template = $this->getElementLayout($object, $method, $noCancelButton); }        
-        //Fill the template
-        
-       $template = $this->fillDatasInElementLayout($object,$template,$method);
-       $template = $this->fillVariablesInElementLayout($object,$template,$action);
-
-
-        if($output){
-            $output = new $output();
-            $output->message($SystemMessage);
-            $output->content($template->html());
-            $outputtemplate = $this->directlayoutPath($output, 'showView');
-            $outputtemplate = \phpQuery::newDocumentFileHTML($outputtemplate);
-            $this->getJSandCSS($outputtemplate);
-            $outputtemplate = $this->addCSSandJSLinksToTemplate($outputtemplate);
-
-            return $this->fillDatasInElementLayout($output,$outputtemplate,'showView');
-        }else{
-            //if the message has not been printed reset it
-            SC_Main::$SystemMessage=$SystemMessage;
-            return $template->html();
-        }
-
-    }
-
-    function addCSSandJSLinksToTemplate($dom){
-    if($dom["head"]->html()!=''){              
-            $dom["head link[rel='stylesheet']"]->remove();
-
-            foreach(self::$csslinks as $csslink){
-
-                if(substr($csslink, 0, 4) == 'http' && substr($csslink, -4) == '.css'){
-                    $dom["head"]->append('<link rel="stylesheet" href="'.$csslink.'"  //>');
-                }else{
-                    $dom["head"]->append('<link rel="stylesheet" href="'.$this->cssWebRoot.'/'.basename($csslink).'" //>');
+            if($object instanceof SD_Data){   
+                //if($object->renderOverride()){ $method = $object->renderOverride(); } 
+                if(method_exists($object, $method)){
+                    $object->{$method}();
+                } else { $dom = $this->getDataLayout($object, $method); }
+            }elseif ($object instanceof SI_Item) {  
+                if(method_exists($object, $method)){
+                    $object->{$method}();
+                } else { 
+                    $object->name($object->getClass().'_'.$method); 
+                    $dom = $this->getItemLayout($object);     
                 }
+            }elseif ($object instanceof SI_Container) {       
+                $dom = $this->getContainerLayout($object, $method, $forTemplateOf); 
+            }elseif ($object instanceof SI_Page) {
+                $dom = $this->getPageLayout($object);
+                $dom = $this->addCSSandJSLinksToTemplate($dom);
             }
-            $dom["head script"]->remove();
-            foreach(self::$jslinks as $jslink){
-                if(substr($jslink, 0, 4) == 'http' && substr($jslink, -3) == '.js'){
-                    $dom["head"]->append('<script type="text/javascript" src="'.$jslink.'"> </script>'."\n");
-                }else{
-                    $dom["head"]->append('<script type="text/javascript" src="'.$this->jsWebRoot.'/'.basename($jslink).'" /> </script>'."\n");  //NOTE :: space in -" /> </script>- weirdly required
-                }
-            }
+            return $this->fillDomWithObject($object, $dom->html());
         }
-        return $dom;
-    }
 
-    function requiredText(SC_BaseObject $object){
-        if($object->required()){ return 'required'; }else{ return ''; }
-    }
-
-    /* methods related with fix or generate specific HTML parts */
-    function VCSLForPeople($object = null, string $VCSL=''){ 
-        if(SC_Main::$VCRSL[$VCSL]){ return SC_Main::$VCRSL[$VCSL];}else{ return $VCSL;}
-    }
-
-    /* methods related with fix or generate specific HTML parts */
-    function BackURL(){ 
-        if(isset($_SERVER["HTTP_REFERER"])){
-            $url = explode('!!',$_SERVER["HTTP_REFERER"]);
-            return $url[0];
+        function renderFullPage($object, $method = null, $forTemplateOf = null, $template = null){
+            $content = $this->render($object, $method, $forTemplateOf, $template );
+            $page = new SI_FullPage($content,SC_Main::$App_Name);
+            return $this->render($page);
         }
-    }
 
-    function setOutputDom(string $output,phpQueryObject $content){
-
-        if($output != 'partOnly' && !self::$mainDom){
-            $appFile = $this->App_path.DIRECTORY_SEPARATOR.'Layouts'.DIRECTORY_SEPARATOR.$output.'.html';
-            $simplonFile = $this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.DIRECTORY_SEPARATOR.$output.'.html';
-            if(file_exists($appFile)){ self::$mainDom = \phpQuery::newDocumentFileHTML($appFile); }
-            elseif(file_exists($simplonFile)){ self::$mainDom = \phpQuery::newDocumentFileHTML($simplonFile); }
-
-        }elseif($output == 'partOnly'){
-            if(!self::$mainDom){
-                throw new SR_RendererException('There is not MainDom, there most be one element rendering to a full page to include the CSS and JS');
-            } 
-        }elseif(!self::$mainDom){
-            throw new SR_RendererException('There is con only be one MainDom / Element Reendering to a full page');
-        }
+        function renderBasicPage($object, $method = null, $forTemplateOf = null, $template = null){
+            $content = $this->render($object, $method, $forTemplateOf, $template );
       
-    }
-
-    /* methods related with the JS and CSS */
-    function getJSandCSS(phpQueryObject $dom){
-        $this->getStylesAndScriptsLinks($dom);
-        //TODO get other scripts and Styles???
-    }
-        
-        function getStylesAndScriptsLinks(phpQueryObject $dom){ 
-            // get all the CSS Links
-            foreach($dom["head link[rel='stylesheet']"] as $link){
-                $link = pq($link)->attr('href');
-                if(substr($link, 0, 4) == 'http' && substr($link, -4) == '.css'){ self::$csslinks[$link]=$link; }
-                elseif(substr($link, -4) == '.css'){self::$csslinks[basename($link)]=$link;}
-            }
-
-            // get all the JS Links
-            foreach($dom["head script"] as $link){
-                $link = pq($link)->attr('src');
-                if(substr($link, 0, 4) == 'http' && substr($link, -3) == '.js'){ self::$jslinks[$link]=$link; }
-                elseif(substr($link, -3) == '.js'){self::$jslinks[basename($link)]=$link;}
-            }
+            $page = new SI_BasicPage($content,SC_Main::$App_Name);
+            return $this->render($page);
         }
 
-        function addStylesTagsToAutoCSS(SC_BaseObject $data, phpQueryObject $dom, string $method){ 
-            global $cssTagsContent;
-            // get the style tags of the method
+        //--------------------------------
+        function action($object, string $action, $clean = null, $message = null){
 
-            $cssTagsContent[$data->getClass()]=array(
-                'method'=>$method,
-                'style'=>$dom['style']->html()
-            );
-            
-            $minifyed = minify_css($cssTagsContent[$data->getClass()]['style']);
-            $minifyedWithMarks = "/* START_".$data->getClass()." */\n $minifyed \n/* END_".$data->getClass()." */";
-    
-            $file = $this->App_path.DIRECTORY_SEPARATOR.'Layouts'.DIRECTORY_SEPARATOR.'css'.DIRECTORY_SEPARATOR.'simplon-auto.css';
-            $currentStylesFile = file_get_contents($file);
-
-            $regEx = '/(\/\* START_'.$data->getClass().' \*\/)(\\n.*\\n)(\/\* END_'.$data->getClass().' \*\/)/';
-            preg_match($regEx, $currentStylesFile, $currentStile);
-
-            if(isset($currentStile[2]) && $currentStile[2] != $minifyed){
-                $StylesForFile = preg_replace($regEx, $minifyedWithMarks, $currentStylesFile);
-        
-                if(!empty($currentStile[2]) AND $StylesForFile){
-                    file_put_contents($file, $StylesForFile);
-                }elseif(!empty(trim($minifyed))){
-                    file_put_contents($file, $currentStylesFile."\n".$minifyedWithMarks);
-                }
+            if ($object instanceof SD_ElementContainer or $object instanceof SD_ElementsContainerMM) {
+                $object = $object->element();
             }
-        }   
 
-
-
-    function getElementLayout($object, $method, $noCancelButton=false){
-        
-        $layoutName = $object->getClass().'::'.$method;
-        if(!isset(self::$layoutsCache[$layoutName])){
-            $directlayoutPath = $this->directlayoutPath($object);
-            if(file_exists($directlayoutPath)){
-            $check = $this->checkMethodLayout($object, $directlayoutPath, $method);
-                if(is_array($check)){ 
-                    $changes = $check; 
-                    $check = 'Outdated'; 
-                } 
+            if ($object instanceof SC_BaseObject) {
+                $class = $object->getClass();
+            }elseif(is_string($object)){
+                $class = $object;
+                $clean = 'id';
             }
-    
-            if($object instanceof SE_Interface AND file_exists($directlayoutPath)){// if it's Interface ignore the OverWrite and use showView
-                $dom = $this->createMethodLayout($object,'showView', null, $noCancelButton);
-            }elseif( !file_exists($directlayoutPath) OR (SC_Main::$Layouts_Processing =='OnTheFly') ){
-   
-                // If there is no file create  the template
-                $dom = $this->createMethodLayout($object,$method, null,$noCancelButton);
-                $dom = "<section class='".$object->getClass()." $method'>". $dom->html()."</section>";
 
-                if( SC_Main::$Layouts_Processing !='OnTheFly'){
-                    $this->writeLayoutFile($dom,$directlayoutPath);
-                }
-            }elseif( file_exists($directlayoutPath) && $check == 'None' ){ 
-                // If there is template file but it has no section for the given method
-                $dom = $this->createMethodLayout($object,$method, null, $noCancelButton);
-                $dom = "<section class='".$object->getClass()." $method'>". $dom->html()."</section>";
-                $this->appendMethodLayout($dom,$directlayoutPath);
-            }elseif( file_exists($directlayoutPath) && $check == 'Empty' ){ 
+            if(!empty($message)){ $message = SC_Main::$URL_METHOD_SEPARATOR.SC_Main::$URL_METHOD_SEPARATOR.urlencode($message); }
 
-                // If there is template file but it has no section for the given method
-                $dom = $this->createMethodLayout($object,$method, null, $noCancelButton);
-                $dom = "<section class='".$object->getClass()." $method'>". $dom->html()."</section>";
-                $this->updateLayoutFile($dom,$method, $directlayoutPath);
-            }elseif( SC_Main::$Layouts_Processing == 'OverWrite' ){ 
-                // If the section has to be overwriten
-                if($check == 'Ok-NotVCRSL'){
-                    //Preserve de existiong NotVCRSL template
-                    $dom = \phpQuery::newDocumentFileHTML($directlayoutPath);
-                    $this->getStylesAndScriptsLinks($dom);
-                    $dom = $dom['.'.$method];
-                }else{
-                    // Overwrite if VCRSL
-                    $dom = $this->createMethodLayout($object,$method, null, $noCancelButton);
-                    $dom = "<section class='".$object->getClass()." $method'>". $dom->html()."</section>";
-                    $this->updateLayoutFile($dom,$method,$directlayoutPath);
-                }
-            }elseif( SC_Main::$Layouts_Processing == 'Update' AND !str_starts_with($check,'Ok') ){  
-                // If Update and not in syc with Element or there is no section to render the method create the section
-                $dom = $this->updateMethodLayout($object,$method,$changes, null, $noCancelButton);
-                $dom = "<section class='".$object->getClass()." $method'>". $dom->html()."</section>";
-                $this->updateLayoutFile($dom,$method, $directlayoutPath);
-            }elseif(  
-                SC_Main::$Layouts_Processing == 'Preserve' 
-                OR 
-                (SC_Main::$Layouts_Processing == 'Update' AND str_starts_with($check,'Ok') ) 
-                ){
-
-                // if Preserve or template in sync, render the Element with it.
-                $dom = \phpQuery::newDocumentFileHTML($directlayoutPath);
-                $this->getStylesAndScriptsLinks($dom);
-                $dom = $dom['.'.$method];
-
+            if ($clean == 'id') {
+                return $this->encodeURL($class, array(), $action).$message;
+                //return $this->encodeURL($object->getClass(),array(),$action,array($nextStep));    
+            } else {
+                return $this->encodeURL($class, array($object->getId()), $action).$message;
+                //return $this->encodeURL($object->getClass(),array($object->id()),$action,array($nextStep));
             }
-            //Returning the same $dom creates unusual flows I think there is trigger or something that alters the dom if the file is altered
-            if($dom instanceof phpQueryObject){ $dom = $dom->htmlOuter(); }
-
-            self::$layoutsCache[$layoutName] = \phpQuery::newDocumentHTML($dom); // save a copy to avoid overwring
-            return \phpQuery::newDocumentHTML($dom); // returns a copy to avoid overwring
-        }else{ 
-            $dom = self::$layoutsCache[$layoutName];
-            return \phpQuery::newDocument( $dom[".$method"]->html() ); // returns a copy to avoid overwring
         }
-    }
+ 
+        function encodeURL($class = null, $construct_params = null, $method = null, $method_params = null, $dataName = null) {
+            $url = '';
+            if(isset($class)) {
+                // class
+                $url.= $this->App_web_root . '/' . $this->fixCode(strtr($class,'\\','-'));
+                // construct params
+                if(!empty($construct_params) && is_array($construct_params)) {
+                    // $tempArr=array_map(
+                    //     //['self', 'parameterEncoder'], 
+                    //     'SR_main::parameterEncoder()',
+                    // 	$construct_params
+                    // );
+                    $tempArr = array();
+                    foreach($construct_params as $param){
+                        $tempArr[]=$this->parameterEncoder($param);
+                    }
+                    $url.= '/' . implode('/',$tempArr);
+                }
+                
+                if(isset($dataName) && isset($method)) {
+                    // Data name
+                    $url.= $this->URL_METHOD_SEPARATOR . $dataName;
+                }
+                
+                if(isset($method)) {
+                    // method
+                    $url.= $this->URL_METHOD_SEPARATOR . $method;
+                    
+                    // method params
+                    if(!empty($method_params) && is_array($method_params)) {
+                        $tempArr = array();
+                        foreach($method_params as $param){
+                            $tempArr[]=$this->parameterEncoder($param);
+                        }
+                        $url.= '/' . implode('/',$tempArr);
+                    }
+                }
+            }
+            $qs = SC_Main::$URL_METHOD_SEPARATOR;
+    
+            return $url;
+        }
+ 
+        static function fixCode($string, $encoding = true){
+            return $encoding
+                ? strtr($string, array(
+                    '%2F' => '/',
+                    '%2527' => '%252527',
+                    '%27' => '%2527',
+                    '%255C' => '%25255C',
+                    '%5C' => '%255C',
+                ))
+                : strtr($string, array(
+                    '%2527' => '%27',
+                    '%252527' => '%2527',
+                    '%255C' => '%5C',
+                    '%25255C' => '%255C',
+                ));
+        }
+
+        static function parameterEncoder($p) {
+            if(is_string($p)) {
+                $string_delimiter = '"';
+                $p = self::fixCode(urlencode($p));
+                return $string_delimiter. $p .$string_delimiter;
+            } else {
+                return urlencode($p);
+            }
+        }
+        
+        function setMessage($message='') {
+            SC_Main::$SystemMessage = $message;
+        }
+        //--------------------------------
+
+
+
+        function layoutPath($object){
+            if(gettype($object) == 'object' && is_a($object,'SC_BaseObject')){
+
+                //$ret = $this->App_path.DIRECTORY_SEPARATOR.'Layouts'.DIRECTORY_SEPARATOR.$object->getClass().'.html';
+
+                if(is_a($object,'SD_Data')){ $dataPath=DIRECTORY_SEPARATOR.'Datas'; }
+                else if(is_a($object,'SI_Item')){ $dataPath=DIRECTORY_SEPARATOR.'InterfaceItems'; }
+                else if(is_a($object,'SI_Page')){ $dataPath=DIRECTORY_SEPARATOR.'InterfaceItems'; }
+                else if(is_a($object,'SI_Container')){ $dataPath=DIRECTORY_SEPARATOR.'InterfaceItems'; }
+                else if(is_a($object,'SC_Element')){ $dataPath=''; }
+
+                $ancestors = class_parents($object);
+                array_splice($ancestors, -1);
+                $ancestorClass = $object->getClass();
+                while(
+                        $ancestorClass 
+                        && !file_exists($this->App_path.DIRECTORY_SEPARATOR.'Layouts'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html')
+                        && !file_exists($this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html')
+                    ){
+                    $ancestorClass = array_shift($ancestors);
+                }
+               
+                if(file_exists($this->App_path.DIRECTORY_SEPARATOR.'Layouts'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html')){
+                    $ret = $this->App_path.DIRECTORY_SEPARATOR.'Layouts'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html';
+                }elseif(file_exists($this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html')){
+                    $ret = $this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html';
+                }
+            }elseif(gettype($object) == 'object' && !is_a($object,'SC_BaseObject')){  
+                throw new SR_RendererException('This function can only get the path for Simplon  Datas and Elements');
+            }elseif(is_string($object)){
+                $ret = $this->App_path.DIRECTORY_SEPARATOR.'Layouts'.DIRECTORY_SEPARATOR.$object.'.html';
+                if(!file_exists($ret)){
+                    $ret = $this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.$dataPath.DIRECTORY_SEPARATOR.$object.'.html';
+                }
+                if(!file_exists($ret)){
+                    throw new SR_RendererException('Tehere is no template for '.$object);
+                }
+            }
+
+            return $ret;
+        }
 
         function directlayoutPath($object){
             if(gettype($object) == 'object' && is_a($object,'SC_BaseObject')){
@@ -321,817 +227,496 @@ class SR_main extends SC_BaseObject{
             return $ret;
         }
 
-        function layoutPath($object){
-            if(gettype($object) == 'object' && is_a($object,'SC_BaseObject')){
+        function fillDomWithObject($object, $htmlDomString){
 
-                $ret = $this->App_path.DIRECTORY_SEPARATOR.'Layouts'.DIRECTORY_SEPARATOR.$object->getClass().'.html';
+            $filledItemHtml='';
+            //$htmlDomString = str_replace("&#13;\n", "", $htmlDomString);
+            $htmlDomString = str_replace("&#13;", "", $htmlDomString);
+            $dom = HtmlDomParser::str_get_html($htmlDomString);
 
-                if(is_a($object,'SD_Data')){ $dataPath=DIRECTORY_SEPARATOR.'Datas'; }
 
-                if(is_a($object,'SID_Data') OR is_a($object,'SID_ComplexData')){ $dataPath=DIRECTORY_SEPARATOR.'InterfaceDatas'; }
+            if (method_exists($object, 'fillLayout')) {
+                $ret = $object->fillLayout($dom);
+            }else{
+                if($object instanceof SI_Container){
+    
+                    $ICNode = $dom->findOne('.IC');
+     
+                    if (strpos($ICNode->class, 'items') == false) {
+                         $ICNode = $dom->findOne('.IC .items');
+                    }
 
-                if(is_a($object,'SC_Element')){ $dataPath=''; }
+                    $tmpID = $ICNode->id;
+                    $ICNode->id='tmpID';
+      
+                    $IINodes = $ICNode->find('#tmpID > .II');
 
-                $ancestors = class_parents($object);
-                array_splice($ancestors, -1);
-                $ancestorClass = $object->getClass();
-                while(
-                        $ancestorClass 
-                        && !file_exists($this->App_path.DIRECTORY_SEPARATOR.'Layouts'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html')
-                        && !file_exists($this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html')
+                    if(count($IINodes) === 0){
+                        $IINodes = $ICNode->find('#tmpID > .itemWarp > .II');
+                    }
+
+                    $i=0;
+                    $filledItemsHtml='';
+
+                    foreach($object->items() as $item){
+                        $item = $item["item"];
+                        if($item instanceof SC_BaseObject){
+                            $filledItemsHtml.=$this->fillDomWithObject($item, $IINodes[$i]->html() )."\n\n";
+                        }elseif( is_string($item) OR is_numeric($item)){
+                            if($item == 0){$item = (string)$item;}
+                            $filledItemsHtml .=  str_replace('$val', $item, $IINodes[$i]->html());
+                        }
+                        $i++;
+                    }        
+                    $ICNode->id=$tmpID;    
+                    $ICNode->innerhtml = $filledItemsHtml; 
+                }elseif( !($object instanceof SI_Container) ){
+                    $repeatNodes = $dom->find(".repeat");
+                    foreach($repeatNodes as $repeatNode){
+                        $repeatClasses = explode(' ', $repeatNode->class);
+                        $items = $object->{$repeatClasses[1]}();
+                        $itemHtml = $repeatNode->find('.repeat .item',0)->outerHtml;
+                        $selectedItemHtml = $repeatNode->find('.repeat .selectedItem',0)->outerHtml;
+        
+                        $i=0;
+                        foreach($items as $key => $value){
+                            
+                            if (is_object($value)) {
+                                if( $selectedItemHtml
+                                    AND (method_exists($object, 'selected') OR property_exists($object, 'selected'))
+                                    AND (
+                                        ($value instanceof \SD_Data AND $object->selected($value->val())) 
+                                        OR 
+                                        ($value instanceof \SC_Element AND $object->selected($value->id()))
+                                    )
+                                ){
+                                    $filledItemHtml .= $this->fillDomWithObject($value, $selectedItemHtml);
+                                }else{
+                                    $filledItemHtml .= $this->fillDomWithObject($value, $itemHtml);
+                                }
+                            }else{
+                                if( $key === 0 ){ $key = '0'; }else
+                                if( $key === ' ' ){ $key = ''; }
+            
+                                if( $selectedItemHtml
+                                    AND (method_exists($object, 'selected') OR property_exists($object, 'selected'))
+                                    AND $object->selected($key)
+                                ){
+                                    $filledItemHtml .= "\n".str_replace(['$key','$val'],[$key,$value],$selectedItemHtml);
+                                }else{
+                                    $filledItemHtml .= "\n".str_replace(['$key','$val'],[$key,$value],$itemHtml);
+                                }
+        
+                            }
+                        }
+                        $dom->find(".repeat",$i)->innerHtml = "\n".$filledItemHtml."\n";
+                        $i++;
+                    }
+                }
+
+                
+                //TODO optimize so this does not replace nodes that will/have disaper when the parents node content has been also replaced
+                //TODO modify so it detects nodes with any class that starts with 'OA_' not only the first class
+                $OAs = $dom->find('[class^="OA_"]');
+
+                foreach($OAs as $OANode){
+                    $class = explode(' ',$OANode->class)[0];
+                    $class = explode('_',$class);
+                    $oa = $object->{$class[1]}();
+                    if(is_string($oa)){
+                        $OANode->innerhtml = $oa;
+                    }elseif( (
+                            $oa instanceof SD_Data
+                            OR
+                            $oa instanceof SI_Item
+                            OR
+                            $oa instanceof SI_Container
+                            OR
+                            $oa instanceof SI_Page
+                            OR
+                            $oa instanceof SC_Element
+                        ) 
+                            AND empty($class[2]) 
                     ){
-                    $ancestorClass = array_shift($ancestors);
+                        $OANode->innerhtml = $this->render($oa,'showView');
+                    }
                 }
-                if(file_exists($this->App_path.DIRECTORY_SEPARATOR.'Layouts'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html')){
-                    $ret = $this->App_path.DIRECTORY_SEPARATOR.'Layouts'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html';
-                }elseif(file_exists($this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html')){
-                    $ret = $this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html';
-                }
-            }elseif(gettype($object) == 'object' && !is_a($object,'SC_BaseObject')){  
-                throw new SR_RendererException('This function can only get the path for Simplon  Datas and Elements');
-            }elseif(is_string($object)){
-                $ret = $this->App_path.DIRECTORY_SEPARATOR.'Layouts'.DIRECTORY_SEPARATOR.$object.'.html';
-                if(!file_exists($ret)){
-                    $ret = $this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.$dataPath.DIRECTORY_SEPARATOR.$object.'.html';
-                }
-                if(!file_exists($ret)){
-                    throw new SR_RendererException('Tehere is no template for '.$object);
-                }
+              
+
+                $ret = preg_replace_callback(
+                    '/(\$)([a-z,_,0-9]+)/i',
+                    function ($matches) use ($object){                  
+                        $parameters = explode ('_',$matches[2]);
+                        $method = array_shift($parameters);
+                        $methodKey = substr($method, 0, 2);
+                        $rendermethod = substr($method, 2); 
+
+        
+                        if($methodKey != 'SR' && (method_exists($object,$method) OR property_exists($object, $method)) ){ 
+                            // if the method is for the data call it
+                            return call_user_func_array(array($object, $method), $parameters);
+                        }elseif($methodKey == 'SR' && (method_exists($this,$rendermethod) OR property_exists($this, $rendermethod)) ){
+                            // if the method is for the renderer call it and use data as a parameter
+                            if(method_exists($this,$rendermethod)){
+                                array_unshift($parameters,$object);
+                            }
+                            return call_user_func_array(array($this, $rendermethod), $parameters);
+                        }elseif((method_exists($object, 'parent') OR property_exists($object, 'parent') ) && $object->parent()){
+                            return call_user_func_array(array($object->parent(), $method), $parameters);
+                        }
+                    },
+                    $dom
+                );
             }
 
-            return $ret;
+            return str_replace('&#13;', '', $ret);
         }
 
-        function checkMethodLayout(SC_Element $object, $dom, $method){
-            if(is_string($dom)){$dom = \phpQuery::newDocumentFileHTML($dom);}
-            $methodNode = $dom[".$method"];
-            $showType = '';
-            if(substr($method, 0 ,4) =='show'){$showType=strtolower(substr($method,4));}
-            $objectDatasForMethod = $object->datasWith($showType);
-      
-            if(!$methodNode->htmlOuter()){ 
-                return 'None';
-            }elseif(!trim($methodNode->html())){ 
-                return 'Empty';
-            }elseif(!in_array(strtolower($showType), SC_Main::$VCRSLMethods)){
-                return 'Ok-NotVCRSL';
-            }elseif($methodNode->hasClass('direct')){
-                return 'Ok-Direct';
-            }else{
-                $datasInLayout = preg_match_all_callback(
-                    '/EA_[a-zA-Z0-9]+/',
-                    $methodNode->html(),
-                    function ($match){
-                        return explode('_',$match[0])[1];
-                    }
-                );
+        function getStylesAndScriptsLinks($dom){ 
+            // get head the CSS Links
+            foreach ($dom->find('head link[rel="stylesheet"]') as $domLink) {
+                // Get the href attribute of each link
+                $link = $domLink->href;
+                if(substr($link, 0, 4) == 'http' && substr($link, -4) == '.css'){ self::$csslinks[$link]=$link; }
+                elseif(substr($link, -4) == '.css'){self::$csslinks[basename($link)]=$link;}
+            }
 
-                $ret = array();
+            // get head the JS Links
+            foreach ($dom->find('head script') as $domLink) {
+               $link = $domLink->src;
+               if(substr($link, 0, 4) == 'http' && substr($link, -3) == '.js'){ self::$jslinks[$link]=$link; }
+               elseif(substr($link, -3) == '.js'){self::$jslinks[basename($link)]=$link;}
+            }
+        }
 
-                $ret['addToTemplate'] = array_diff(array_unique($objectDatasForMethod), array_unique((array)$datasInLayout));
-                $ret['removeFromTemplate'] = array_diff(array_unique((array)$datasInLayout), array_unique($objectDatasForMethod));
-
-                //-- Check for Correct Clasess
-                foreach($objectDatasForMethod as $DataName){
-                    $DataClass = $object->{'O'.$DataName}()->getClass();
-                    if(empty($methodNode['.'.$DataClass.'.EA_'.$DataName])){
-                        $ret['removeFromTemplate'][] = $DataName;
-                        $ret['addToTemplate'][] = $DataName;
-                    }
-                }
-                $ret['addToTemplate'] = array_unique($ret['addToTemplate']);
-                $ret['removeFromTemplate'] = array_unique($ret['removeFromTemplate']);
-
-
-                if(empty($ret['addToTemplate']) and empty($ret['removeFromTemplate'])){
-                    return 'Ok';
-                }else{
-                    return $ret;
-                }
+        function addStylesTagsToAutoCSS(SC_BaseObject $object, $dom){ 
+            global $cssTagsContent;
          
+           
+            // get the style tags of the method           
+            $cssTagsContent[$object->getClass()] = $dom->find("style", 0)->plaintext;
+              
+            $minifyed = minify_css($cssTagsContent[$object->getClass()]);
+            $minifyedWithMarks = "/* START_".$object->getClass()." */\n $minifyed \n/* END_".$object->getClass()." */";
+            
+            $file = $this->App_path.DIRECTORY_SEPARATOR.'Layouts'.DIRECTORY_SEPARATOR.'css'.DIRECTORY_SEPARATOR.'simplon-auto.css';
+            $currentStylesFile = file_get_contents($file);
+
+            $regEx = '/(\/\* START_'.$object->getClass().' \*\/)(\\n.*\\n)(\/\* END_'.$object->getClass().' \*\/)/';
+            
+            //Put in $currentStile[2] whats now in the simplon-auto.css file 
+            preg_match($regEx, $currentStylesFile, $currentStile);
+            if(
+                array_key_exists(2, $currentStile) 
+                && 
+                !empty(trim($minifyed))
+                &&
+                (  trim($currentStile[2]) != trim($minifyed)  ) 
+            ){
+                //$StylesForFile = preg_replace($regEx, $minifyedWithMarks, $currentStylesFile);
+                $StylesForFile = str_replace($currentStile[2], "\n".$minifyed."\n", $currentStylesFile); 
+                if(!empty($currentStile[2]) AND $StylesForFile){
+                   file_put_contents($file, trim($StylesForFile));
+                }
+            }elseif(!array_key_exists(2, $currentStile)  && !empty(trim($minifyed))){      
+                $regEx = '/\/\* START_'.$object->getClass().'\*\/\s*(.+?)\s*\/\* END_'.$object->getClass().'\*\//s';
+                preg_match($regEx, $currentStylesFile, $currentStile);
+                if(array_key_exists(0, $currentStile)){
+                    $StylesForFile = str_replace($currentStile[0], $minifyedWithMarks."\n", $currentStylesFile); 
+                    file_put_contents($file, trim($StylesForFile));
+                }else{
+                    file_put_contents($file, trim($currentStylesFile)."\n".trim($minifyedWithMarks));
+                }              
+            }elseif(empty(trim($minifyed))){
+                $StylesForFile = preg_replace($regEx, '', $currentStylesFile);
+                file_put_contents($file, trim($StylesForFile));
             }
         } 
 
-        function updateMethodLayout(SC_Element $object,$method,$changes,$action=null,$noCancelButton=false){ 
-            $dom = \phpQuery::newDocumentFileHTML($this->directlayoutPath($object));
-            $methodNode = $dom[".$method"];
-
-            foreach($changes['removeFromTemplate'] as $dataToRemove){
-                $methodNode['.EA_'.$dataToRemove]->remove();
-            }
-
-            $objectDatasForMethod = $changes['addToTemplate'];
-
-            if(is_array($objectDatasForMethod)){
-                foreach($objectDatasForMethod as  $i=>$objectData) {
-                    $dataTemplate = $this->getDataLayout($object->{'O'.$objectData}(),$method); //This has to be here to add the CSS and JS of all datas to the new updated template
-            
-                    if($i==0){
-                        if( stripos($methodNode->html(),'<legend') ){
-                            $methodNode["legend"]->after($dataTemplate);
-                        }elseif(stripos($methodNode->html(),'<fieldset')){
-                            $methodNode["fieldset"]->prepend($dataTemplate);
-                        }elseif(stripos($methodNode->html(),'<form')){
-                            $methodNode["form"]->prepend($dataTemplate);
-                        }else{
-                            $methodNode->prepend($dataTemplate);
-                        }
-                    }else{
-                        if(isset($objectDatasForMethod[$i-1])){
-                            $methodNode['.EA_'.$objectDatasForMethod[$i-1]]->after($dataTemplate);
-                        }
-                    }
-                    
+        function addCSSandJSLinksToTemplate($dom)
+        {
+            $head = $dom->findOne("head");
+            if ($dom->findOne("head")->html() != '') {
+                                                
+                foreach ($dom->find('head link[rel="stylesheet"]') as $element) {
+                    $element->outertext = '';
                 }
-                $html = $methodNode->html();
-                $formTags = array('<input','<select','<textarea','<button','<fieldset', '<legend','<datalist','<output','<option','<optgroup'); 
-                if( $this->contains($html,$formTags) && !stripos($html,'<form')) {
-                    $enctype='';//todo change enctype if there is file type data
-                    $VCSL=substr($method, 4);
-    
-                    if(SC_Main::$VCRSL[$VCSL]){$VCSLForPeople = SC_Main::$VCRSL[$VCSL];}else{$VCSLForPeople = $VCSL;};
-                    if(empty($action)){$action='process'.$VCSL;}
-                                
-                    $html = '<form class="'.$object->htmlClasses($VCSL).' '.strtolower($VCSL) .'" '
-                    . ' action="$action"'
-                    . ' method="post" '
-                    . @$enctype
-                    . '><fieldset><legend>' . $VCSLForPeople . ' ' . $object->Name() . '</legend>'
-                    . $html
-                    . '<div class="buttons"><button type="submit">' . $VCSLForPeople . '</button>'
-                    . (($noCancelButton) ? '<button onclick="location.href =\'$SRBackURL\';" class="SimplOn cancel-form">$SRVCSLForPeople_Cancel </button>' : '')
-                    . '</div></fieldset></form>';
-                    $methodNode->html($html);
-                }
-                return $methodNode;
-            }elseif($objectDatasForMethod == 'NotVCRSL'){  
-                $ret = $this->lookForMethodInElementsTree($object,$method);
-                $ret['style']->html('');
-            }
-        }
 
-
-        function createMethodLayout(SC_Element $object,$method,$action=null,$noCancelButton=false){ 
-
-            $layoutName = $object->getClass().'::'.$method;
-            if(!isset(self::$layoutsCache[$layoutName])){
-                $showType = '';
-                if(substr($method, 0 ,4) =='show'){$showType=strtolower(substr($method,4));}
-                $DatasForMethod = $object->datasWith($showType);
-                $ret='';
-                if(is_array($DatasForMethod) && $DatasForMethod != 'NotVCRSL'){
-                    foreach($DatasForMethod as $Data){
-                        $ret .= $this->getDataLayout($object->{'O'.$Data}(),$method);
+                $headInnerHtml='';
+                // Add new stylesheet links
+                foreach (self::$csslinks as $csslink) {
+                    if (substr($csslink, 0, 4) == 'http' && substr($csslink, -4) == '.css') {
+                        $headInnerHtml .= '<link rel="stylesheet" href="' . $csslink . '" />';
+                    } else {
+                        $headInnerHtml .= '<link rel="stylesheet" href="' . $this->cssWebRoot . '/' . basename($csslink) . '" />';
                     }
-        
-                    $ret = \phpQuery::newDocumentHTML($ret);
-                    //$this->getStylesAndScriptsLinks($ret);
-                    $html=$ret->html();
-                    $enctype='';//todo change enctype if there is file type data
-                    $formTags = array('<input','<select','<textarea','<button','<fieldset', '<legend','<datalist','<output','<option','<optgroup'); 
-                    $VCSL=substr($method, 4);
-            
-                    if(SC_Main::$VCRSL[$VCSL]){$VCSLForPeople = SC_Main::$VCRSL[$VCSL];}else{$VCSLForPeople = $VCSL;};
-                    if(empty($action)){$action='process'.$VCSL;}
-                    if( $this->contains($html,$formTags) ) { 
-                        
-                        $html = '<form class="'.$object->htmlClasses($VCSL).' '.strtolower($VCSL) .'" '
-                        . ' action="$action"'
-                        . ' method="post" '
-                        . @$enctype
-                        . '><fieldset><legend>' . $VCSLForPeople . ' ' . $object->Name() . '</legend>'
-                        . $html
-                        . '<div class="buttons"><button type="submit">' . $VCSLForPeople . '</button>'
-                        . ((!$noCancelButton) ? '<button onclick="location.href =\'$SRBackURL\';" class="SimplOn cancel-form"> $SRVCSLForPeople_Cancel</button>' : '')
-                        . '</div></div></fieldset></form>';
-                        $ret->html($html);
-                    }
-                }elseif($DatasForMethod == 'NotVCRSL'){  
-                    $ret = $this->lookForMethodInElementsTree($object,$method);
-                    $ret['style']->html('');
                 }
-                
-                self::$layoutsCache[$layoutName] = \phpQuery::newDocument( $ret );
-                return \phpQuery::newDocument( $ret ); // returns a copy to avoid overwring
-            }else{ 
 
-                $ret = self::$layoutsCache[$layoutName];
-                return \phpQuery::newDocument( $ret[".$method"]->html() ); // returns a copy to avoid overwring
+                foreach ($dom->find("head script") as $element) {
+                    $element->outertext = '';
+                }
+                // Add new script tags
+                foreach (self::$jslinks as $jslink) {
+                    if (substr($jslink, 0, 4) == 'http' && substr($jslink, -3) == '.js') {
+                        $headInnerHtml .= '<script type="text/javascript" src="' . $jslink . '"></script>' . "\n";
+                    } else {
+                        $headInnerHtml .= "\n".'<script type="text/javascript" src="' . $this->jsWebRoot . '/' . basename($jslink) . '"></script>' ;
+                    }
+                }
+  
             }
+            $head->innerHtml .= $headInnerHtml;
+
+            return $dom;
         }
 
         function getDataLayout(SD_Data $Data, string $method){ 
 
-            $specialRendererPath = $this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.DIRECTORY_SEPARATOR.'specialRenderers'.DIRECTORY_SEPARATOR.'SR_'.$Data->getClass().'.php';
-
-
-            if(file_exists($specialRendererPath)){
-                require_once($specialRendererPath);
-
-               
-                $dom = ($Data->getClass().'_SR_special_Get')($Data, $method);
-                $this->getStylesAndScriptsLinks($dom);
-                //$this->addStylesTagsToAutoCSS($Data,$dom,$method);
-                return $dom;
-
+            if (method_exists($Data, 'getLayout')) {
+                $methodDom = $Data->getLayout($method);
+                $this->layoutsCache[$Data->getClass().'_'.$method] = $methodDom;
             }else{
-                if($Data->fixedValue() && in_array($method,$Data->parent()::$formMethods) ){
-                    $method = 'showFixedValue';
+                if($Data->renderOverride()){$method = $Data->renderOverride();}
+                if( !isset($this->layoutsCache[$Data->getClass().'_'.$method]) ){           
+                    $methodDom = $this->getDataLayoutFromFile($Data,$method);
+                    $this->layoutsCache[$Data->getClass().'_'.$method] = $methodDom;
                 }
-                // $dataHTML = \phpQuery::newDocumentHTML($dataHTML);
-                // $this->getStylesTagsContent($dataHTML,$object->{'O'.$Data}(),$method);
-                $dom = \phpQuery::newDocumentFileHTML($this->layoutPath($Data));
-                $dom[".$method>*:first-child"]->addClass($Data->getClass())->html();
-                $dom[".$method>*:first-child"]->addClass('EA_'.$Data->name())->html();
+            }
+  
+            return $this->layoutsCache[$Data->getClass().'_'.$method];
+        }
+
+        function getDataLayoutFromFile(SD_Data $Data, string $method){ 
+
+            if( !isset($this->layoutsCache[$Data->getClass().'_'.$method]) ){
+                $dom = HtmlDomParser::file_get_html($this->layoutPath($Data));
+                $this->getStylesAndScriptsLinks($dom);     
+                $this->addStylesTagsToAutoCSS($Data,$dom);
+                $methodDom = $dom->find(".$method > *", 0);
+
+                $methodDom->class = $methodDom->class.' '.'II II_'.$Data->name().'_'.$Data->getClass().'_'.$method;
+                return $methodDom;
+            }else{
+                return $this->layoutsCache[$Data->getClass().'_'.$method];
+            }
+        }
+
+        function getItemLayout(SI_Item $Item, string $class = null){ 
+
+            if( !isset($this->layoutsCache[$Item->getClass()]) ){
+                
+                if (method_exists($Item, 'getLayout')) {
+                    $this->layoutsCache[$Item->getClass()] = $Item->getLayout();
+                }else{
+                    $sectionDom = $this->getItemLayoutFromTemplate($Item,$class);
+                    $this->layoutsCache[$Item->getClass()] = $sectionDom;
+                }
+            }
+
+            return $this->layoutsCache[$Item->getClass()];
+        }
+
+        function getItemLayoutFromTemplate(SI_Item $Item, string $class = null){
+            $dom = HtmlDomParser::file_get_html($this->layoutPath($Item));
+            $this->getStylesAndScriptsLinks($dom);     
+            $this->addStylesTagsToAutoCSS($Item,$dom);
+            if(empty($class)){
+                $sectionDom = $dom->find("section > *", 0);
+            }else{
+                $sectionDom = $dom->find("section.$class > *", 0);                
+            }
+            $sectionDom->class = $sectionDom->class.' '.'II II_'.$Item->name().'_'.$Item->getClass();
+            return $sectionDom;
+        }
+
+
+
+        function getContainerLayout($container, $method = null, $forTemplateOf = null){
+
+            if($forTemplateOf){$container->name($forTemplateOf->getClass().'_'.$method);}
+
+            if($forTemplateOf && !isset($this->layoutsCache[$container->name()])){
+
+                if(SC_Main::$Layouts_Processing == 'OnTheFly'){                   
+
+                    $content = '<section class="'.$method.'">'.$this->makeContainerLayout($container).'</section>';
+                    $dom = HtmlDomParser::str_get_html($content);
+                    $containerdom = $dom->findOne("section.".$method);
+                }else{
+                    $path = $this->directlayoutPath($forTemplateOf);
+                    if(file_exists($path)){
+                        $dom = HtmlDomParser::file_get_html($path); 
+                        $this->getStylesAndScriptsLinks($dom);     
+                        $this->addStylesTagsToAutoCSS($container,$dom);
+                    }else{
+                        //CREATE FILE
+                        $content = '<section class="'.$method.'">'.$this->makeContainerLayout($container).'</section>';
+                        $dom = $this->render(new SI_basicPage($content));
+                        file_put_contents($path, htmlCleanAndTidy($dom));
+                        $dom = HtmlDomParser::str_get_html($dom);
+                    }
+
+    
+                    $containerdom = $dom->findOne("section.".$method);
+                    $bodyDom = $dom->findOne("body");
+                }
+
+                if(SC_Main::$Layouts_Processing == 'Preserve'){ 
+                    $containerdom = $dom->findOne("section.".$method);
+                    if(!$containerdom->html()){
+                        throw new SC_Exception('There is no '.$method.' in the file: '.$path.' Layouts Processing: Preserve');
+                    }
+                }elseif(SC_Main::$Layouts_Processing == 'OverWrite'){
+                    $methodDom = $dom->findOne("section.".$method);
+                    if(empty($methodDom->html())){
+                        $bodyDom->innerhtml = $bodyDom->innerhtml.'<section class="'.$method.'">'."\n".
+                        $this->makeContainerLayout($container).
+                        "\n".'</section>';
+                        $containerdom = $dom->findOne("section.".$method);
+                    }else{
+                        $containerdom->innerhtml  = $this->makeContainerLayout($container)->html();
+                    }
+                    file_put_contents($path, htmlCleanAndTidy($dom->html()));
+                }elseif(SC_Main::$Layouts_Processing == 'Update'){
+                    //TODO make it so that it just updates the Datas that are missing or have changed
+                    $methodDom = $dom->findOne("section.".$method);
+                    $check = $this->checkContainerLayout($container,$methodDom);
+                    if($check[0] == 'Empty'){ 
+                        $bodyDom->innerhtml = $bodyDom->innerhtml.'<section class="'.$method.'">'."\n".
+                        $this->makeContainerLayout($container).
+                        "\n".'</section>';
+                        $containerdom = $dom->findOne("section.".$method);
+                    }
+                }
+            }elseif($forTemplateOf && !empty($this->layoutsCache[$container->name()])){
+                return $this->layoutsCache[$container->name()];
+            }else{
+                $containerdom = $this->makeContainerLayout($container);
+            }
+            return $containerdom;
+        }
+
+        function checkContainerLayout($container, $dom){ 
+
+            $containerDom = $dom->findOne("section > .II");
+
+            foreach ($containerDom->children() as $child) {
+                if(!empty($child->html())){
+                    if (preg_match('/\bII_\w+/', $child->getAttribute('class'), $matches)) {
+                        $iiClass = $matches[0];
+                    }
+                    $containerDomChilds[] = $child;
+                }
+            }
+
+            if(empty($dom->html())){
+                return ['Empty'];
+            }else{
+                foreach($container->items() as $item){
+                    $method = $item['method'];
+                    $item = $item['item'];
+      
+                        // if($item instanceof SI_Container){
+                        //     //$this->checkContainerLayout($item['item'],$dom);
+                        // }
+        
+                    //$itemDom = $dom->findOne("section.".$item->getClass());
+                    //if(empty($itemDom->html())){
+                    //    $itemDom = $this->getItemLayout($item);
+                    //    $dom->findOne("section.".$item->getClass())->innerhtml = $itemDom->html();
+                    //}
+                }
+
+                
+            }
+            return ['Empty'];
+        }
+
+        function getPageLayout($page){ 
+
+            if( $page->name() && !isset($this->layoutsCache[$page->name()]) ){          
+                $dom = HtmlDomParser::file_get_html($this->layoutPath($page));
+                $this->getStylesAndScriptsLinks($dom);     
+                $this->addStylesTagsToAutoCSS($page,$dom);
+                $this->layoutsCache[$page->name()] = $dom;
+            }
+            
+            if($page->name()){
+                return $this->layoutsCache[$page->name()];
+            }else{
+                $dom = HtmlDomParser::file_get_html($this->layoutPath($page));
+                $this->getStylesAndScriptsLinks($dom);     
+                $this->addStylesTagsToAutoCSS($page,$dom);
+                return $dom;
+            }
+        }
+
+        function makeContainerLayout(SI_Container $container){ 
+
+            if (method_exists($container, 'makeLayout')) {
+                $containerDom = $container->makeLayout();
+            }else{
+                $dom = HtmlDomParser::file_get_html($this->layoutPath($container));
                 $this->getStylesAndScriptsLinks($dom);
-                $this->addStylesTagsToAutoCSS($Data,$dom,$method);
-
-                return \phpQuery::newDocument( $dom[".$method"]->html() );
-            }
-        }
-
-        function contains($str, array $arr){
-            foreach($arr as $a) {
-                if (stripos($str,$a) !== false) return true;
-            }
-            return false;
-        }
-
-
-        function appendMethodLayout($domOrfileContent, $pathOrObject){
-
-            if($pathOrObject instanceof SC_Element){
-                $filePath = $this->layoutPath($pathOrObject);
-            }elseif(is_string($pathOrObject)){
-                $filePath = $pathOrObject;
-            }
-
-            $dom = \phpQuery::newDocumentFileHTML($filePath);
-
-            if(is_string($domOrfileContent)){
-                $newContent = \phpQuery::newDocumentHTML($domOrfileContent);
-            }elseif($domOrfileContent instanceof phpQueryObject){
-                $newContent = $domOrfileContent;
-            }
-
-
-            $dom["body"]->append($newContent);
-
-            // Get The CSS and JS of the base Tamplate
-            $this->getStylesAndScriptsLinks($dom);
-
-            // Add all the CSS and JS (from Datas -previously collected- and the base template)
-           if($dom["head"]->html()!=''){              
-                $dom["head link[rel='stylesheet']"]->remove();
-    
-                foreach(self::$csslinks as $csslink){
-
-                    if(substr($csslink, 0, 4) == 'http' && substr($csslink, -4) == '.css'){
-                        $dom["head"]->append('<link rel="stylesheet" href="'.$csslink.'"  //>');
-                    }else{
-                        $dom["head"]->append('<link rel="stylesheet" href="'.$this->cssWebRoot.'/'.basename($csslink).'" //>');
-                    }
-                }
-                $dom["head script"]->remove();
-
-                foreach(self::$jslinks as $jslink){
-                    if(substr($jslink, 0, 4) == 'http' && substr($jslink, -3) == '.js'){
-                        $dom["head"]->append('<script type="text/javascript" src="'.$jslink.'"> </script>'."\n");
-                    }else{
-                        $dom["head"]->append('<script type="text/javascript" src="'.$this->jsWebRoot.'/'.basename($jslink).'" /> </script>'."\n");  //NOTE :: space in -" /> </script>- weirdly required
-                    }
-                }
-            }
-  
-            $fileContent=$dom->html();
-            
-            
-            if(extension_loaded('tidy')){
-                $tidy = new tidy;
-                $config = array('indent'=> true,'output-xhtml' => false, 'output-html' => true,'wrap'=> 600);
-                $tidy->parseString($fileContent, $config, 'utf8');
-                $tidy->cleanRepair();
-                $fileContent=$tidy.'';
-            }
-    
-            $fileContent=str_replace('href="%24','href="$',$fileContent);
-            $fileContent=str_replace('action="%24','action="$',$fileContent); //for some unkonown reason phpQuery changes the $ to %24 in action so this was required fix that
-
-            file_put_contents($filePath, $fileContent);
-        } 
-
-        function updateLayoutFile($domOrfileContent, $method, $pathOrObject){
-
-            if($pathOrObject instanceof SC_Element){
-                $filePath = $this->layoutPath($pathOrObject);
-            }elseif(is_string($pathOrObject)){
-                $filePath = $pathOrObject;
-            }
-
-            $dom = \phpQuery::newDocumentFileHTML($filePath);
-
-            if(is_string($domOrfileContent)){
-                $newContent = \phpQuery::newDocumentHTML($domOrfileContent);
-            }elseif($domOrfileContent instanceof phpQueryObject){
-                $newContent = $domOrfileContent;
-            }
-
-
-            $dom[".$method"]->replaceWith($newContent);
-
-            // Get The CSS and JS of the base Tamplate
-            $this->getStylesAndScriptsLinks($dom);
-
-            // Add all the CSS and JS (from Datas -previously collected- and the base template)
-           if($dom["head"]->html()!=''){              
-                $dom["head link[rel='stylesheet']"]->remove();
-    
-                foreach(self::$csslinks as $csslink){
-
-                    if(substr($csslink, 0, 4) == 'http' && substr($csslink, -4) == '.css'){
-                        $dom["head"]->append('<link rel="stylesheet" href="'.$csslink.'"  //>');
-                    }else{
-                        $dom["head"]->append('<link rel="stylesheet" href="'.$this->cssWebRoot.'/'.basename($csslink).'" //>');
-                    }
-                }
-                $dom["head script"]->remove();
-
-                foreach(self::$jslinks as $jslink){
-                    if(substr($jslink, 0, 4) == 'http' && substr($jslink, -3) == '.js'){
-                        $dom["head"]->append('<script type="text/javascript" src="'.$jslink.'"> </script>'."\n");
-                    }else{
-                        $dom["head"]->append('<script type="text/javascript" src="'.$this->jsWebRoot.'/'.basename($jslink).'" /> </script>'."\n");  //NOTE :: space in -" /> </script>- weirdly required
-                    }
-                }
-            }
-  
-            $fileContent=$dom->html();
-            
-            
-            if(extension_loaded('tidy')){
-                $tidy = new tidy;
-                $config = array('indent'=> true,'output-xhtml' => false, 'output-html' => true,'wrap'=> 600);
-                $tidy->parseString($fileContent, $config, 'utf8');
-                $tidy->cleanRepair();
-                $fileContent=$tidy.'';
-            }
-    
-            $fileContent=str_replace('href="%24','href="$',$fileContent);
-            $fileContent=str_replace('action="%24','action="$',$fileContent); //for some unkonown reason phpQuery changes the $ to %24 in action so this was required fix that
-
-            file_put_contents($filePath, $fileContent);
-        } 
-
-        function appendToLayoutFile($domOrfileContent, $pathOrObject){
-            if($pathOrObject instanceof SC_Element){
-                $filePath = $this->layoutPath($pathOrObject);
-            }elseif(is_string($pathOrObject)){
-                $filePath = $pathOrObject;
-            }
-            $dom = \phpQuery::newDocumentFileHTML($filePath);
+                $this->addStylesTagsToAutoCSS($container,$dom);
+                $containerDom = $dom->findOne("section > *");                
+                $itemsDom = $dom->find("section .items", 0);
         
 
-            if(is_string($domOrfileContent)){
-                $newContent = \phpQuery::newDocumentHTML($domOrfileContent);
-            }elseif($domOrfileContent instanceof phpQueryObject){
-                $newContent = $domOrfileContent;
-            }
-
-            if($dom["#content"]->html()!=''){
-                $dom["#content"]->append($newContent);
-            }else{
-                $dom["body"]->append($newContent);
-            }
-
-            // Get The CSS and JS of the base Tamplate
-            $this->getStylesAndScriptsLinks($dom);
-
-            // Add all the CSS and JS (from Datas -previously collected- and the base template)
-           if($dom["head"]->html()!=''){              
-                $dom["head link[rel='stylesheet']"]->remove();
-    
-                foreach(self::$csslinks as $csslink){
-
-                    if(substr($csslink, 0, 4) == 'http' && substr($csslink, -4) == '.css'){
-                        $dom["head"]->append('<link rel="stylesheet" href="'.$csslink.'"  //>');
-                    }else{
-                        $dom["head"]->append('<link rel="stylesheet" href="'.$this->cssWebRoot.'/'.basename($csslink).'" //>');
+                $containerDom->class = 'IC II IC_'.$container->name().'_'.$container->getClass().' '.$container->getClass().' '.$containerDom->class;
+                $itemDom = $containerDom->findOne(".itemWarp"); 
+                if ($itemDom) {
+                    $currentClasses = $itemDom->getAttribute('class');
+                    if (strpos($currentClasses, 'II') === false) {
+                        $itemDom->setAttribute('class', trim($currentClasses . ' II'));
                     }
                 }
-                $dom["head script"]->remove();
-                foreach(self::$jslinks as $jslink){
-                    if(substr($jslink, 0, 4) == 'http' && substr($jslink, -3) == '.js'){
-                        $dom["head"]->append('<script type="text/javascript" src="'.$jslink.'"> </script>'."\n");
-                    }else{
-                        $dom["head"]->append('<script type="text/javascript" src="'.$this->jsWebRoot.'/'.basename($jslink).'" /> </script>'."\n");  //NOTE :: space in -" /> </script>- weirdly required
-                    }
-                }
-            }
-  
-            $fileContent=$dom->html();
-            
-            
-            if(extension_loaded('tidy')){
-                $tidy = new tidy;
-                $config = array('indent'=> true,'output-xhtml' => false, 'output-html' => true,'wrap'=> 600);
-                $tidy->parseString($fileContent, $config, 'utf8');
-                $tidy->cleanRepair();
-                $fileContent=$tidy.'';
-            }
-   
-            $fileContent=str_replace('href="%24','href="$',$fileContent);
-            $fileContent=str_replace('action="%24','action="$',$fileContent); //for some unkonown reason phpQuery changes the $ to %24 in action so this was required fix that
-
-            file_put_contents($filePath, $fileContent);
-     
-        } 
-
-        function writeLayoutFile($domOrfileContent, $pathOrObject){
-            if($pathOrObject instanceof SC_Element){
-                $filePath = $this->layoutPath($pathOrObject);
-            }elseif(is_string($pathOrObject)){
-                $filePath = $pathOrObject;
-            }
-            
+                //if($itemDom){$originalItemDom = HtmlDomParser::str_get_html($itemDom->outerhtml);}
 
 
-            if(is_string($domOrfileContent)){
-                $dom = \phpQuery::newDocumentHTML($domOrfileContent);
-            }elseif($domOrfileContent instanceof phpQueryObject){
-                $dom = $domOrfileContent;
-            }
+                $itemDom->innerhtml  = '';
 
-            $baseTemplate = \phpQuery::newDocumentFileHTML($this->layoutPath('SC_Element'));
-            $baseTemplate["body"]=$dom->html();
-            // Get The CSS and JS of the base Tamplate
-            $this->getStylesAndScriptsLinks($baseTemplate);
-
-            
-            // Add all the CSS and JS (from Datas -previously collected- and the base template)
-           if($dom["head"]->html()!=''){              
-                $dom["head link[rel='stylesheet']"]->remove();
-    
-                foreach(self::$csslinks as $csslink){
-
-                    if(substr($csslink, 0, 4) == 'http' && substr($csslink, -4) == '.css'){
-                        $dom["head"]->append('<link rel="stylesheet" href="'.$csslink.'"  //>');
-                    }else{
-                        $dom["head"]->append('<link rel="stylesheet" href="'.$this->cssWebRoot.'/'.basename($csslink).'" //>');
-                    }
-                }
-                $dom["head script"]->remove();
-                foreach(self::$jslinks as $jslink){
-                    if(substr($jslink, 0, 4) == 'http' && substr($jslink, -3) == '.js'){
-                        $dom["head"]->append('<script type="text/javascript" src="'.$jslink.'"> </script>'."\n");
-                    }else{
-                        $dom["head"]->append('<script type="text/javascript" src="'.$this->jsWebRoot.'/'.basename($jslink).'" /> </script>'."\n");  //NOTE :: space in -" /> </script>- weirdly required
-                    }
-                }
-            }
-  
-            $fileContent=$baseTemplate->html();
-    
-            if(extension_loaded('tidy')){
-                $tidy = new tidy;
-                $config = array('indent'=> true,'output-xhtml' => false, 'output-html' => true,'wrap'=> 600);
-                $tidy->parseString($fileContent, $config, 'utf8');
-                $tidy->cleanRepair();
-                $fileContent=$tidy.'';
-            }
-    
-            $fileContent=str_replace('href="%24','href="$',$fileContent);
-            $fileContent=str_replace('action="%24','action="$',$fileContent); //for some unkonown reason phpQuery changes the $ to %24 in action so this was required fix that
-
-            file_put_contents($filePath, $fileContent);
-        }       
+                $innerHtml = '';
  
-    function fillDatasInElementLayout(SC_Element $object, phpQueryObject $dom, string $method){
-        $ret = $dom->html();
-        $datasInLayout = preg_match_all_callback(
-            '/EA_[a-z,_,0-9]+/i',
-            $ret,
-            function ($match){
-                return explode('_',$match[0]);
-            }
-        );
+                foreach($container->items() as $containerItem){  
 
-        if($datasInLayout){
-            //$datasInLayout = array_unique($datasInLayout);
-
-            foreach($datasInLayout as $dataInLayout){
-                $data = $object->{'O'.$dataInLayout[1]}();
-                $dataMethodClass = '';
-                if(isset($dataInLayout[2])){
-                    $dataMethod=$dataInLayout[2];
-                    $dataMethodClass=$dataInLayout[2];
-                    $join='_';
+                    $method = $containerItem['method'];
+                    $containerItem = $containerItem['item'];
+                
+                    if($containerItem instanceof SD_Data){            
+                        $tempHtml = $this->getDataLayout($containerItem,$method)->outerhtml."\n\n"; 
+                    }elseif($containerItem instanceof SI_Item){
+                        $tempHtml = $this->getItemLayout($containerItem)->outerhtml."\n\n";
+                    }elseif($containerItem instanceof SI_Container){
+                        $tempHtml = $this->getContainerLayout($containerItem)->outerhtml."\n\n";
+                    }elseif($containerItem instanceof SC_Element){
+                        $tempHtml = $containerItem->{$method}(); 
+                    }elseif( is_string($containerItem) OR is_numeric($containerItem)){
+                        if($itemDom->html()){
+                            $itemDom->setAttribute('class', trim($currentClasses . ' II'));
+                            $tempHtml =  '$val' ;
+                        }
+                        else{$tempHtml =  '<span class="II item">$val</span>';}
+                    }
+                
+                    if($itemDom->html()){
+                        $itemDom->innerhtml = $tempHtml;
+                        $innerHtml .= $itemDom->outerhtml; 
+                    }else{ 
+                        $innerHtml .= $tempHtml; 
+                    }  
+                } 
+                if(empty($itemsDom->html())){
+                    $containerDom->innerhtml=$innerHtml;
                 }else{
-                    $dataMethod=$method;
-                    $join='';
-                };
-                $dom[".EA_".$data->name().$join.$dataMethodClass]->replaceWith( $this->renderData( $data, $dataMethod, $dom[".EA_".$data->name().$join.$dataMethodClass] ));
-
+                    $itemsDom->innerhtml=$innerHtml; 
+                }
             }
+            return $containerDom;
         }
 
-        return $dom;
-    }
-
-    function fillDataDomWithVariables(SD_Data $Data, phpQueryObject $dom, $action=null){
-
-
-        $repeatClasses = explode(' ',$dom['.repeat']->attr('class') );
-
-        if($repeatClasses[0]){
-            $items = $Data->{$repeatClasses[1]}();
-            $itemHtml=$dom['.repeat .item:first']->htmlOuter();
-            $filledItemHtml = '';
-            $selectedItemHtml=$dom['.repeat .selectedItem:first']->htmlOuter();
-            if(is_string(reset($items)) OR is_numeric(reset($items))){
-                if(!$itemHtml){ $itemHtml = $dom['.repeat *:first']->htmlOuter(); }
-                foreach($items as $key => $value){
-                    if( $key === 0 ){ $key = '0'; }else
-                    if( $key === ' ' ){ $key = ''; }
-                    if($selectedItemHtml && (strval($Data->val()) === strval($key) OR strval($Data->val()) === strval($value))){
-                        $filledItemHtml .= str_replace(['$key','$val'],[$key,$value],$selectedItemHtml);
-                    }else{
-                        $filledItemHtml .= str_replace(['$key','$val'],[$key,$value],$itemHtml);
-                    }
-                }
-                $dom['.repeat']->html($filledItemHtml);
-     
-            }elseif(reset($items) instanceof SD_Data){
-                //TODO
-            }
+        function requiredText(SC_BaseObject $object){
+            if($object->required()){ return 'required'; }else{ return ''; }
         }
-
-
-        // $ret = str_replace('%24','$',$dom->html()); 
-        $ret = str_replace('="%24','="$',$dom->htmlOuter());
-        $ret = str_replace('/%24','/$',$ret);  //for some unkonown reason phpQuery changes the $ to %24  so this was required fix that
-
-       
-
-        /** Quick and dirty replace of action */
-        $ret = str_replace('$action',$action,$ret); //for some unkonown reason 
-
-        /*
-        Substitute the $variables on the Layout with the correspondant Data value.
-        Substitute the $SRvariables with the correspondant Renderer Method
-        */
-        $ret = preg_replace_callback(
-            '/(\$)([a-z,_,0-9]+)/i',
-            function ($matches) use ($Data){
-                $parameters = explode ('_',$matches[2]);
-                $method = array_shift($parameters);
-                $methodKey = substr($method, 0, 2);
-                $rendermethod = substr($method, 2); 
-
-                if($methodKey != 'SR' && (method_exists($Data,$method) OR property_exists($Data, $method)) ){ 
-                    return call_user_func_array(array($Data, $method), $parameters);
-                }elseif($methodKey == 'SR' && (method_exists($this,$rendermethod) OR property_exists($this, $rendermethod)) ){
-                    if(method_exists($this,$rendermethod)){
-                        array_unshift($parameters,$Data);
-                    }
-                    return call_user_func_array(array($this, $rendermethod), $parameters);
-                }else{
-                    if($Data->parent()){
-                        return call_user_func_array(array($Data->parent(), $method), $parameters);
-                    }
-                }
-            },
-            $ret
-        );
-
-        /*
-        Remove/fix the required atributes
-        */
-        $dom = \phpQuery::newDocumentHTML($ret);
-        /** @var phpQueryObject $dom */
-        $dom[ "*[required='']" ]->removeAttr('required');
-        $this->getStylesAndScriptsLinks($dom);
-        return $dom;
-    }
-
-    function fillVariablesInElementLayout( SC_Element $element, phpQueryObject $dom, $action=null,$nextStep=null){   
-
-        $ret=$dom->html();
-        $fixedActionInDom = str_replace('action="%24','action="$',$dom->html());
-        $fixedActionInDom = str_replace('/%24','/$',$fixedActionInDom);
-        $fixedActionInDom = str_replace('href="%24','href="$',$fixedActionInDom); //for some unkonown reason phpQuery changes the $ to %24 in action so this was required fix that
-
-        /** Quick and dirty replace of action */
-        $fixedActionInDom = str_replace('$action',$action,$fixedActionInDom);  
-
-        $ret = preg_replace_callback(
-            '/(\$)([a-z,_,0-9]+)/i',
-            function ($matches) use ($element,$nextStep){
-                // return $matches[2];
-                $parameters = explode ('_',$matches[2]);
-                $method = array_shift($parameters);
-                $methodKey = substr($method, 0, 2);
-                $rendermethod = substr($method, 2); 
-
-                if($methodKey != 'SR' && method_exists($element,$method)){
-                    return call_user_func_array(array($element, $method), $parameters);
-                }elseif($methodKey == 'SR' &&  (method_exists($this,$rendermethod) OR property_exists($this, $rendermethod))){
-                    array_unshift($parameters,$element);
-                    if($nextStep){
-                        $parameters[]=$nextStep;
-                    }
-                    return call_user_func_array(array($this, $rendermethod), $parameters);
-                }else{
-                    return call_user_func_array(array($element, $method), $parameters);
-                }
-            },
-            $fixedActionInDom 
-        );
-        $dom = \phpQuery::newDocumentHTML($ret);
-        /** @var phpQueryObject $dom */
-        $dom[ "*[required='']" ]->removeAttr('required');
-        $this->getStylesAndScriptsLinks($dom);
-        return $dom;
-    }
-
-
-	function setMessage($message='') {
-		SC_Main::$SystemMessage = $message;
-	}
-
-
-	function encodeURL($class = null, $construct_params = null, $method = null, $method_params = null, $dataName = null) {
-		$url = '';
-		if(isset($class)) {
-			// class
-			$url.= $this->App_web_root . '/' . $this->fixCode(strtr($class,'\\','-'));
-			// construct params
-			if(!empty($construct_params) && is_array($construct_params)) {
-                // $tempArr=array_map(
-                //     //['self', 'parameterEncoder'], 
-                //     'SR_main::parameterEncoder()',
-				// 	$construct_params
-				// );
-                $tempArr = array();
-                foreach($construct_params as $param){
-                    $tempArr[]=SR_main::parameterEncoder($param);
-                }
-			    $url.= '/' . implode('/',$tempArr);
-			}
-			
-			if(isset($dataName) && isset($method)) {
-				// Data name
-				$url.= $this->URL_METHOD_SEPARATOR . $dataName;
-			}
-			
-			if(isset($method)) {
-				// method
-				$url.= $this->URL_METHOD_SEPARATOR . $method;
-				
-				// method params
-				if(!empty($method_params) && is_array($method_params)) {
-                    $tempArr = array();
-                    foreach($method_params as $param){
-                        $tempArr[]=SR_main::parameterEncoder($param);
-                    }
-                    $url.= '/' . implode('/',$tempArr);
-				}
-			}
-		}
-        $qs = SC_Main::$URL_METHOD_SEPARATOR;
-
-        if(!empty(SC_Main::$SystemMessage)){ $url.=$qs.$qs.SR_main::parameterEncoder(SC_Main::$SystemMessage); }
-		return $url;
-	}
-
-    static function fixCode($string, $encoding = true) {
-		return $encoding  
-			? strtr($string, array(
-				'%2F' => '/',
-				'%2527' => '%252527',
-				'%27' => '%2527',
-				'%255C' => '%25255C',
-				'%5C' => '%255C',
-			))
-			: strtr($string, array(
-				'%2527' => '%27',
-				'%252527' => '%2527',
-				'%255C' => '%5C',
-				'%25255C' => '%255C',
-			));
-	}
-
-    function lookForMethodInElementsTree(SC_Element $element, string $method){
-        $Tree = class_parents($element);
-        $Tree = array_merge(array($element->getClass()), array_values($Tree));
-        $i = '0';
-        $Dom = '';
-        do {     
-            if($Tree[$i] != 'SC_Element' ){
-                $path = $this->layoutsPath($Tree[$i]);
-                if(file_exists($path)){
-                    $Dom = \phpQuery::newDocumentFileHTML($path);
-                }
-            }elseif($Tree[$i] == 'SC_Element'){
-                $Dom = $this->LoadDefaultLayoutFile();
-            }
-            $i++;
-        } while ( $i<sizeof($Tree) AND (!$Dom OR empty ($Dom[".$method"]->html()) ) );
-
-        $this->getStylesAndScriptsLinks($Dom);
-        $this->addStylesTagsToAutoCSS($element, $Dom, $method);
-        return $Dom[".$method"];     
-    }
-
-
-    public function action(SC_BaseObject $object, string $action, $clean = null, $message = null){
-
-        if($object instanceof SD_ElementContainer OR $object instanceof SD_ElementsContainerMM){
-            $object = $object->element();
-        }
-        if($clean == 'id'){
-            return $this->encodeURL($object->getClass(),array(),$action);
-            //return $this->encodeURL($object->getClass(),array(),$action,array($nextStep));    
-        }else{
-            return $this->encodeURL($object->getClass(),array($object->id()),$action);
-            //return $this->encodeURL($object->getClass(),array($object->id()),$action,array($nextStep));
-        }
-    }
-
-
-    function layoutsPath($object){
-        if(is_a($object,'SD_Data')){
-            $dataPath=DIRECTORY_SEPARATOR.'Datas';
-            $ancestors = class_parents($object);
-            array_splice($ancestors, -1);
-            $ancestorClass = $object->getClass();
-            while(
-                    $ancestorClass 
-                    && !file_exists($this->App_path.DIRECTORY_SEPARATOR.'Layouts'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html')
-                    && !file_exists($this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html')
-                ){
-                $ancestorClass = array_shift($ancestors);
-            }
-            if(file_exists($this->App_path.DIRECTORY_SEPARATOR.'Layouts'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html')){
-                $ret = $this->App_path.DIRECTORY_SEPARATOR.'Layouts'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html';
-            }elseif(file_exists($this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html')){
-                $ret = $this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.$dataPath.DIRECTORY_SEPARATOR.$ancestorClass.'.html';
-            }
-        }elseif(!is_string($object) && is_a($object,'SC_Element')){
-            $ret = $this->App_path.DIRECTORY_SEPARATOR.'Layouts'.DIRECTORY_SEPARATOR.$object->getClass().'.html';
-            if(!file_exists($ret)){
-                $ret = $this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.DIRECTORY_SEPARATOR.$object->getClass().'.html';
-            }
-        }elseif(is_string($object)){
-
-            $ret = $this->App_path.DIRECTORY_SEPARATOR.'Layouts'.DIRECTORY_SEPARATOR.$object.'.html';
-
-            if( is_subclass_of($object, 'SD_Data') || $object === 'SD_Data' ){ $dataPath=DIRECTORY_SEPARATOR.'Datas'; }
-            else{$dataPath='';}
-            
-
-            if(!file_exists($ret)){
-                $ret = $this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.$dataPath.DIRECTORY_SEPARATOR.$object.'.html';
-            }
-        }
-
-        return $ret;
-    }
-
-
-    /* methods related with getting/generatting the Layouts */
-    function  LoadDefaultLayoutFile(){
-        $simplonBase = $this->SimplOn_path.DIRECTORY_SEPARATOR.'Renderers'.DIRECTORY_SEPARATOR.$GLOBALS['redenderFlavor'].DIRECTORY_SEPARATOR.'htmls'.DIRECTORY_SEPARATOR.'SC_Element.html';
-        $appBase = $this->App_path.DIRECTORY_SEPARATOR.'Layouts'.DIRECTORY_SEPARATOR.'SC_Element.html';
-        if(file_exists($appBase)){ $dom = \phpQuery::newDocumentFileHTML($appBase); }
-        else{  $dom = \phpQuery::newDocumentFileHTML($simplonBase);  }
-        $this->getStylesAndScriptsLinks($dom);
-        return $dom;
-    }
-
-	function link($content, $href, array $extra_attrs = array(), $auto_encode = true) {
-		$extra = array();
-		foreach($extra_attrs as $attr => $value) {
-			if($auto_encode) $value = htmlentities($value, ENT_COMPAT, 'UTF-8');
-			$extra[] = $attr.'="'.$value.'"';
-		}
-		if($auto_encode) {
-			$href = htmlentities($href, ENT_COMPAT, 'UTF-8');
-			//$content = htmlentities($content, ENT_COMPAT, 'UTF-8');
-		}
-		return '<a '.implode(' ',$extra).' href="'.$href.'">'.$content.'</a>';
-    }
-
-
-
-	static function parameterEncoder($p){
-		if(is_string($p)) {
-		    $string_delimiter = '\'';
-			$p = self::fixCode(urlencode($p));
-			return $string_delimiter. $p .$string_delimiter;
-		} else {
-			return urlencode($p);
-		}
-	}
-
-
+    
 }

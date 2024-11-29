@@ -121,6 +121,7 @@ class SC_Element extends SC_BaseObject {
 	 * */
 	static $onTheFlyAttributes = array();
 
+	protected $defaultAction = null;
 
 	/**
 	 * Array containing the acces rules for the datas and methods.
@@ -151,12 +152,12 @@ class SC_Element extends SC_BaseObject {
 	 * Determines the kind of permissions that are given to the attributes.
 	 * 
 	 * Depending on the $methodsFamilies array each method is assigned a DatasMode
-	 * View, Update, Create, Delete, Search or the method it self. This way the permissions don't have to be asigned for each method but for DatasMode and special methods.
+	 * View, Update, Create, Delete, Search or the method it static. This way the permissions don't have to be asigned for each method but for DatasMode and special methods.
 	 * 
 	 */
 	protected $datasMode;
 
-	protected $Name;
+	protected $Name, $NamePlural;
 
 	protected $nameInParent;
 
@@ -167,17 +168,21 @@ class SC_Element extends SC_BaseObject {
 	 */
 	protected $OrderCriteria = 'SimplOn_id desc';
 
+	/** @var SR_main */
+	protected $renderer;
+
 	/**
 	 * Keeps the relationship between the methods and the datasMode so that is simplier to write the permissions.
 	 */
 	static $methodsFamilies = array(
 		'showView'=>'View',
 		'showSearch'=>'View',
-		'showAdmin'=>'View',
 		'showList'=>'View',
 		'showEmbed'=>'View',
 		'showEmbededStrip'=>'View',
 		'processReport'=>'View',
+
+		'showAdmin'=>'Admin',
 		
 		'showUpdate'=>'Update',
 		'showUpdateSelect'=>'Update',
@@ -223,8 +228,6 @@ class SC_Element extends SC_BaseObject {
 		*/
 	);
 
-
-
 	static $formMethods = ['showSearch','showCreate','showUpdate'];
 
 	/**
@@ -233,6 +236,27 @@ class SC_Element extends SC_BaseObject {
 	*/
 	protected $fullyset = false;
 
+	static
+		$ReturnBtnMsg,
+		$CancelBtnMsg,
+
+		$SearchBtnMsg,
+		$SearchMsg,
+
+		$CreateBtnMsg,
+		$CreatedMsg,
+		$CreateMsg,
+		$CreateError,
+
+		$UpdateBtnMsg,
+		$UpdatedMsg,
+		$UpdateMsg,
+		$UpdateError,
+
+		$DeleteBtnMsg,
+		$DeletedMsg,
+		$DeleteMsg,
+		$DeleteError;
 
 	/**
 	 * - Calls user defined constructor.
@@ -244,67 +268,58 @@ class SC_Element extends SC_BaseObject {
 	 * @param DataStorage $specialDataStorage DataStorage to use in uncommon cases.
 	 */
 	public function __construct($id_or_array = null, $storage = null, $specialDataStorage = null) {
+
 		//On heirs put here the asignation of SimplOndata and attributes
 		if ($storage)
 		$this->storage($storage);
 		else
 		$this->storage($this->getClass());
 
-		//Assings the storage element for the SimplOnelement. (a global one : or a particular one)
+
+		
+		$this->renderer = SC_Main::$RENDERER;
+
+		//Assings the storage element for the SimplonElement. (a global one : or a particular one)
 		if (!$specialDataStorage) {
 			$this->dataStorage = SC_Main::dataStorage();
 		} else {
 			$this->dataStorage = &$specialDataStorage;
 		}
-		//Call to "construct" function
+
+		if(!$this->Name){$this->Name();}
+
+		static::$ReturnBtnMsg = SC_MAIN::L('Return');
+		static::$CancelBtnMsg = SC_MAIN::L('Cancel');
+
+		static::$SearchBtnMsg = SC_MAIN::L('Search');
+		static::$SearchMsg = SC_MAIN::L('Search a '.$this->Name);
+
+		static::$CreateBtnMsg = SC_MAIN::L('Create');
+		static::$CreateMsg = SC_MAIN::L('Create a '.$this->Name);
+		static::$CreatedMsg = SC_MAIN::L('A '.$this->Name.' has been created');
+		static::$CreateError = SC_MAIN::L('A '.$this->Name.' can\'t be created');
+
+		static::$UpdateBtnMsg = SC_MAIN::L('Update');
+		static::$UpdateMsg = SC_MAIN::L('Update a '.$this->Name);
+		static::$UpdatedMsg = SC_MAIN::L('The '.$this->Name.' has been updated');
+		static::$UpdateError = SC_MAIN::L('The '.$this->Name.' can\'t be updated');
+
+		static::$DeleteBtnMsg = SC_MAIN::L('Delete');
+		static::$DeleteMsg = SC_MAIN::L('Delete a '.$this->Name);
+		static::$DeletedMsg = SC_MAIN::L('A '.$this->Name.' has been deleted');
+		static::$DeleteError = SC_MAIN::L('The '.$this->Name.' has been deleted');
+
+
 		$this->construct($id_or_array, $storage);
 
-		if (!self::$quickDelete)
-			self::$quickDelete = SC_Main::$QUICK_DELETE;
 
-		if (!isset($this->viewAction))
-			$this->viewAction = new SD_viewAction('', array('<img     src="/Imgs/viewIcon.webp" atl="Edit">'));
-		else 
-			$this->viewAction = new SD_emptyAction('', array(''));
-
-		if (!isset($this->createAction))
-		$this->createAction = new SD_CreateAction('', array('<img     src="/Imgs/addIcon.webp" atl="Create">'));
-	
-		if (!isset($this->updateAction))
-			$this->updateAction = new SD_UpdateAction('', array('<img     src="/Imgs/editIcon.webp" atl="Edit">'));
-		else 
-			$this->updateAction = new SD_emptyAction('', array(''));
-
-		if (!isset($this->deleteAction))
-		$this->deleteAction = new SD_DeleteAction('', array('<img     src="/Imgs/deleteIcon.webp" atl="Delete">'));
-		if (!isset($this->adminAction))
-		$this->adminAction = new SD_AdminAction('', array('Admin'));
-
-		if( !isset($this->selectAction) )
-		$this->selectAction = new SD_SelectAction('', array('Select'));
-
-		if( !isset($this->selectSearchAction) )
-		$this->selectSearchAction = new SD_SelectSearchAction('', array('Select'));
-
-		if( !isset($this->selectAppendAction) )
-		$this->selectAppendAction = new SD_SelectAppendAction('', array('Select'));
-
-
-		$this->multiSelectAction = new SD_DeleteAction('', array('Select'));
-		//Load the attributes on the fly
 		$this->addDatas();
-
 		$this->assignDatasName();
-
-		//user_error($this->{$this->fieldId()}());
-		// Tells the SimplOndata whose thier "container" in case any of it has context dependent info or functions.
 		$this->assignAsDatasParent();
 
 		//checking if there is already a dataStorage and storage for this element
-		if(!($this instanceof SE_Interface)){
-			$this->dataStorage->ensureElementStorage($this);
-		}
-
+		$this->dataStorage->ensureElementStorage($this);
+		
 		if (is_array($id_or_array)) {
 			$this->fillFromArray($id_or_array);
 		} else if ($id_or_array) {
@@ -314,10 +329,13 @@ class SC_Element extends SC_BaseObject {
 			//$this->fillFromRequest();
 		}
 
+
+
 		$this->fullyset = true;
 	}
 
-	function attributesOfType($type){
+	
+	function attributesOfClass($type){
 		$ret = array();
 		foreach ($this as $property => $value) {
 			if($value instanceof $type){
@@ -391,15 +409,15 @@ class SC_Element extends SC_BaseObject {
 		if (@$this->$name instanceof SD_Data) {
 			if ($arguments) {
 				return $this->$name->val($arguments[0]);
-			} else {
+			}else {
 				return $this->$name->val();
 			}
 		} else if(substr($name, 0, 4) === "show"){
-			$redender = $GLOBALS['redender'];
-			// return $redender->render($this,$name);
+
+			// return $this->renderer->render($this,$name);
 			array_unshift($arguments,$name);
 			array_unshift($arguments,$this);
-			return call_user_func_array(array($redender, 'render'), $arguments);
+			return call_user_func_array(array($this->renderer, 'render'), $arguments);
 		} else {
 
 			$letter = substr($name, 0, 1);
@@ -430,20 +448,12 @@ class SC_Element extends SC_BaseObject {
 					}
 					break;
 				default:
-					throw new \Exception('Letter ' . $letter . ' not recognized!');
+					throw new SC_Exception('Letter ' . $letter . ' not recognized!');
 				}
 			} else {
 				return parent::__call($name, $arguments);
 			}
 		}
-	}
-
-	function htmlClasses($append = '') {
-		return 'SimplOn Element ' . $this->getClass() . ' ' . $append;
-	}
-
-	function cssSelector($append = '') {
-		return '.SimplOn.Element.' . $this->getClass() . $append;
 	}
 
 	// -- SimplON key methods
@@ -457,7 +467,9 @@ class SC_Element extends SC_BaseObject {
 		$filled = 0;
 		if (is_array($array_of_data)) {
 			foreach ($array_of_data as $dataName => $value) {
+				
 				if (isset($this->$dataName) && ($this->$dataName instanceof SD_Data)) {	
+
 				try {
 						$this->$dataName($value);
 						$filled++;
@@ -466,6 +478,9 @@ class SC_Element extends SC_BaseObject {
 					}
 				}
 			}
+		}
+		if(!empty($this->excetionsMessages)){
+			throw new SC_ElementValidationException($this->excetionsMessages);
 		}
 		return $filled;
 	}
@@ -484,15 +499,18 @@ class SC_Element extends SC_BaseObject {
 	}
 
 	/**
-	 *
 	 * NOTE: This method is not a simple redirection to $this->fillFromArray($_REQUEST) because the file upload requeires the $_FILES array
-	 * Thus the redirection from fillFromRequest to fillFromArray is made at the SimplOnData and there for any SimplOnData that needs to
-	 * distinguish between both can do it.
-	 *
 	 */
 	public function fillFromRequest() {
 		if ($_REQUEST) {	
 			$this->fillFromArray($_REQUEST);
+			if(!empty($_FILES)){
+				foreach ($_FILES as $key => $value) {
+					if ( $this->$key instanceof SD_File && is_array($value) ) {
+						$this->$key->val($value);
+					}
+				}
+			}
 			return;
 		} else {
 			return false;
@@ -533,7 +551,6 @@ class SC_Element extends SC_BaseObject {
 		return $this->getId() ? $this->update() : $this->create();
 	}
 
-
 	public function update() {
 		$this->processData('preUpdate');
 		$return = $this->dataStorage->updateElement($this);
@@ -558,8 +575,6 @@ class SC_Element extends SC_BaseObject {
 		}
 	}
 
-
-
 	/** Stores in the DataStorage the Element Values */
 	public function create() {
 		$this->processData('preCreate');
@@ -571,20 +586,26 @@ class SC_Element extends SC_BaseObject {
 
 		return $id !== false;
 	}
-	/** Calls Create and makes th JSon for the renderer to do the next Step */
+
+	/** Calls Create and makes the JSon for the renderer to do the next Step */
 	function processCreateJSon($nextStep = null) {
 					
 		try {
 			$this->fillFromRequest();
 			$this->validateForDB();
 			$shouldContinue = true; // Control variable		
-		} catch (SC_ElementValidationException $ev) {
+		} catch (SC_Exception $ev) {
+
 			$data = array();
-			foreach ($ev->datasValidationMessages() as $key => $value) {
-				$data[] = array(
-				'func' => 'showValidationMessages',
-				'args' => array($key, $value[0])
-				);
+			if(is_callable($ev, 'datasValidationMessages')){
+				foreach ($ev->datasValidationMessages() as $key => $value) {
+					$data[] = array(
+					'func' => 'showValidationMessages',
+					'args' => array($key, $value[0])
+					);
+				}
+			}else{
+				var_dump($ev);
 			}
 			$return = array(
 			'status' => true,
@@ -594,7 +615,6 @@ class SC_Element extends SC_BaseObject {
 			$return = json_encode($return);
 			return $return;
 		}
-
 
 		try {
 			if ($this->create()) {
@@ -611,7 +631,7 @@ class SC_Element extends SC_BaseObject {
 					return $return;
 			} else {
 				// @todo: error handling
-				user_error('Cannot create in DS!', E_USER_ERROR);
+				user_error(static::$CreateError, E_USER_ERROR);
 			}
 		} catch (\PDOException $ev) {
 			//user_error($ev->errorInfo[1]);
@@ -620,49 +640,76 @@ class SC_Element extends SC_BaseObject {
 		}
 	}
 
-	function showCreate($template = null, $output='AE_fullPage', $messages=null){
-		$redender = $GLOBALS['redender'];
-		
-		$action = $redender->action($this,'processCreate');
-		return $redender->render($this,'showCreate', 'AE_fullPage',$template, $action);
+	function showCreate(){
+		$body = new SI_VContainer();
+		$title = new SI_Tittle(static::$CreateMsg,'3');
+
+		$action = $this->renderer->action($this,'processCreate');
+        $form = new SI_Form($this->datasWith('create','objects'), $action, true, __METHOD__);
+		$form->addItem(new SI_SubmitButton(static::$CreateBtnMsg));
+		$form->addItem(new SI_CancelButton(static::$CancelBtnMsg));
+
+		$body->addItem($title);
+		$body->addItem($form);	
+        return $this->renderer->renderFullPage($body, 'showCreate', $this);
 	}
 
 	function processCreate(){
-		$redender = $GLOBALS['redender'];
-		$redender->setMessage($this->Name().' guardado correctamente');
-		$nextStep = $redender->action($this,'showAdmin','id');
+		$this->renderer->setMessage(static::$CreatedMsg);
+		$nextStep = $this->renderer->action($this,'showAdmin','id',static::$CreatedMsg );	
 		return $this->processCreateJSon($nextStep);
 	}
 
 
 	function showContinusCreate($template = null, $partOnly = false,$action=null,$nextStep=null){
-		$redender = $GLOBALS['redender'];
-		$redender->setMessage($this->Name().' guardado correctamente');
-		$action = $redender->action($this,'processContinusCreate');
-		return $redender->render($this,'showCreate',$template, $partOnly ,$action ,$nextStep);
+		$this->renderer->setMessage(static::$CreatedMsg );
+		$action = $this->renderer->action($this,'processContinusCreate');
+		return $this->renderer->render($this,'showCreate',$template, $partOnly ,$action ,$nextStep);
 		// (SC_BaseObject $object, string $method, $template = null, $partOnly = false,$action=null,$nextStep=null)
 	}	
 	function processContinusCreate($nextStep = null) {
-		$redender = $GLOBALS['redender'];
-		$nextStep = $redender->action($this,'showContinusCreate','id');
+		$nextStep = $this->renderer->action($this,'showContinusCreate','id');
 		return $this->processCreateJSon($nextStep);
 	}
 
 	function showCreateSelect($template = null, $partOnly = false,$action=null,$nextStep=null){
-		$redender = $GLOBALS['redender'];
-		$action = $redender->action($this,'processCreateSelect');
-		return $redender->render($this,'showCreate', 'AE_basicPage',$template, $action);
-		//return $redender->render($this,'showCreate',$template, $partOnly ,$action ,$nextStep);
+		$action = $this->renderer->action($this,'processCreateSelect');
+		return $this->renderer->render($this,'showCreate', 'AE_basicPage',$template, $action);
+		//return $this->renderer->render($this,'showCreate',$template, $partOnly ,$action ,$nextStep);
 		// (SC_BaseObject $object, string $method, $template = null, $partOnly = false,$action=null,$nextStep=null)
 	}
 	
 	function showCreateAppend($template = null, $partOnly = false,$action=null,$nextStep=null){
-		$redender = $GLOBALS['redender'];
-		//$action = $redender->action($this,'processCreateSelect');
-		$action = $redender->action($this,'processCreateAppend');
-		return $redender->render($this,'showCreate', 'AE_basicPage',$template, $action);
-		//return $redender->render($this,'showCreate',$template, $partOnly ,$action ,$nextStep);
+
+		//$action = $this->renderer->action($this,'processCreateSelect');
+		$action = $this->renderer->action($this,'processCreateAppend');
+		return $this->renderer->render($this,'showCreate', 'AE_basicPage',$template, $action);
+		//return $this->renderer->render($this,'showCreate',$template, $partOnly ,$action ,$nextStep);
 		// (SC_BaseObject $object, string $method, $template = null, $partOnly = false,$action=null,$nextStep=null)
+	}
+
+	function showNoAccess() {
+
+		$body = new SI_VContainer();
+		$title = new SI_Tittle(SC_Main::$PERMISSIONS::$CantAccessMsg,'3');
+		$link = new SI_Link( SC_Main::$PERMISSIONS::$CantAccessHomeLinkMsg, SC_Main::$PERMISSIONS->defaultAction() );
+		
+		$body->addItem($title);
+		$body->addItem($link);
+        return $this->renderer->renderFullPage($body, 'showCreate', $this);
+	}
+
+	function defaultAction($defaultAction = null) { 
+
+		if(!$defaultAction) {
+			if(isset($this->defaultAction)) {
+				return $this->defaultAction;
+			} else {
+				return $this->renderer->action(SC_Main::$DEFAULT_ELEMENT,SC_Main::$DEFAULT_METHOD);
+			}
+		} else {
+			$this->defaultAction = $defaultAction;
+		}
 	}
 
 	function processCreateAppend($nextStep = null) {
@@ -690,7 +737,7 @@ class SC_Element extends SC_BaseObject {
 					return $this->makeAppendSelection();
 			} else {
 				// @todo: error handling
-				user_error('Cannot create in DS!', E_USER_ERROR);
+				user_error(static::$CreateError, E_USER_ERROR);
 			}
 		} catch (\PDOException $ev) {
 			//user_error($ev->errorInfo[1]);
@@ -726,7 +773,7 @@ class SC_Element extends SC_BaseObject {
 					return $this->makeSelection();
 			} else {
 				// @todo: error handling
-				user_error('Cannot create in DS!', E_USER_ERROR);
+				user_error(static::$CreateError, E_USER_ERROR);
 			}
 		} catch (\PDOException $ev) {
 			//user_error($ev->errorInfo[1]);
@@ -735,81 +782,92 @@ class SC_Element extends SC_BaseObject {
 		}
 	}
 
-	function showSearch($template = NULL, $output = false, $action = NULL, $nextStep = NULL){
-		$redender = $GLOBALS['redender'];
-		$action = $redender->action($this,$action);
-		return $redender->render($this,'showSearch',$template, $output, $action,$nextStep,true);
+	function showSearch(){
+		$body = new SI_VContainer();
+		$title = new SI_Tittle(static::$SearchMsg,'3');
+
+		$action = $this->renderer->action($this,'processSearch');
+        $form = new SI_Form($this->datasWith('search','objects'), $action, 'search', __METHOD__);
+		$form->addItem(new SI_SubmitButton(static::$SearchBtnMsg));
+		$form->addItem(new SI_CancelButton(static::$CancelBtnMsg));
+
+		$body->addItem($title);
+		$body->addItem($form);	
+        return $this->renderer->renderFullPage($body, 'showCreate', $this);
 	}
 
-	// function showUpdate($template = null, $partOnly = false,$action=null,$nextStep=null){
-	// 	$redender = $GLOBALS['redender'];
-	// 	$action = $redender->action($this,'processUpdate');
-	// 	return $redender->render($this,'showUpdate',$template, $partOnly ,$action ,$nextStep);
-	// }
 	function processCreprocessUpdateate(){
-		$redender = $GLOBALS['redender'];
-		$redender->setMessage($this->Name().' actualizado correctamente');
-		$nextStep = $redender->action($this,'showAdmin','id');
+		
+		$this->renderer->setMessage(static::$UpdatedMsg);
+		$nextStep = $this->renderer->action($this,'showAdmin','id');
 
 		return $this->processUpdateJSon($nextStep);
 	}
 
-
-	
 	function showEmbededUpdateInput($template = null, $partOnly = false,$action=null,$nextStep=null){
-		$redender = $GLOBALS['redender'];
-		//$ret = $redender->render($this,'showEmbededUpdateInput',$template,$partOnly,$action);
-		$ret = $redender->render($this,'showEmbededUpdateInput', null,$template, $action);
+
+		//$ret = $this->renderer->render($this,'showEmbededUpdateInput',$template,$partOnly,$action);
+		$ret = $this->renderer->render($this,'showEmbededUpdateInput', null,$template, $action);
 		$canEdit = true;
 		if($canEdit == false){
-			$ret = \phpQuery::newDocumentHTML($ret);
-			$ret['.SimplOn.actions .UpdateSelect']->remove();
-			$ret = $ret->htmlOuter();
+			//$ret = \phpQuery::newDocumentHTML($ret);
+			//$ret['.SimplOn.actions .UpdateSelect']->remove();
+			//$ret = $ret->htmlOuter();
 		}
 		return $ret;
 	}	
 
 	function showEmbededAppendInput($template = null, $partOnly = false,$action=null,$nextStep=null){
-		$redender = $GLOBALS['redender'];
-		//$ret = $redender->render($this,'showEmbededUpdateInput',$template,$partOnly,$action);
 
-		$ret = $redender->render($this,'showEmbededAppendInput', null,$template, $action);
+		//$ret = $this->renderer->render($this,'showEmbededUpdateInput',$template,$partOnly,$action);
+		$ret = $this->renderer->render($this,'showEmbededAppendInput', null,$template, $action);
 		$canEdit = true;
 		
 		if($canEdit == false){
-			$ret = \phpQuery::newDocumentHTML($ret);
-			$ret['.SimplOn.actions .UpdateSelect']->remove();
-			$ret = $ret->htmlOuter();
+			//$ret = \phpQuery::newDocumentHTML($ret);
+			//$ret['.SimplOn.actions .UpdateSelect']->remove();
+			//$ret = $ret->htmlOuter();
 		}
 		return $ret;
 	}
 
 	function showEmbededSearchInput($template = null, $partOnly = false,$action=null,$nextStep=null){
-		$redender = $GLOBALS['redender'];
-		//$ret = $redender->render($this,'showEmbededUpdateInput',$template,$partOnly,$action);
-		$ret = $redender->render($this,'showEmbededSearchInput', null,$template, $action);
+
+		//$ret = $this->renderer->render($this,'showEmbededUpdateInput',$template,$partOnly,$action);
+		$ret = $this->renderer->render($this,'showEmbededSearchInput', null,$template, $action);
 		$canEdit = false;
 		if($canEdit == false){
-			$ret = \phpQuery::newDocumentHTML($ret);
-			$ret['.SimplOn.actions .UpdateSelect']->remove();
-			$ret = $ret->htmlOuter();
+			//$ret = \phpQuery::newDocumentHTML($ret);
+			//$ret['.SimplOn.actions .UpdateSelect']->remove();
+			//$ret = $ret->htmlOuter();
 		}
 		return $ret;
 	}
 	
 
-	function showUpdate($template = null, $output='AE_fullPage', $messages=null){
-		$redender = $GLOBALS['redender'];
-		
-		$action = $redender->action($this,'processUpdate');
-		return $redender->render($this,'showUpdate', $output,$template, $action);
+	function showView(){
+        $container = new SI_VContainer($this->datasWith('view','objects'),'showView');
+		$container->addItem(new SI_CancelButton(static::$ReturnBtnMsg));
+        return $this->renderer->renderFullPage($container, 'showView', $this);
+	}
+
+	function showUpdate(){
+		$body = new SI_VContainer();
+		$title = new SI_Tittle(static::$UpdateMsg,'3');
+
+		$action = $this->renderer->action($this,'processUpdate');
+        $form = new SI_Form($this->datasWith('update','objects'), $action, 'update', __METHOD__);
+		$form->addItem(new SI_SubmitButton(static::$UpdateBtnMsg));
+		$form->addItem(new SI_CancelButton(static::$CancelBtnMsg));
+
+		$body->addItem($title);
+		$body->addItem($form);	
+        return $this->renderer->renderFullPage($body, 'showUpdate', $this);
 	}
 
 	function showUpdateSelect($template = null, $output='AE_basicPage', $messages=null){
-		$redender = $GLOBALS['redender'];
-		
-		$action = $redender->action($this,'processUpdateSelect');
-		return $redender->render($this,'showUpdate', $output,$template, $action);
+		$action = $this->renderer->action($this,'processUpdateSelect');
+		return $this->renderer->render($this,'showUpdate', $output,$template, $action);
 	}
 
 
@@ -847,13 +905,9 @@ class SC_Element extends SC_BaseObject {
 		}
 	}
 
-
-
-
 	function processUpdate(){
-		$redender = $GLOBALS['redender'];
-		$redender->setMessage($this->Name().' actualizado correctamente');
-		$nextStep = $redender->action($this,'showAdmin','id');
+		$this->renderer->setMessage(static::$UpdatedMsg);
+		$nextStep = $this->renderer->action($this,'showAdmin','id',static::$UpdatedMsg);
 		return $this->processUpdateJSon($nextStep);
 	}
 
@@ -894,7 +948,7 @@ class SC_Element extends SC_BaseObject {
 					return $return;
 			} else {
 				// @todo: error handling
-				user_error('Cannot create in DS!', E_USER_ERROR);
+				user_error(static::$UpdateError);
 			}
 		} catch (\PDOException $ev) {
 			//user_error($ev->errorInfo[1]);
@@ -903,19 +957,45 @@ class SC_Element extends SC_BaseObject {
 		}
 	}
 
-	function showDelete($template = null, $output='AE_fullPage', $messages=null){
-		/** @var SR_main2 $redender */
-		$redender = $GLOBALS['redender'];
-		$action = $redender->action($this,'processDeletePage');
-		return $redender->render($this,'showDelete', 'AE_fullPage',$template, $action);
+	function showDelete(){
+		$body = new SI_VContainer();
+		$title = new SI_Tittle(static::$DeleteMsg,'3');
+
+		$action = $this->renderer->action($this,'processDelete');
+        $form = new SI_Form([$this->id], $action, 'delete', __METHOD__);
+		$form->addItem(new SI_VContainer($this->datasWith('view','objects'),'showView'));
+		$form->addItem(new SI_SubmitButton(static::$DeleteBtnMsg));
+		$form->addItem(new SI_CancelButton(static::$CancelBtnMsg));
+
+		$body->addItem($title);
+		$body->addItem($form);	
+        return $this->renderer->renderFullPage($body, 'showUpdate', $this);
 	}
 
-	function processDeletePage($nextStep = null, $format = 'json') {
+	function test(){
+
+/* 		$message = new SI_SystemMessage('Probando 1 2 3 probando...');
+
+		$testLink1 = new SI_Link('Test 1', $this->renderer->action($this,'test 1'));
+		$testLink2 = new SI_Link('Test 2', $this->renderer->action($this,'test 2'));
+		$testLink3 = new SI_Link('Test 3', $this->renderer->action($this,'test 3'));
+		$testLink4 = new SI_Link('Test 4', $this->renderer->action($this,'test 4'));
+		$menu = new SI_SystemMenu([$testLink1,$testLink2,$testLink3,$testLink4]);
+		$saludo = new SI_Text('Hola Mundo');
+		$mensaje = new SI_SystemMessage();	
+
+		$topBar = new SI_HContainer([$menu,$saludo,$mensaje],'showView');
+		$topBar->style(' grid-template-columns: 80fr auto 2fr;');
+
+		$body = new SI_VContainer([new SI_Tittle('TEST',3),$message,$menu],'showView');
+        return $this->renderer->renderBasicPage($topBar, 'test', $this); */
+	}
+
+	function processDelete($nextStep = null, $format = 'json') {
 		//esta pendienmte el tema de nexstep o el json y las modalidades de delete
-		/** @var SR_main2 $redender */
-		$redender = $GLOBALS['redender'];
-		$redender->setMessage($this->Name().' borrado correctamente');
-		if(!$nextStep){ $nextStep = $redender->action($this,'showAdmin','id'); }
+
+		$this->renderer->setMessage($this->Name().' borrado correctamente');
+		if(!$nextStep){ $nextStep = $this->renderer->action($this,'showAdmin','id',static::$DeletedMsg ); }
 		$data = array(
 			array(
 			'func' => 'removeHtml',
@@ -939,7 +1019,7 @@ class SC_Element extends SC_BaseObject {
 			echo json_encode($return);
 		} else {
 			// @todo: error handling
-			user_error('Cannot delete in DS!', E_USER_ERROR);
+			user_error(static::$DeleteError);
 		}
 	}
 
@@ -953,9 +1033,7 @@ class SC_Element extends SC_BaseObject {
 			// $params = ['simplonCols'=>'show'];
 			$results = new SD_Table('Results',$params,$results);
 
-			/** @var SR_main2 $redender */
-			$redender = $GLOBALS['redender'];
-			return $redender->renderData($results,'showView',null,1);
+			return $this->renderer->renderData($results,'showView',null,1);
 			// $results = $search->getResults($this->toArray());
 			// foreach($results as $row) 
 			//  	$ret .= var_export($row, true);
@@ -965,114 +1043,10 @@ class SC_Element extends SC_BaseObject {
 		}
 	}
 
-	function adminTable( $position = null, $limit = null) {
-		try {
-			//$search = new SE_Search(array($this->getClass()));
-			if(is_object(SC_Main::$PERMISSIONS)){SC_Main::$PERMISSIONS->setValuesByPermissions($this, 'View');}
-
-			$results = $this->dataStorage->readElements($this, 'Elements', $position, $limit);
-
-			$columnsToAdd = [
-				//'Suma'=>new SD_Sum('Suma',array('num1','num2')),
-				'&nbsp;'=>new SD_Concat('&nbsp;',array('&nbsp;','viewAction','updateAction','deleteAction'))
-			];
-
-			// $params = [];
-			// $rowsToAdd=[
-			// 	['title'=>'Total','function'=>'array_sum','rows'=>[1,2,3] ]
-			// ];
-			$params = ['colsTitles'=>true,'rowsTitles'=>false,'colsTitlesIn'=>'keys','rowsTitlesIn'=>'keys','columnsToAdd'=>$columnsToAdd,];
-			// $params = ['colsTitles'=>true,'rowsTitles'=>false,'colsTitlesIn'=>'keys','rowsTitlesIn'=>'none','columnsToAdd'=>$columnsToAdd];
-			// $params = ['simplonCols'=>'show'];
-
-
-			if( !empty($results) ){
-				$results = new SD_Table('Results',$params,$results);
-			}else{
-				$results = new SD_Text('Results','VL','No hay datos que mostrar');
-			}
-
-
-			/** @var SR_main2 $redender */
-			$redender = $GLOBALS['redender'];
-			return $redender->renderData($results,'showView',null,1);
-
-		} catch (SC_ElementValidationException $ev) {
-			user_error($ev->datasValidationMessages());
-		}
-	}
-
-	function selectTable() {
-		try {
-			$search = new SE_Search(array($this->getClass()));
-
-			$results = $this->dataStorage->readElements($this, 'Elements', $position, $limit);
-
-			$params = ['colsTitles'=>true,'rowsTitles'=>false,'colsTitlesIn'=>'keys','rowsTitlesIn'=>'keys','columnsToAdd'=>array('selectAction')];
-
-			if( !empty($results) ){
-				$results = new SD_Table('Results',$params,$results);
-			}else{
-				$results = new SD_Text('Results','VL','No hay datos que mostrar');
-			}
-
-			/** @var SR_main2 $redender */
-			$redender = $GLOBALS['redender'];
-			return $redender->renderData($results,'showView',null,1);
-
-		} catch (SC_ElementValidationException $ev) {
-			user_error($ev->datasValidationMessages());
-		}
-	}
-
 	function viewVal(){
 		return $this->val();
 	}
 	
-	function selectAppendTable() {
-		try {
-			$search = new SE_Search(array($this->getClass()));
-
-			$results = $this->dataStorage->readElements($this, 'Elements', $position, $limit);
-
-			$params = ['colsTitles'=>true,'rowsTitles'=>false,'colsTitlesIn'=>'keys','rowsTitlesIn'=>'keys','columnsToAdd'=>array('selectAppendAction')];
-			if( !empty($results) ){
-				$results = new SD_Table('Results',$params,$results);
-			}else{
-				$results = new SD_Text('Results','VL','No hay datos que mostrar');
-			}
-
-			/** @var SR_main2 $redender */
-			$redender = $GLOBALS['redender'];
-			return $redender->renderData($results,'showView',null,1);
-
-		} catch (SC_ElementValidationException $ev) {
-			user_error($ev->datasValidationMessages());
-		}
-	}
-
-	function selectSearchTable() {
-		try {
-			$search = new SE_Search(array($this->getClass()));
-
-			$results = $this->dataStorage->readElements($this, 'Elements', $position, $limit);
-
-			$params = ['colsTitles'=>true,'rowsTitles'=>false,'colsTitlesIn'=>'keys','rowsTitlesIn'=>'keys','columnsToAdd'=>array('selectSearchAction')];
-
-			if( !empty($results) ){
-				$results = new SD_Table('Results',$params,$results);
-			}else{
-				$results = new SD_Text('Results','VL','No hay datos que mostrar');
-			}
-
-			/** @var SR_main2 $redender */
-			$redender = $GLOBALS['redender'];
-			return $redender->renderData($results,'showView',null,1);
-
-		} catch (SC_ElementValidationException $ev) {
-			user_error($ev->datasValidationMessages());
-		}
-	}	
 
 	/**
 	 * 
@@ -1146,17 +1120,38 @@ class SC_Element extends SC_BaseObject {
 		return $tableReport.$links;
 	}
 
-	function showAdmin($template = null, $output='AE_fullPage', $messages=null){
-		$redender = $GLOBALS['redender'];
+
+	function showAdmin(){
 		$this->fillFromRequest();
-		$mode = self::$methodsFamilies[__FUNCTION__];
 
-		if($mode && is_object(SC_Main::$PERMISSIONS) ){
-			SC_Main::$PERMISSIONS->setValuesByPermissions($this, $mode);
-		}
+		$body = new SI_VContainer();
 
-		$action = $redender->action($this,'processAdmin');
-		return $redender->render($this,'showAdmin', 'AE_fullPage',$template, $action);
+		$body->addItem( new SI_Divider(new SI_Tittle($this->NamePlural(null,true),'3')) );
+	
+		
+			$createAction = new SD_Action('showCreate',static::$CreateMsg,  'createIcon.webp', null,'l');
+			$createAction->parent($this);
+		$body->addItem( $createAction );
+
+				$action = $this->renderer->action($this,'showAdmin');
+				$form = new SI_Form($this->datasWith('search','objects'), $action, false, 'showSearch');
+			$form->addItem(new SI_SubmitButton(static::$SearchBtnMsg));
+		$body->addItem( new SI_Divider(static::$SearchMsg) );
+		$body->addItem( $form );
+
+						$viewAction = new SD_Action('showView',SC_MAIN::L('View'), 'viewIcon.webp');
+						$updateAction = new SD_Action('showUpdate',SC_MAIN::L('Update'), 'editIcon.webp');
+						$deleteAction = new SD_Action('showDelete',SC_MAIN::L('Delete'), 'deleteIcon.webp');
+					$actionsBox = new SI_HContainer([$updateAction,$viewAction,$deleteAction],'showList');
+				$actions = new SD_Wrapper($actionsBox,SC_MAIN::L('Actions'),'L');
+
+				$extraColumns = [$actions->label() => $actions];
+				$elements = $this->dataStorage->readElements($this, 'Elements');
+			$table = new SI_Table($elements, $extraColumns, 'showEmbeded');
+		$body->addItem( new SI_Divider(SC_MAIN::L('Results')) );
+		$body->addItem( $table );
+
+		return $this->renderer->renderFullPage($body,'showSearch', $this,'AE_fullPage');
 	}
 
 	/**
@@ -1172,14 +1167,14 @@ class SC_Element extends SC_BaseObject {
 	 * @return string
 	 */
 	function processAdmin($start = 1, $limit = null) {
-		$redender = $GLOBALS['redender'];	
+
 		if ($start < 1) {
 			$start = 1;
 		}			
 		$position = ($start - 1) * $limit;
 		$this->fillFromRequest();
 		$search = new SE_Search(array($this->getClass()));
-		//$admin = $redender->encodeURL(array(), 'showAdmin');
+		//$admin = $this->renderer->encodeURL(array(), 'showAdmin');
 
 		$colums = array_merge($this->datasWith("list"), array( "viewAction", "updateAction","deleteAction"));
 
@@ -1424,7 +1419,7 @@ class SC_Element extends SC_BaseObject {
 
 		foreach ($this as $data) {
 			if ($data instanceof SD_Data) {
-				if ($data->hasMethod('parent') && empty($data->parent()) ) {
+				if ($data->hasAttribute('parent') && empty($data->parent()) ) {
 					$data->parent($parent);
 				}
 			}
@@ -1448,19 +1443,23 @@ class SC_Element extends SC_BaseObject {
 		/** @var string[] $embeadedDatas */
 		$embeadedDatas = $this->datasWith("embeded");
 		$ret = '';
-		$this->fillFromDSById();
+
+		if ($this->getId() || $this->getId() === 0) {$this->fillFromDSById();}
 		foreach($embeadedDatas as $embeadedData){
+			
 			$ret .= $this->{$embeadedData}->showEmbededStrip().' ';
-		}
+		}		
 		return trim($ret);
 	} 
 
 	//RSL 2022 #todo 
-	public function addData($attributeName, SD_Data $attribute = null) {
+	public function addData($attributeName, SD_Data $attribute) {
 		///RSL 2022 fix de error que tronaba en ciertas lecturas por falta name en el atributo
 		$attribute->name($attributeName);
-		self::$onTheFlyAttributes[$attributeName]=$attribute;
+		static::$onTheFlyAttributes[$attributeName]=$attribute;
 		$this->$attributeName = $attribute;
+		
+
 		if ($attribute instanceof SD_Data) {
 			if (is_array($this->dataAttributes)) {
 				if(!in_array($attributeName, $this->dataAttributes)){
@@ -1470,6 +1469,7 @@ class SC_Element extends SC_BaseObject {
 				$this->dataAttributes = $this->attributesTypes();
 			}
 		}
+
 		$this->$attributeName->parent($this);
 
 		return $this;
@@ -1478,7 +1478,7 @@ class SC_Element extends SC_BaseObject {
 	public function removeData($attributeName) {
 		if ($attribute instanceof SD_Data) {
 			unset($obj->$attributeName);
-			unset(self::$onTheFlyAttributes[$attributeName]);
+			unset(static::$onTheFlyAttributes[$attributeName]);
 			SC_Main::removeData($this->getClass(), $attributeName);
 			$this->dataAttributes = $this->attributesTypes();
 		}
@@ -1486,7 +1486,7 @@ class SC_Element extends SC_BaseObject {
 	}
 
 	public function addDatas() {
-		foreach (self::$onTheFlyAttributes as $attributeName => $attribute) {
+		foreach (static::$onTheFlyAttributes as $attributeName => $attribute) {
 			$this->$attributeName = clone $attribute;
 			if ($attribute instanceof SD_Data) {
 				if (is_array($this->dataAttributes)) {
@@ -1538,7 +1538,6 @@ class SC_Element extends SC_BaseObject {
 		);
 		header('Content-type: application/json');
 		echo json_encode($return);
-
 	}
 
 	function makeAppendSelection(){
@@ -1557,13 +1556,11 @@ class SC_Element extends SC_BaseObject {
 		);
 		header('Content-type: application/json');
 		echo json_encode($return);
-
 	}
 
 
 
 	function makeSearchAdition(){
-
 		$return = array(
 			'status' => true,
 			'type' => 'commands',
@@ -1585,21 +1582,42 @@ class SC_Element extends SC_BaseObject {
 		echo json_encode($return);
 	}
 
-	public function Name($name = null){
+	public function Name($name = null, $captalize = false){
 		if(!$name){
 			if(!$this->Name){
 				$this->Name = explode('_',get_class($this));
 				array_shift( $this->Name  );
 				$this->Name = implode(' ', $this->Name );
-				$this->Name  = preg_replace('/[A-Z]/', ' $0', $this->Name);
+				$this->Name = strtolower(trim(preg_replace('/[A-Z]/', ' $0', $this->Name)));
 			}
-			return $this->Name;
+			if($captalize){
+				return SC_MAIN::L(ucfirst($this->Name));
+			}else{
+				return SC_MAIN::L($this->Name);
+			}
+		}else{
+			$this->Name = $name;
 		}
 	}
 
-	function showMultiPicker() {
-		return SC_Main::$RENDERER->table(array($this->toArray()));
+	public function NamePlural($namePlural = null, $captalize = false){
+		if(!$namePlural){
+			if(!$this->NamePlural){
+				$this->NamePlural = strtolower(trim($this->Name.'s'));
+			}
+			if($captalize){
+				return SC_MAIN::L(ucfirst($this->NamePlural));
+			}else{
+				return SC_MAIN::L($this->NamePlural);
+			}
+		}else{
+			$this->NamePlural = $namePlural;
+		}
 	}
+
+	// function showMultiPicker() {
+	// 	return SC_Main::$RENDERER->table(array($this->toArray()));
+	// }
 
 	function getId() {
 		//user_error($this->fieldId());
@@ -1651,7 +1669,7 @@ class SC_Element extends SC_BaseObject {
 		return $this->dataAttributes;
 	}
 
-	// @todo: change name to attributesOfType
+	// @todo: change name to attributesOfClass
 	function attributesTypes($type = 'SD_Data') {
 		foreach ($this as $name => $data) {
 			if ($data instanceof $type) {
@@ -1661,7 +1679,7 @@ class SC_Element extends SC_BaseObject {
 		return @$a ? : array();
 	}
 
-	// @todo: change name to attributesOfType
+	// @todo: change name to attributesOfClass
 	function attributesTypesWith($type = 'SD_Data', $what = 'fetch') {
 		$a = null;
 		foreach ($this as $name => $data) {
@@ -1691,7 +1709,7 @@ class SC_Element extends SC_BaseObject {
 				if ($this->$data->$what()) {
 					if($retType == 'strings'){
 						$output[] = $data;
-					}elseif($retType == 'objects'){
+					}elseif($retType != 'strings'){					
 						$output[] = $this->$data;
 					}
 				}
@@ -1701,87 +1719,8 @@ class SC_Element extends SC_BaseObject {
 		}
 		return $output;
 	}
-        
-	function allow($validator, $method) {
 
-		$validatorClass = '\\' . SC_Main::$PERMISSIONS;
-		$validatorObject = new $validatorClass($validator);
-                $rolesArray = $validatorObject->role();
-                $roleNameHierarchy = array();
-                foreach ($rolesArray as $key) {
-                    $roleNameHierarchy[$key->level()] = $key->name();
-                }
-                asort($roleNameHierarchy);
-                if (isset($_SESSION['simplonUser'])) {
-                        foreach ($roleNameHierarchy as $value) {
-                            if (isset(self::$permissions[$value])) {
-                                    return $this->isAllowed(self::$permissions[$value], $method); 
-                            } elseif (isset(self::$permissions['default'])){
-                                    return $this->isAllowed(self::$permissions['default'], $method);
-                            } elseif (isset(SC_Main::$DEFAULT_PERMISSIONS[$value])) {
-                                    return $this->isAllowed(SC_Main::$DEFAULT_PERMISSIONS[$value], $method);
-                            } else {
-                                    return false;
-                            }
-                    }
-                } else {
-                            return true;
-                    }
-	}
-
-	function isAllowed($methods, $method) {
-		$values = array(
-		'a' => array('processAdmin', 'showAdmin'),
-		'c' => array('processCreate', 'showCreate'),
-		'd' => array('processDelete', 'showDelete'),
-		's' => array('processSearch', 'showSearch'),
-		'u' => array('processUpdate', 'showUpdate'),
-        'v' => array('showView'),
-		'i' => array('index'),
-                '*' => array('*')
-		);
-		$allowedMethods = array();
-		$deniedMethods = array();
-                $allowedElementMethods = array();
-		$deniedElementMethods = array();
-		if (isset($methods['Allow'])) {
-			$flagsMethods = str_split(strtolower(array_shift($methods['Allow'])));
-			foreach ($flagsMethods as $key) {
-				foreach ($values[$key] as $value) {
-					$allowedMethods[] = $value;
-				}
-			}
-			if (isset($methods['Allow'])) {
-				foreach ($methods['Allow'] as $value) {
-					$allowedElementMethods[] = $value;
-				}
-			}
-		}
-		if (isset($methods['Deny'])) {
-			$flagsMethods = str_split(strtolower(array_shift($methods['Deny'])));
-			foreach ($flagsMethods as $key) {
-				foreach ($values[$key] as $value) {
-					$deniedMethods[] = $value;
-				}
-			}
-			if (isset($methods['Deny'][1])) {
-				foreach ($methods['Deny'] as $value) {
-					$deniedElementMethods[] = $value;
-				}
-			}
-		}
-                if ( ( in_array('*', $deniedElementMethods) || in_array('*', $deniedMethods)) || (in_array($method, $deniedElementMethods) || in_array($method, $deniedMethods)) ) {
-			return false;
-		} elseif ( (in_array('*', $allowedElementMethods) || in_array('*', $allowedMethods)) || ( in_array($method, $allowedElementMethods) || in_array($method, $allowedMethods)) ) {
-			return true;
-		} else {
-			return true;
-		}
-	}
-
-
-	public function __toString()
-	{
+	public function __toString(){
 		return $this->showView();
 	}
 

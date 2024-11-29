@@ -61,6 +61,6 @@ class SD_NumericId extends SD_Id
 	}	
 
 	public function showDelete() {
-		return $redender->render($this,'showView');
+		return $this->renderer()->render($this,'showView');
 	}
 }

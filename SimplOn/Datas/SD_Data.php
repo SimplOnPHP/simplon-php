@@ -137,6 +137,8 @@ abstract class SD_Data extends SC_BaseObject {
 	 */
 	$required = false,
 	
+	/** @var SR_main */
+	$renderer = null,
 	
 	/**
 	 * indicates if the SimplOndata must have a value in order to allow the storage of it's dataParent SimplOnelement
@@ -169,7 +171,8 @@ abstract class SD_Data extends SC_BaseObject {
 	
 	$filterCriteria = 'name == :name',
 
-	$fixedValue = false; // to control if the value is not to be changed
+	$fixedValue = false, // to control if the value is not to be changed
+	$renderOverride = false;
 	
 	public $tip;
 	public $tipInline;
@@ -224,13 +227,52 @@ abstract class SD_Data extends SC_BaseObject {
 			$this->dataFlags($flags);
 		}
 	}
+	
+
+
+	public function __call($name, $arguments) {
+		if(substr($name, 0, 4) === "show"){
+
+			array_unshift($arguments,$name);
+			array_unshift($arguments,$this);
+			return call_user_func_array(array($this->renderer(), 'render'), $arguments);
+		}else {
+			return parent::__call($name, $arguments);
+		}
+	}
+
+	/**
+	* User defined constructor, called within {@link __constructor()},
+	* Useful in child clasess to define any class SD_specific construction code without overwritning the __construct method
+	*/
+   public function construct($label=null, $flags=null, $val=null, $filterCriteria=null) {}
+ 
+   
+	
+   public function renderer($renderer=null){
+		if(isset($val)){
+			$this->renderer = $renderer;
+		}else{
+			if($this->renderer){
+				return $this->renderer;
+			}elseif($this->parent){
+				return $this->parent->renderer();
+			}else{
+				return SC_Main::$RENDERER;
+			}
+		}
+	}
 
 	public function fixValue($val){
 		$this->val($val);
 		$this->fixedValue = true;
+		$this->renderOverride = 'showFixedValue';
 	}
 
-	
+	public function showEmbededStrip(){
+		return $this->val();
+	}
+
 	public function val($val=null){
 		if(isset($val)){
 			if(!$this->fixedValue){
@@ -244,23 +286,6 @@ abstract class SD_Data extends SC_BaseObject {
 	public function viewVal(){
 		return $this->val();
 	}
-	
-	/**
-	 * User defined constructor, called within {@link __constructor()},
-	 * Useful in child clasess to define any class SD_specific construction code without overwritning the __construct method
-	 */
-	public function construct($label=null, $flags=null, $val=null, $filterCriteria=null) {}
-	
-	function htmlClasses($append = '') {
-        return ''
-			.' '.($this->required ? 'required ' : '')
-			.' '.($this->fixedValue ? 'disabled ' : '')
-			.' '.$append;
-    }
-	
-	function cssSelector($append = '') {
-        return '.SimplOn.Data.'.$this->getClass().'.'.$this->name().$append;
-    }
 	
 	public function preRead() {}
 	
@@ -299,8 +324,6 @@ abstract class SD_Data extends SC_BaseObject {
 	}
 
 	public function doDelete(){}
-
-
 
 	
 	
@@ -357,8 +380,6 @@ abstract class SD_Data extends SC_BaseObject {
 			'f' => 'fetch',
 		);
 	
-
-
 		if(isset($flags)) {
 			foreach(str_split($flags) as $flag)
 				$this->{$a_flags[strtolower($flag)]} = ($flag != strtolower($flag));
@@ -369,53 +390,14 @@ abstract class SD_Data extends SC_BaseObject {
 			return $return;
 		}
 	}
-	
-        
-	public function select() {
-		$this->search();
-	}
 
-
-	
-	public function getCSS($method) {
-		$class = $this->getClass('-');
-                 
-		if($this->hasMethod($method)) {
-			$arrayClassName = explode('\\',$this->getClass());    
-			$class = end($arrayClassName);
-			return array(SE_CSS::getPath("$class.$method.css"));
-
-		} else {
-			return array();
-		}
-
-	}
-
-	public function getJS($method) {
-		$class = $this->getClass('-');
-		// gets class' js file
-		$a_js = ($local_js = SE_JS::getPath("$class.js"))
-				? array($local_js) 
-				: array();
-		if($this->hasMethod($method)) {
-			// gets method's js file
-			if($local_js = SE_JS::getPath("$class.$method.js"))
-					$a_js[] = $local_js;
-
-		}
-
-		return $a_js;
-
-	}
-	
-	
 	/**
 	 * Tells PHP how to render this object as a string
 	 *
 	 * @return ing
 	 */
 	public function __toString() {
-		return (string)$this->showView();
+		return (string)$this->val();
 	}
 
 	/**
@@ -434,67 +416,6 @@ abstract class SD_Data extends SC_BaseObject {
 		
 	}
 
-	/**
-         * showView allows display the value in the views
-         * 
-         * @param string $template Path to the file to use as template
-         * @return string Rendered interface representation of the SD_Data
-         */
-	// function showView($template = null){
-    //     // \phpQuery::newDocumentFileHTML(realpath($template_file))
-    //     $redender = $GLOBALS['redender'];
-	// 	return $redender->render($this,__FUNCTION__);
-	// }
-
-	public function __call($name, $arguments) {
-		// if(method_exists($this, $name )){
-		// 	call_user_func_array(array($this, $name), $arguments);
-		// } else 
-
-		if(substr($name, 0, 4) === "show"){
-	
-			$redender = $GLOBALS['redender'];
-			// return $redender->render($this,$name);
-			array_unshift($arguments,$name);
-			array_unshift($arguments,$this);
-			return call_user_func_array(array($redender, 'renderData'), $arguments);
-		}else{
-			return parent::__call($name, $arguments);
-		}
-	 }
-
-	/**
-         * showEmbeded allows display the value in the EmbededViews
-         * 
-         * @param type $template
-         * @return string
-         */
-	// function showEmbeded($template = null){
-	// 	$this->printValInInput = $fill;
-	// 	/**@var SR_main2 $redender  */
-    //     $redender = $GLOBALS['redender'];
-	// 	return $redender->render($this,__FUNCTION__);
-	// }
-	
-	function showEmbededStrip($template = null){
-		return strip_tags(self::showEmbeded());
-	}	
-	function showEmbededSlim($template = null){
-		return self::showEmbeded();
-	}
-
-	/**
-         * showInput prints the label and the input with the correct 
-         * format (id,class,name,value, etc) to be display in the forms
-         */
-	// function showInput($fill = true){
-	// 	$this->printValInInput = $fill;
-    //     $redender = $GLOBALS['redender'];
-	// 	return $redender->render($this,__FUNCTION__);
-	// }
-
-
-
 	function htmlId() {
         return $this->instanceId();
     }
@@ -505,77 +426,6 @@ abstract class SD_Data extends SC_BaseObject {
 	}
 
 	/**
-         * showCreate return the string returned by showInput to be displayed
-         * in showCreate template
-         * @return string
-         */
-	// function showCreate(){
-    //     return self::showInput(false);
-	// }
-	/**
-         * showUpdate return the string returned by showInput to be displayed 
-         * in showUpdate template
-         * @return string
-         */
-	function showUpdate(){
-        return self::showInput(true);
-	}
-	/**
-         * showSearch return the string returned by showInput to be displayed 
-         * in showSearch template to do a search
-         * @return string
-         */
-	function showSearch(){ 
-
-		$tmpreq = $this->required;
-		$this->required = false;
-		$tempRet = self::showInput(true);
-		$this->required = $tmpreq;
-		return $tempRet;
-	}
-        /**
-         * showSelect display the result of the search of the showSelect method
-         * @return string
-         */
- 	function showSelect($class = array()){
-		return self::showSearch();
-	}  
-	     
-	/**
-	 * showList is similar to showView but in this case is used to indicate 
-	 * how will be display $this->val() in the list
-	 * @return string
-	 */
- 	// function showList(){
-
-	// 	return $this->__call('showList',array());
-	// 	return self::showView();
-	// }
-	
-	/**
-	 * ///RSL 2022 Aded "e Embeded"
-	 * showList is similar to showView but in this case is used to indicate 
-	 * how will be display $this->val() in the list
-	 * @return string
-	 */
-
-
-	/**
-	 * showAdmin allows control how will be display the datas in the admin panel
-	 * @return string
-	 */
-    // function showAdmin(){
-    // 	return self::showInput();
-    // }
-
-    // function showReport(){
-    // 	return self::showInput();
-    // }
-
-	
-
-	
-	/**
 	 * Returns the label for the input
 	 *
 	 * @return ing
@@ -584,15 +434,8 @@ abstract class SD_Data extends SC_BaseObject {
 		if($label){
 			$this->label = $label;
 		}else{
-			return isset($this->label) ? $this->label : ucfirst($this->name());
+			return isset($this->label) ? SC_MAIN::L($this->label) : SC_MAIN::L(ucfirst($this->name()));
 		}
 	}
-	
-	function encodeURL($method = null, array $method_params = array()) {
-
-        $redender = $GLOBALS['redender'];
-		return $redender->encodeURL($this->parent->getClass(), array($this->parent->getId()), $method, $method_params, $this->name());
-	}
-
-	
+		
 }

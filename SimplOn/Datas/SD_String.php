@@ -42,5 +42,6 @@ class SD_String extends SD_Data {
 		$list = true,
 		$embeded = true,
 		$filterCriteria = 'name ~= :name';
-        
+
+  
 }

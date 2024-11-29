@@ -18,26 +18,30 @@
 */
 
 /**
- * Text data type
+ * String data type 
  * 
- * This is a textarea data type which allow you show a common textarea.
+ * This is a string data type which allow you show an input to introduce a string.
  * 
  * @author Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
  * @copyright (c) 2011, Rubén Schaffer Levine and Luca Lauretta
  * @category Data
  */
-class SD_Text extends SD_Data
-{
-    /**
-     *
-     * @var boolean $list - this variable indicates if this data will be listed. 
-     */
-	protected $list = false;
-	
-	function showInput($fill=true)
-	{
-		$data_id = 'SimplOn_'.$this->instanceId();
-		return  ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
-				'<textarea id="'.$this->inputName().'" name="'.$this->inputName().'">'.(($fill)? $this->val :'').'</textarea>';
-	}
+class SD_Text extends SD_Data {
+	/**
+         *
+         * @var boolean $view,$create,$update and $list - these variables are 
+         * flags to indicate if this input will be displayed in the different templates
+         * 
+         * @var string $filterCriteria - this variable indicates the kind of filter to this
+         * kind of data.
+         */
+	protected 
+		$view = true,
+		$create = true,
+		$update = true,
+		$list = true,
+		$embeded = true,
+		$filterCriteria = 'name ~= :name';
+
+  
 }

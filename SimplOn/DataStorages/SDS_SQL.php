@@ -126,7 +126,7 @@ abstract class SDS_SQL extends SDS_DataStorage
 				$dbColumns[$dbColumn['Field']] = $dbColumn;
 			}
 		}
-		
+
 		foreach($this->db->query('SHOW INDEXES FROM `'.$element->storage().'`')->fetchAll() as $dbIndex){
 			//if( $dbIndex['Column_name']!=$element->fieldId() && !$element->{'O'.$dbIndex['Column_name']}()->search() ) {
 				// DROP INDEX
@@ -136,7 +136,7 @@ abstract class SDS_SQL extends SDS_DataStorage
 				$dbIndexes[$dbColumn['Column_name']] = $dbIndex;
 			}*/
 		}
-		
+
 		$dbColumnsKeys = array_keys($dbColumns);
 		foreach($elementData as $dataName => $dataType) {
 			$flags = $dataType.' '.($element->{'O'.$dataName}()->required() ? 'NOT NULL' : 'NULL');
@@ -154,10 +154,11 @@ abstract class SDS_SQL extends SDS_DataStorage
 				$alters[] = 'ADD INDEX `Index'.$dataName.'` ('.(($dataType==='text') ? $dataName .= '(200)' : $dataName).' ASC)';
 			}
 		}
-		
+		$alters[] = 'ADD INDEX `Index'.$dataName.'` ('.(($dataType==='text') ? $dataName .= '(200)' : $dataName).' ASC)';
 		$alters[] = 'ADD PRIMARY KEY (`'.$element->fieldId().'`)';
 		
 		$q = 'ALTER TABLE `'.$element->storage().'` '.implode(', ', $alters);
+
 		return $this->db->query($q);
 	}
 	
@@ -168,7 +169,7 @@ abstract class SDS_SQL extends SDS_DataStorage
 		$dbColumns = $this->db->query('SHOW COLUMNS FROM `'.$element->storage().'`', \PDO::FETCH_COLUMN,0)->fetchAll();
 		$elementData = $this->getDataTypes($element);
 		$return = true;
-		
+
 		//verifys that both element and DB have the same Data
 		if( count($dbColumns) == count($elementData) && !array_diff($dbColumns, array_keys($elementData)) )
 		{
@@ -280,9 +281,10 @@ abstract class SDS_SQL extends SDS_DataStorage
 	 * @return [type]
 	 */
 	public function ensureElementStorage( SC_Element &$element) {
+
 		if($element->getClass()::$storageChecked) {
 			return $element->getClass()::$storageChecked;
-		} else {
+		} else {	
 			if(!$this->isSetElementStorage($element)) {
 				if(SC_Main::$DEV_MODE) {
 					$return = $this->createTable($element);
@@ -303,8 +305,33 @@ abstract class SDS_SQL extends SDS_DataStorage
 		}
 	}
 
+	public function getDataType(string $class)
+	{
+		$typesMap = array_reverse(self::$typesMap, true);
+	
+		foreach ($typesMap as $checkClass => $type) {
+			if (is_a($class, $checkClass, true)) {  // Use is_a() for string comparison
+				return $type;
+			}
+		}
+		throw new SC_Exception($class . ' is not mapped in SDS_SQL data types');
+	}
+
 	public function getDataTypes(SC_Element &$element) {
-		// @todo: check
+
+		//--------------new version of the fnction currently postponed
+		/*
+		$storableDatas = $element->processData('doRead');
+		$typesMap = array_reverse(self::$typesMap, true);
+		$ret = [];
+		foreach($storableDatas as $storableData){
+			$ret[$storableData[0][0]] = $this->getDataType($storableData[0][1]);
+		}
+		*/
+		//--------------new version of the fnction currently postponed
+
+
+
 		$result = array();
 		$typesMap = array_reverse(self::$typesMap, true);
 		foreach($typesMap as $class => $type)

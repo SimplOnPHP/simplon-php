@@ -18,7 +18,7 @@
 */
 
 
-class SC_ElementValidationException extends \Exception {
+class SC_ElementValidationException extends \SC_Exception {
 	
 	protected $datasValidationMessages = array();
 	

@@ -18,6 +18,6 @@
 */
 
 
-class SC_DataValidationException extends \Exception {
+class SC_DataValidationException extends \SC_Exception {
 	
 }

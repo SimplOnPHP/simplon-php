@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Scanner using Webcam</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <style>
+        #scanner-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        video {
+            width: 100%;
+            height: auto;
+        }
+        #output {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .drawingBuffer{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <section>
+        <div>
+            <div id="scanner-container">
+                <div id="interactive" class="viewport"></div>
+            </div>
+            <input id="output" name="" value="scan or type "/>
+            <script>
+                $(document).ready(function() {
+                    // Initialize QuaggaJS for live barcode scanning
+                    Quagga.init({
+                        inputStream: {
+                            name: "Live",
+                            type: "LiveStream",
+                            target: document.querySelector('#interactive'), // The HTML element to show the video stream
+                            constraints: {
+                                width: 640,
+                                height: 240,
+                                facingMode: "environment" // Prefer rear camera if available
+                            }
+                        },
+                        decoder: {
+                            readers: ["ean_reader", "code_128_reader"] // Types of barcodes to scan
+                        }
+                    }, function(err) {
+                        if (err) {
+                            console.error(err);
+                            return;
+                        }
+                        console.log("Initialization finished. Ready to start");
+                        Quagga.start(); // Start scanning
+                    });
+
+                    // Event listener for successful barcode scan
+                    Quagga.onDetected(function(result) {
+                        var code = result.codeResult.code;
+                        $('#output').val(code);
+                    });
+                });
+            </script>
+        </div>
+
+    </section>
+</body>
+</html>

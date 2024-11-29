@@ -20,6 +20,7 @@ function SR_special_Get($Data, $method){
 
     $redender = $GLOBALS['redender'];
     $dataDom = \phpQuery::newDocumentFileHTML($redender->layoutPath($Data));
+ 
     
     $ret='';
     foreach($Data->sources() as $source){

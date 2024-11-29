@@ -77,7 +77,6 @@ class SC_Main {
 		$PERMISSIONS = false,		//The class that will haldel the permisions for example SE_User
 		$LOAD_ROLE_CLASS = false,	//Wether or not to load the subclass of the premissions element usually a user's role
 
-		
 		/** @var SDS_DataStorage */
 		$DATA_STORAGE,
 
@@ -91,13 +90,13 @@ class SC_Main {
 
 
 		$URL_METHOD_SEPARATOR = '!',	
-
-        $DEFAULT_PERMISSIONS,
-	
 			
 		$QUICK_DELETE = false,
         
 		$LIMIT_ELEMENTS = 20,
+
+		$LANG,
+		$LangArray,
 	
 	//Working stuff
         //super array to alter classes atributes on the fly must be in the format "class" -> array("data1name"=>$data1)
@@ -117,6 +116,7 @@ class SC_Main {
 	 * @return unknown_type
 	 */
 	static function setup($ini = null) {
+        if (session_status() !== PHP_SESSION_ACTIVE) { session_start(); }
 		if(file_exists(self::DEFAULT_INI))
 			self::fillFromArray(parse_ini_file(self::DEFAULT_INI));
 
@@ -136,19 +136,80 @@ class SC_Main {
 			ini_set('display_errors', false);
 		}
 
-		//$redender = $GLOBALS['redender'];
+
+		if(self::$PERMISSIONS){
+			$permissionsClass = self::$PERMISSIONS; // Get the class name from the static property		
+			self::$PERMISSIONS = new $permissionsClass(); //set the object
+
+			self::$DATA_STORAGE->ensureElementStorage(self::$PERMISSIONS);
+
+			if(isset($_SESSION["permissionID"])){			
+				self::$PERMISSIONS->fillFromDSById($_SESSION["permissionID"]); // Instantiate the class
+				$role=self::$PERMISSIONS->OuserRole()->viewVal();
+				if($role){
+					$permissionsClass = 'AE_'.ucfirst($role);
+					self::$PERMISSIONS = new $permissionsClass($_SESSION["permissionID"]); //set the object
+				}else{
+					session_unset();
+				}
+			}
+
+			$results = self::$DATA_STORAGE->readElements(self::$PERMISSIONS);
+		
+			//if there is no user in the database allow a temporary admin that can create users
+			if(!$results){
+				self::$PERMISSIONS = new AE_EmptyAdmin(); 
+				self::$PERMISSIONS->userName('emptyAdmin');
+			}
+		}
+		//Load the sub class of the User (or permisssions class) if it exisists
+		if(self::$LOAD_ROLE_CLASS && isset($role)){
+			$class = 'AE_'.ucfirst($role); 
+			if(file_exists(SC_Main::$App_PATH.'\\'.$class.'.php')){
+				$newPermissionsObject = new $class();
+				$newPermissionsObject->fillFromDSById($_SESSION["permissionID"]);
+				SC_Main::$PERMISSIONS = $newPermissionsObject;
+			}
+		}
+
 		self::decodeURL();
 	}
+
+	static function L($key) {
+		// Check if the key exists in the Lang array
+		if (isset(static::$LangArray[$key])) {
+			return static::$LangArray[$key];
+		} else {
+			// Add the new key to the LangArray
+			static::$LangArray[$key] = $key;
+			return $key;
+		}
+	}
+
+	static function writeLangFile(){
+		
+			$langFile = static::$RENDERER->SimplOn_path() . DIRECTORY_SEPARATOR . 'Languages' . DIRECTORY_SEPARATOR . static::$LANG . '.php';
+
+			// Generate the content for the file with the updated LangArray
+			$contents = "<?php\n\nSC_Main::\$LangArray = [\n";
+			foreach (static::$LangArray as $k => $v) {
+				$contents .= "    '" . addslashes($k) . "' => '" . addslashes($v) . "',\n";
+			}
+			$contents .= "];\n";
+			
+			// Write the updated array back to the file
+			file_put_contents($langFile, $contents);
+	}
+
+
 	/**
 	 * Gets URL and breaks it into the class andd method that needs to be executed as well as the message that has to be displayed
 	 * 
 	 */
 	static function decodeURL($e = '') {
-
 		$string_delimiter = '\'';
-
         $qs = self::$URL_METHOD_SEPARATOR;
-  
+
         //If there is previos URL store it to be able to do Back
 		if (isset($_SERVER['HTTP_REFERER'])) {
             $server_referal = explode($qs.$qs,$_SERVER['HTTP_REFERER']);
@@ -160,9 +221,15 @@ class SC_Main {
 
 		$server_URI = substr($_SERVER['REQUEST_URI'], strlen(self::$App_web_root));
 
-        // Look if there is a double $qs and take whats at the end as mmesage
+        // Look if there is a double $qs and take whats at the end as mmesag
         $server_request = explode($qs.$qs,$server_URI);
-        if (isset($server_request[1])) { self::$SystemMessage = urldecode($server_request[1]); }
+
+        if (isset($server_request[1])) { 
+			self::$SystemMessage = urldecode($server_request[1]);		
+		 }else {
+			self::$SystemMessage = '';
+		}
+
         $server_request = $server_request[0];
 
         //process the rest of the URL to extract The calss and method
@@ -232,40 +299,11 @@ class SC_Main {
 	 */
 	static function run($ini = null) {
 
-        if (session_status() !== PHP_SESSION_ACTIVE) { session_start(); }
-	
 		self::setup($ini);
-		$permissionsClass = self::$PERMISSIONS; // Get the class name from the static property
-		self::$PERMISSIONS = new $permissionsClass(); //set the object
-	
-		if(isset($_SESSION["permissionID"])){				
-			self::$PERMISSIONS->fillFromDSById($_SESSION["permissionID"]); // Instantiate the class
-			$role=self::$PERMISSIONS->OuserRole()->viewVal();
-			$permissionsClass = 'AE_'.ucfirst($role);
-			self::$PERMISSIONS = new $permissionsClass($_SESSION["permissionID"]); //set the object
-		}
 
-		$results = self::$DATA_STORAGE->readElements(self::$PERMISSIONS);
-
-		//if there is no user in the database allow a temporary admin that can create users
-		if(!$results){
-			self::$PERMISSIONS = new AE_EmptyAdmin(); 
-			self::$PERMISSIONS->userName('emptyAdmin');
-		}
 
 		if(class_exists(self::$class) || class_exists('\\SimplOn\\Elements\\'.self::$class)) {
 			//$cp = self::$construct_params;
-
-			//Load the sub class of the User (or permisssions class) if it exisists
-			if(self::$LOAD_ROLE_CLASS && isset($role)){
-				$class = 'AE_'.ucfirst($role); 
-				if(file_exists(SC_Main::$App_PATH.'\\'.$class.'.php')){
-					$newPermissionsObject = new $class();
-					$newPermissionsObject->fillFromDSById($_SESSION["permissionID"]);
-					SC_Main::$PERMISSIONS = $newPermissionsObject;
-				}
-			}
-
 
 			$rc = new \ReflectionClass(class_exists(self::$class) ? self::$class : '\\SimplOn\\Elements\\'.self::$class);
 			if( 
@@ -280,6 +318,7 @@ class SC_Main {
 					if(isset($obj::$methodsFamilies[self::$method])){$mode = $obj::$methodsFamilies[self::$method];}
 					
 					// If there is a user that can enter
+
 					if( self::$PERMISSIONS->canEnter($obj,$mode) ){	
 						//if there is a set of values for the Element Datas set them
 						if($mode){
@@ -289,7 +328,7 @@ class SC_Main {
 					//if there is a user that can't enter
 					}elseif(self::$PERMISSIONS->logedIn()){
 						self::$SystemMessage='You can\'t access that page ';
-						echo call_user_func_array(array(self::$PERMISSIONS, 'default'), self::$method_params);
+						echo call_user_func_array(array(self::$PERMISSIONS, 'showNoAccess'), self::$method_params);
 					//if there is no user or else
 					}else{
 						echo call_user_func_array(array(self::$PERMISSIONS, 'showLogin'), self::$method_params);
@@ -299,6 +338,8 @@ class SC_Main {
 					echo call_user_func_array(array($obj, self::$method), self::$method_params);
 				}
 			}
+			
+			static::writeLangFile();
 		} else {
 			header('HTTP/1.1 404 File not found');
 			trigger_error('SimplOn: '.self::$class.' is not a valid class name.', E_USER_ERROR);
@@ -335,7 +376,7 @@ class SC_Main {
 		global $app_root;
 
 		$ClassKind = explode('_',$classToLoad)[0];
-	 
+
 		if($ClassKind == 'SC'){ 							//Simplon Core
 			require_once($simplon_root.'/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'SE') {						//Simplon Elements
@@ -345,16 +386,15 @@ class SC_Main {
 		}elseif ($ClassKind == 'SDS') {						//Simplon DataStorage
 			require_once($simplon_root.'/DataStorages/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'SR') {						//Simplon Render
-			$GLOBALS['redenderFlavor'];
 			require_once($simplon_root.'/Renderers/'.$GLOBALS['redenderFlavor'].'/'.$classToLoad.'.php');
-		}elseif ($ClassKind == 'SID') {						//Simplon Interface Data
-			require_once($simplon_root.'/InterfaceDatas/'.$classToLoad.'.php');
+		}elseif ($ClassKind == 'SI') {						//Simplon Interface Data					//Simplon Render
+			require_once($simplon_root.'/Renderers/'.$GLOBALS['redenderFlavor'].'/InterfaceItems/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'AE') {						//App Element
 			require_once($app_root.'/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'AD') {						//App Datas
 			require_once($app_root.'/Datas/'.$classToLoad.'.php');
-		}elseif ($ClassKind == 'AID') {						//App Interface Data
-			require_once($app_root.'/InterfaceDatas/'.$classToLoad.'.php');
+		}elseif ($ClassKind == 'AI') {						//App Interface Data
+			require_once($app_root.'/InterfaceItems/'.$classToLoad.'.php');
 		}
 	}
 

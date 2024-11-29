@@ -1,15 +1,37 @@
 <?php
 
 class SE_Role extends SC_Element
-{
+{	
+	static
+		$ReturnBtnMsg,
+		$CancelBtnMsg,
+
+		$SearchBtnMsg,
+		$SearchMsg,
+
+		$CreateBtnMsg,
+		$CreatedMsg,
+		$CreateMsg,
+		$CreateError,
+
+		$UpdateBtnMsg,
+		$UpdatedMsg,
+		$UpdateMsg,
+		$UpdateError,
+
+		$DeleteBtnMsg,
+		$DeletedMsg,
+		$DeleteMsg,
+		$DeleteError;
+		
+	public static $storageChecked;
+
 	static $permissions = array(
 		'admin' => array('*'=>'allow'),
 		'*' => array('*'=>'deny')
 	);
 
-
-	public function construct($id = null, &$specialDataStorage = null)
-	{
+	public function construct($id = null, &$specialDataStorage = null){
         $this->id = new SD_NumericId(); 
 		$this->roleName = new SD_String('Rol','S');
 	}
@@ -30,5 +52,5 @@ class SE_Role extends SC_Element
 			return $results[0]['id'];
 		}
 	}	
-
+ 
 }

@@ -1,8 +1,13 @@
 <?php
 
+use voku\helper\HtmlDomParser;
+
 class SE_User extends SC_Element
-{
-	static $permissions;
+{	
+	public static $storageChecked;
+	static 
+		$permissions,
+		$cantAccessMsg;
 	
 	protected
 		$asesorCreate,
@@ -11,47 +16,52 @@ class SE_User extends SC_Element
 
 	public function construct($id = null, &$specialDataStorage = null)
 	{
+		static::$cantAccessMsg = SC_Main::L('You can\'t access this page');
 		self::$permissions = array(
 			'admin' => array('*'=>'allow'),
-			'Asesor' => array(
+			'user' => array(
+				'Admin'=>'deny',
 				'View'=>array(
 					'updateAction'=>'viwableWhen_id_=_CurrentUserId',
 					'createAction'=>'hide',
 					'deleteAction'=>'hide',
 				),
-				'Search'=>'allow',
+				'Search'=>'deny',
 				'Update'=>array(
 					'id'=>'fixed_CurrentUserId',
 					'userRole'=>'fixed_CurrentUserRole',
+					'userName'=>'fixed_CurrentUserName',
 				),
 				'Create'=>'deny',
 				'Delete'=>'deny',
-				'showDashboard'=>'allow',
+				'*'=>'deny',
 			),
 		);
 
         $this->id = new SD_NumericId(null); 
-		$this->userName = new SD_String('User','VCUSLR');
+		$this->userName = new SD_String('User','VCUSlRe');
 		$this->password = new SD_Password('Password');
+		$this->fullName = new SD_String('Nombre Completo','SL');
+
+		//$this->role = new SD_Hidden('admin','vcuslerf',$_SERVER['REQUEST_URI']);
 		$this->sourceURL = new SD_Hidden(null,'vcuslerf',$_SERVER['REQUEST_URI']);
+		
 
 		//We need to ensure there is an admin role in the DB
 		$role = new SE_Role();
-		$role->asureRole('admin');
+		///////////$role->asureRole('admin');
 
-		$this->userRole = new SD_ElementContainerDropBox($role,'Rol',null,'RS');
+		$this->userRole = new SD_ElementContainerDropBox($role,'Role',null,'RSL');
 		//Needed  to load the options before SE_User is created 
-		$this->userRole->options();
+		//$this->userRole->options();
 
-		$redender = $GLOBALS['redender'];
+		$this->processLoginLink = $this->renderer()->action($this,'processLogin');
+		//$this->logoutLink = $this->renderer()->action($this,'logout');
 
-		$this->processLoginLink = $redender->action($this,'processLogin');
-		//$this->logoutLink = $redender->action($this,'logout');
+		// self::$formMethods = parent::$formMethods ;
+		// self::$formMethods[] = 'login';
 
-		self::$formMethods = parent::$formMethods ;
-		self::$formMethods[] = 'login';
-
-        $this->menu = new SID_Menu([]);
+        $this->menu = new SI_SystemMenu([]);
 
 	}
 	
@@ -65,12 +75,15 @@ class SE_User extends SC_Element
 
 			//Get the info from the form
 			$this->fillFromRequest();
+			//Change the way the userName compared in the DS switching to that contains the stirng  used by default and useful in search to equal needed to find the proper user
+			$this->userName->filterCriteria('name == :name');
 			$this->validateForDB();	
 			$this->userRole->required($tempRoleReq);
 		} catch (SC_ElementValidationException $ev) {
 
 			//If something is missing send the message
 			$data = array();
+
 			foreach ($ev->datasValidationMessages() as $key => $value) {
 				$data[] = array(
 				'func' => 'showValidationMessages',
@@ -93,6 +106,7 @@ class SE_User extends SC_Element
 
 		//Get the first user with the same name
 		$results = $this->dataStorage->readElements($this);
+		
 		$this->fillFromArray($results[0]);
 
 		if($this->autenticate($recibedPassword)){
@@ -101,7 +115,7 @@ class SE_User extends SC_Element
 			$_SESSION["userName"] = $this->userName();
 			$_SESSION["userRole"] = $this->userRole->viewVal();	
 
-			if($_REQUEST['sourceURL']){
+			if(isset($_REQUEST['sourceURL'])){
 				$nextStep = $_REQUEST['sourceURL'];
 			}else{
 				$nextStep = '';
@@ -123,7 +137,7 @@ class SE_User extends SC_Element
 				'data' => array(
 					array(
 						'func' => 'alert',
-						'args' => array('Nel chavo')
+						'args' => array(static::$cantAccessMsg)
 					),
 				)
 			);
@@ -134,7 +148,7 @@ class SE_User extends SC_Element
 	public function fillFromRequest() {
 		if ($_REQUEST) {
 			$this->fillFromArray($_REQUEST);
-			$this->password->encriptedFlag(False);
+			$this->password->encriptedFlag(False);			
 			return;
 		} else {
 			return false;
@@ -164,7 +178,31 @@ class SE_User extends SC_Element
 		}
 	}
 	
+	function showLogin(){
 
+		$content = new SI_VContainer();
+			$picframe = new SI_HContainer([
+				'&nbsp;',
+				new SI_Image('Logo.webp'),
+				'&nbsp;']);
+				$picframe->style('  grid-template-columns: 1fr 4fr 1fr;
+  margin: 2rem 0;');
+		$content->addItem($picframe);
+
+
+		$action = $this->renderer->action($this,'processLogin');
+		if($_SERVER['REQUEST_URI']){
+			$this->addData('sourceURL',new SD_Hidden(null,null,$_SERVER['REQUEST_URI']));
+        	$form = new SI_Form([$this->userName, $this->password, $this->sourceURL], $action, 'showLogin', 'showCreate');
+		}else{
+        	$form = new SI_Form([$this->userName, $this->password], $action, true, 'showCreate');
+		}
+		$form->addItem(new SI_SubmitButton(SC_MAIN::L('Login')));
+
+		$content->addItem($form);
+        return $this->renderer->renderFullPage($content, 'showView', $this, 'showLogin');;
+	}
+	
 	function processCreate(){
 		if($this->userName() == 'emptyAdmin'){
 			throw new SC_Exception('You can not create a user with the name emptyAdmin');
@@ -182,15 +220,72 @@ class SE_User extends SC_Element
 
 	public function canEnter(SC_Element $element, string $method = null){
 
-		$premissions = $this->checkPermissions($element::$permissions, $this->userRole->viewVal(), $method);
+		$premissions = $this->getPermissions($element, $this->userRole->viewVal(), $method);
 
 		if(
-			$premissions
-			OR
 			(($method=='showLogin' || $method=='processLogin' || $method=='logout') AND ($element instanceof $this))
 			OR
 			$this->getClass() == 'AE_EmptyAdmin'
 		){
+			return true;
+		}elseif($premissions){
+				
+			if(isset($premissions[''])){
+
+				$value = explode("_", $premissions['']);
+				$treatment = array_shift($value);
+
+				if($treatment == 'accessibleWhen'){
+					if($value[0] == 'CurrentUserId'){
+						$value[0] = $this->id();
+					}elseif($value[0] == 'CurrentUserName'){
+						$value[0] = $this->userName();
+					}elseif($value[0] == 'CurrentUserRole'){
+						$value[0] = $this->userRole->viewVal();
+					}else{
+						$value[0] = $element->{$value[0]}();
+					}
+					if($value[2] == 'CurrentUserId'){
+						$value[2] = $this->id();
+					}elseif($value[2] == 'CurrentUserName'){
+						$value[2] = $this->userName();
+					}elseif($value[2] == 'CurrentUserRole'){
+						$value[2] = $this->userRole->viewVal();
+					}else{
+						$value[2] = $element->{$value[2]}();
+					}
+					
+					switch ($value[1]) {
+						case '=':
+						case '==':
+							return $value[0] == $value[2];
+							break;
+						case '!=':
+							return $value[0] != $value[2];
+							break;
+						case '>':
+							return $value[0] > $value[2];
+							break;
+						case '<':
+							return $value[0] < $value[2];
+							break;
+						case '>=':
+							return $value[0] >= $value[2];
+							break;
+						case '<=':
+							return $value[0] <= $value[2];
+							break;
+						default:
+							throw new SC_Exception("Invalid element access operator: " . $value[1]);
+					}
+
+				}else{
+					throw new SC_Exception('Command '.$treatment.' is not valid for element access control');
+				}
+			}else{
+				return true;
+			}
+			
 			return true;
 		}else{
 			return false;
@@ -199,88 +294,128 @@ class SE_User extends SC_Element
 
 	public function setValuesByPermissions(&$element, $mode){
 		$element->datasMode($mode);
+
 		if(
 			isset($element::$permissions[$this->userRole->viewVal()]) &&
 			isset($element::$permissions[$this->userRole->viewVal()][$mode]) &&
 			is_array($element::$permissions[$this->userRole->viewVal()][$mode])
 		){
-			foreach($element::$permissions[$this->userRole->viewVal()][$mode] as $data=>$value){
-
-				$value = explode("_", $value);
-				$treatment = array_shift($value);
-				if($treatment == 'fixed'){// can't change the value
-					if($value[0] == 'CurrentUserId'){
-						$element->{'F'.$data}($this->id());
-					}elseif($value[0] == 'CurrentUserName'){
-						$element->{'F'.$data}($this->userName());
-					}elseif($value[0] == 'CurrentUserRole'){
-						$element->{'F'.$data}($this->userRole());
-					}elseif(property_exists($element, $value[0])){ //other attribute
-						$element->{'F'.$data}($element->{$value[0]}());
-					}else{ // constant TODO: how to use a constant that is equal to an attribute name
-						$element->{'F'.$data}($value[0]);
-					}
-				}elseif($treatment == 'load'){// set the value but can be changed
-					if($value[0] == 'CurrentUserId'){
-						$element->{$data}($this->id());
-					}elseif($value[0] == 'CurrentUserName'){
-						$element->{$data}($this->userName());
-					}elseif($value[0] == 'CurrentUserRole'){
-						$element->{$data}($this->userRole());
-					}elseif(property_exists($element, $value[0])){ //other attribute
-						$element->{$data}($element->{$value[0]}());
-					}else{ // constant TODO: how to use a constant that is equal to an attribute name
-						$element->{$data}($value[0]);
-					}
-				}elseif($treatment == 'viwableWhen'){ // Show the value when conditions meet
-					if($value[2] == 'CurrentUserId'){
-						$tmpCompare = $this->id();
-					}elseif($value[2] == 'CurrentUserName'){
-						$tmpCompare = $this->userName();
-					}elseif($value[2] == 'CurrentUserRole'){
-						$tmpCompare = $this->userRole();
-					}elseif(property_exists($element, value[2])){ //other attribute
-						$tmpCompare = $element->{$value[2]}();
-					}else{ // constant TODO: how to use a constant that is equal to an attribute name
-						$tmpCompare = $value[2];
-					}
-					switch ($value[1]) {
-					case '=':
-					case '==':
-						$result = $element->{$value[0]}() == $tmpCompare;
-						break;
-					case '!=':
-						$result = $element->{$value[0]}() != $tmpCompare;
-						break;
-					case '<':
-						$result = $element->{$value[0]}() < $tmpCompare;
-						break;
-					case '>':
-						$result = $element->{$value[0]}() > $tmpCompare;
-						break;
-					case '<=':
-						$result = $element->{$value[0]}() <= $tmpCompare;
-						break;
-					case '>=':
-						$result = $element->{$value[0]}() >= $tmpCompare;
-						break;
-					}
-					if(!$result){// TODO: Change to emptyData
-						$element->{'O'.$data}(new SD_emptyAction('', array('')));
-					}
-				
-				}elseif($treatment == 'hide'){//  Do not show the value
-					$element->{'O'.$data}(new SD_emptyAction('', array('')));
+			foreach($element::$permissions[$this->userRole->viewVal()][$mode] as $data=>$rule){
+				//If the rules are for the element itself
+				if(empty($data)){
+					// just ignore because this is checked in the canEnter function
+				//if the rules are for the element's datas
+				}elseif(property_exists($element, $data)){
+					$this->setCheckDataRule($element,$data,$rule);
 				}
 			}
 		}	
 	}
+
+	public function setCheckDataRule(SC_Element $element, $data, string $rule){
+		$result = null;
+		$rule = explode("_", $rule);
+
+		$treatment = array_shift($rule);
+		if($treatment == 'fixed'){// can't change the value
+			if($rule[0] == 'CurrentUserId'){
+				$element->{'F'.$data}($this->id());
+			}elseif($rule[0] == 'CurrentUserName'){
+				$element->{'F'.$data}($this->userName());
+			}elseif($rule[0] == 'CurrentUserRole'){
+				$element->{'F'.$data}($this->userRole());
+			}elseif(property_exists($element, $rule[0])){ //other attribute
+				$element->{'F'.$data}($element->{$rule[0]}());
+			}else{ // constant TODO: how to use a constant that is equal to an attribute name
+				$element->{'F'.$data}($rule[0]);
+			}
+		}elseif($treatment == 'load'){// set the value but can be changed
+			if($rule[0] == 'CurrentUserId'){
+				$element->{'O'.$data}($this->id());
+			}elseif($rule[0] == 'CurrentUserName'){
+				$element->{'O'.$data}($this->userName());
+			}elseif($rule[0] == 'CurrentUserRole'){
+				$element->{'O'.$data}($this->userRole());
+			}elseif(property_exists($element, $rule[0])){ //other attribute
+				$element->{'O'.$data}($element->{$rule[0]}());
+			}else{ // constant TODO: how to use a constant that is equal to an attribute name
+				$element->{'O'.$data}($rule[0]);
+			}
+		}elseif($treatment == 'viwableWhen'){ // Show the value when conditions meet
+			if($rule[0] == 'CurrentUserId'){
+				$rule[0] = $this->id();
+			}elseif($rule[0] == 'CurrentUserName'){
+				$rule[0] = $this->userName();
+			}elseif($rule[0] == 'CurrentUserRole'){
+				$rule[0] = $this->userRole->viewVal();
+			}else{
+				$rule[0] = $element->{$rule[0]}();
+			}
+			if($rule[2] == 'CurrentUserId'){
+				$rule[2] = $this->id();
+			}elseif($rule[2] == 'CurrentUserName'){
+				$rule[2] = $this->userName();
+			}elseif($rule[2] == 'CurrentUserRole'){
+				$rule[2] = $this->userRole->viewVal();
+			}else{
+				$rule[2] = $element->{$rule[2]}();
+			}
+
+			$rule[0] = (string)$rule[0];
+			$rule[2] = (string)$rule[2];
+			switch ($rule[1]) {
+			case '=':
+			case '==':				
+				$result = $rule[0] == $rule[2];
+				break;
+			case '!=':
+				$result = $rule[0] != $rule[2];
+				break;
+			case '<':
+				$result = $rule[0] < $rule[2];
+				break;
+			case '>':
+				$result = $rule[0] > $rule[2];
+				break;
+			case '<=':
+				$result = $rule[0] <= $rule[2];
+				break;
+			case '>=':
+				$result = $rule[0] >= $rule[2];
+				break;
+			}
+
+			// if the comparion is false hide the data
+			if($result === false){
+				$data->renderOverride('showEmpty');
+			}else{
+
+
+				// if the data has no name it's most likely added dinamically and might be reused to save ram in several instances of  the element to save ram, thus the renderOverride might be cleared
+
+				// if(is_string($data)){$data = $element->{'O'.$data}();}//SD_Actions are sent as objects when add dinamically like in table bacause they maight 
+
+				// if(empty($data->name())){
+				// 	$element->{'O'.$data}()->clear('renderOverride');
+				// }
+			}
+			
+		
+		}elseif($treatment == 'hide'){//  Do not show the value
+			$data->renderOverride('showEmpty');
+		}
+		return $result;
+	}
+
+
+
+
 /**
 self::$permissions = array(
 	'admin' => array('*'=>'allow'),
 	'Asesor' => array(
 		'View'=>array(
-			'updateAction'=>'viwableWhen_id_=_CurrentUserRole',
+			'updateAction'=>'viwableWhen_id_=_CurrentUserId',
 			'createAction'=>'hide',
 			'deleteAction'=>'hide',
 		),
@@ -297,9 +432,12 @@ self::$permissions = array(
 
 
 
-	public function checkPermissions($elementPermissions, $userRole=null,  $method = null){
+	public function getPermissions(SC_Element $element, $userRole=null,  $method = null){
 		$ret='';
+		$elementPermissions = $element::$permissions;
+		$methodsFamilies = $element::$methodsFamilies;
 		if(!$method){$method = SC_Main::$method;}
+		if(array_key_exists($method, $methodsFamilies)) { $method = $methodsFamilies[$method];}
 		if(!$userRole){$userRole = SC_Main::$PERMISSIONS->OuserRole()->viewVal();}
 		if(isset($elementPermissions[$userRole])){
 			if(isset($elementPermissions[$userRole][$method])){

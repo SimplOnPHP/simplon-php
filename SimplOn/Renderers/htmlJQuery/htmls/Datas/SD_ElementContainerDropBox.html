@@ -6,15 +6,16 @@
 		<link rel="stylesheet" href="../css/simplon-base.css">
 		<link rel="stylesheet" href="../css/simplon-auto.css">
 		<title>SimplOn</title>
+
 	</head>
 	<body>
-        <section class="showView showList showEmbeded">
-            <div class="SD_ElementContainerDropBox $htmlClasses">
-              $viewVal
+        <section class="showView showEmbeded showList">
+            <div class="">
+               $viewVal
             </div>   
         </section>
-        <section class="showInput showSearch showUpdate showFixedValue">
-            <div class="SD_DorpdownBox SD_withLabel $htmlClasses">
+        <section class="showInput showSearch showUpdate">
+            <div class="SD_DorpdownBox SD_withLabel ">
                 <label for="$htmlId" >$label: <span class="$SRrequiredText ">*</span></label>
                 <select id="$htmlId" name="$name" class="repeat options">
                     <option class="selectedItem" value="$key" selected> $val </option>
@@ -23,15 +24,24 @@
                 </select>
             </div>    
         </section>
-        <section class="showCreate">
-            <div class="SD_DorpdownBox SD_withLabel $htmlClasses">
-                <label for="$htmlId" >$label:<span class="$SRrequiredText ">*</span></label>
-                <select id="$htmlId" name="$name" class="repeat options">
-                    <option value="$key" > $val</option>
-                    <option value="$key" > $val</option>
-                    <option value="$key" > $val</option>
+        <section class="showFixedValue">
+            <div class="SD_DorpdownBox SD_withLabel ">
+                <label for="$htmlId" >$label: <span class="$SRrequiredText ">*</span></label>
+                <select id="$htmlId" name="$name" class=" " disabled>
+                    <option class="selectedItem" value="$val" selected> $viewVal </option>
                 </select>
             </div>    
         </section>
+        <section class="showCreate">
+            <div class="SD_withLabel ">
+                <label for="$htmlId" >$label:<span class="$SRrequiredText ">*</span></label>
+                <select id="$htmlId" name="$name" class="repeat options">
+                    <option class="item" value="$key" > $val</option>
+                    <option class="item" value="$key" > $val</option>
+                    <option class="item" value="$key" > $val</option>
+                </select>
+            </div>    
+        </section>
+
 	</body>
 </html>
