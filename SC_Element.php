@@ -148,14 +148,6 @@ class SC_Element extends SC_BaseObject {
 	 */
 	static $permissions;
 
-	/**
-	 * Determines the kind of permissions that are given to the attributes.
-	 * 
-	 * Depending on the $methodsFamilies array each method is assigned a DatasMode
-	 * View, Update, Create, Delete, Search or the method it static. This way the permissions don't have to be asigned for each method but for DatasMode and special methods.
-	 * 
-	 */
-	protected $datasMode;
 
 	protected $Name, $NamePlural;
 
@@ -170,6 +162,16 @@ class SC_Element extends SC_BaseObject {
 
 	/** @var SR_main */
 	protected $renderer;
+
+	
+	/**
+	 * Determines the kind of permissions that are given to the attributes.
+	 * 
+	 * Depending on the $methodsFamilies array each method is assigned a DatasMode
+	 * View, Update, Create, Delete, Search or the method it static. This way the permissions don't have to be asigned for each method but for DatasMode and special methods.
+	 * 
+	 */
+	protected $datasMode;
 
 	/**
 	 * Keeps the relationship between the methods and the datasMode so that is simplier to write the permissions.
@@ -793,6 +795,8 @@ class SC_Element extends SC_BaseObject {
 
 		$body->addItem($title);
 		$body->addItem($form);	
+		sd('aaaa');
+		
         return $this->renderer->renderFullPage($body, 'showCreate', $this);
 	}
 

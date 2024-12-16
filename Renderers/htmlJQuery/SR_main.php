@@ -29,6 +29,7 @@ class SR_main extends SC_BaseObject {
                 //if($object->renderOverride()){ $method = $object->renderOverride(); } 
                 if(method_exists($object, $method)){
                     $object->{$method}();
+                    ///AQUI poner que del container que regrese el metodo del dato saque el Layout
                 } else { $dom = $this->getDataLayout($object, $method); }
             }elseif ($object instanceof SI_Item) {  
                 if(method_exists($object, $method)){
@@ -472,6 +473,11 @@ class SR_main extends SC_BaseObject {
 
         function getDataLayout(SD_Data $Data, string $method){ 
 
+            // if (method_exists($Data, $method)) {
+            //     // $methodDom = '<section class="showSearch"><div>'.$Data->{$method}().'</div></section>';
+            //     // $methodDom = HtmlDomParser::str_get_html($methodDom);
+            //     // $this->layoutsCache[$Data->getClass().'_'.$method] = $methodDom;
+            // }else
             if (method_exists($Data, 'getLayout')) {
                 $methodDom = $Data->getLayout($method);
                 $this->layoutsCache[$Data->getClass().'_'.$method] = $methodDom;

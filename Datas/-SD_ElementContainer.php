@@ -38,7 +38,6 @@ class SD_ElementContainer extends SD_Data {
 		 * @var SC_Element
 		 */
 		$element,
-		
 		/*
 		 * Column's name where values will be extracted
 		 * @var String
@@ -116,7 +115,7 @@ class SD_ElementContainer extends SD_Data {
     }
 
 	function showList(){
-		return $this->showEmbededStrip();
+		return $this->element->showEmbededStrip();
 	}
 
 	public function viewVal() {
@@ -142,6 +141,7 @@ class SD_ElementContainer extends SD_Data {
         $dom = QP::withHTML5($template);
 
         return $dom.'';
+        
 	}
 
 	function showEmbededStrip($template = null){
@@ -181,7 +181,7 @@ class SD_ElementContainer extends SD_Data {
         $this->element->addData('parentClass' , new SD_Hidden(null,'CUSf', $this->parent->getClass() )    );
         $this->element->addData('dataName' , new SD_Hidden(null,'CUSf', $this->name(), '' )   );
         $this->element->addData('parentId' , new SD_Hidden(null,'CUSf', $this->parent->getId())  );
-        //$this->element->addData('selectAction' , new SD_SelectAction('', array('Select')) );
+        $this->element->addData('selectAction' , new SD_SelectAction('', array('Select')) );
 	}
 
 	function optionsDisplay(){

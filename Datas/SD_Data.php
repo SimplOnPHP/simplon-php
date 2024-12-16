@@ -59,13 +59,6 @@
 
 
 
-/**
- *
- *$campo field
- *$asField asField
- */
-
-
 
 abstract class SD_Data extends SC_BaseObject {
 
@@ -81,15 +74,6 @@ abstract class SD_Data extends SC_BaseObject {
 	 * @var mixed
 	 */
 	$val,
-	
-	
-	/**
-	 * Default value
-	 *
-	 * @access protected
-	 * @var mixed
-	 */
-	$default = NULL,
 	
 	
 	/**
@@ -137,8 +121,6 @@ abstract class SD_Data extends SC_BaseObject {
 	 */
 	$required = false,
 	
-	/** @var SR_main */
-	$renderer = null,
 	
 	/**
 	 * indicates if the SimplOndata must have a value in order to allow the storage of it's dataParent SimplOnelement
@@ -169,14 +151,18 @@ abstract class SD_Data extends SC_BaseObject {
 
     $autoIncrement=false,
 	
-	$filterCriteria = 'name == :name',
 
 	$fixedValue = false, // to control if the value is not to be changed
-	$renderOverride = false;
+	$renderOverride = false,
 	
-	public $tip;
-	public $tipInline;
-	public $validationRequired = 'This field is required';
+	 $tip,
+	 $tipInline,
+	 $validationRequired = 'This field is required',
+
+	/** @var SR_main */
+
+	
+	$renderer = null,
 	/**
 	 * search operands:
 	 * >
@@ -201,6 +187,7 @@ abstract class SD_Data extends SC_BaseObject {
 	 * a <= x <= b
 	 * a > x || x < b
 	 */
+	$filterCriteria = 'name == :name';
 
 	
 	/**
@@ -214,9 +201,6 @@ abstract class SD_Data extends SC_BaseObject {
 	 */
 	public function __construct($label=null, $flags=null, $val=null, $filterCriteria=null)
 	{
-		
-		$this->construct($label, $flags, $val, $filterCriteria);
-
 		$this->val = $val;
 		$this->label=$label;
 		
@@ -226,10 +210,14 @@ abstract class SD_Data extends SC_BaseObject {
 		{
 			$this->dataFlags($flags);
 		}
+		//$this->construct($label, $flags, $val, $filterCriteria);
 	}
 	
 
-
+	/**
+	 * LLama al reneder del dato para todas las llamadas que inicia con show y directo a la funcion el resto de funciones 
+	 * Esto permite llamar a  interfaces del dato sin que sean funciones, solo conque esten declaradas en la platilla de interfaz
+	*/
 	public function __call($name, $arguments) {
 		if(substr($name, 0, 4) === "show"){
 
@@ -245,7 +233,7 @@ abstract class SD_Data extends SC_BaseObject {
 	* User defined constructor, called within {@link __constructor()},
 	* Useful in child clasess to define any class SD_specific construction code without overwritning the __construct method
 	*/
-   public function construct($label=null, $flags=null, $val=null, $filterCriteria=null) {}
+  // public function construct($label=null, $flags=null, $val=null, $filterCriteria=null) {}
  
    
 	
