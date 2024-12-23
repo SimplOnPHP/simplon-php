@@ -388,7 +388,7 @@ class SC_Main {
 		}elseif ($ClassKind == 'SR') {						//Simplon Render
 			require_once($simplon_root.'/Renderers/'.$GLOBALS['redenderFlavor'].'/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'SI') {						//Simplon Interface Data					//Simplon Render
-			require_once($simplon_root.'/Renderers/'.$GLOBALS['redenderFlavor'].'/InterfaceItems/'.$classToLoad.'.php');
+			require_once($simplon_root.'/Renderers/'.$GLOBALS['redenderFlavor'].'/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'AE') {						//App Element
 			require_once($app_root.'/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'AD') {						//App Datas

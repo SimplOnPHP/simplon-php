@@ -8,6 +8,7 @@ class SR_main extends SC_BaseObject {
         $SimplOn_path,
         $App_path,
         $App_web_root,
+        $Renderer_path,
 
         $cssWebRoot,
         $jsWebRoot, 
@@ -23,29 +24,130 @@ class SR_main extends SC_BaseObject {
         $csslinks,
         $jslinks = array();
 
-        function render($object, $method = null, $forTemplateOf = null, $template = null){
 
-            if($object instanceof SD_Data){   
-                //if($object->renderOverride()){ $method = $object->renderOverride(); } 
-                if(method_exists($object, $method)){
-                    $object->{$method}();
-                    ///AQUI poner que del container que regrese el metodo del dato saque el Layout
-                } else { $dom = $this->getDataLayout($object, $method); }
-            }elseif ($object instanceof SI_Item) {  
-                if(method_exists($object, $method)){
-                    $object->{$method}();
-                } else { 
-                    $object->name($object->getClass().'_'.$method); 
-                    $dom = $this->getItemLayout($object);     
-                }
-            }elseif ($object instanceof SI_Container) {       
-                $dom = $this->getContainerLayout($object, $method, $forTemplateOf); 
-            }elseif ($object instanceof SI_Page) {
-                $dom = $this->getPageLayout($object);
-                $dom = $this->addCSSandJSLinksToTemplate($dom);
-            }
-            return $this->fillDomWithObject($object, $dom->html());
+        function renderDOE($doe,$template) {
+
+            $ret = $this->fillDomWithDOE($doe, $template);
+            return $ret;
+
         }
+
+
+        function render(SI_Item $item) {
+
+            if($item instanceof SI_Container){
+                $conteinerDoms = $item->readTemplates();
+                $conteinerDoms['containerDom'] = HtmlDomParser::str_get_html(  $this->fillItemDom($item, $conteinerDoms['containerDom'])  );
+                sd($conteinerDoms['containerDom']);
+                
+                $item->assingItemsTypes();
+                $ret = $this->fillDomWithItems($item, $conteinerDoms);
+            }else{ //if(is_a($item, 'SI_Item'))
+                $itemDom = $item->readTemplate();
+                $ret = $this->fillItemDom($item, $itemDom);
+            }
+
+            return $ret;
+        }
+
+        function fillDomWithItems(SI_Container $container, $Doms){
+            $innerHTML = '';
+
+            foreach ($container->items() as $item) {
+                if($item->type() AND $Doms[$item->type()]){
+                    //
+                }else{
+                    $itemDom = $item->readTemplate();
+                    sd($itemDom);
+                    
+                    if($container->warp()){
+                        $Doms['itemWarp']->innerhtml = $this->fillItemDom($item, $itemDom);;
+                        $innerHTML .= $Doms['itemWarp']->outerhtml;
+                    }else{
+                        $innerHTML .= $this->fillItemDom($item, $itemDom);
+                    }  
+                }
+            }
+            
+            $Doms['containerDom']->findOne('.items')->innerhtml = $innerHTML;
+            
+            return $Doms['containerDom'];
+        }
+
+
+        function getStyles($dom){
+
+        }
+
+        function getJS($dom){
+
+        }
+        
+        function fillItemDom($item, $itemDom){
+            $item->setFillValues();
+            
+            $ret = preg_replace_callback(
+                '/(\$)([a-z,_,0-9]+)/i',
+                function ($matches) use ($item){                  
+                    $parameters = explode ('_',$matches[2]);
+                    $method = array_shift($parameters);
+
+                    return call_user_func_array(array($item, $method), $parameters);
+                },
+                $itemDom
+            );
+
+            return $ret;
+        }
+
+        
+        function buildDOETemplate(SI_Item $item){
+
+            $itemDom = $item->readTemplate();
+            $item->setDOETemplateValues();
+
+            $ret = preg_replace_callback(
+                '/(\$)([a-z,_,0-9]+)/i',
+                function ($matches) use ($item){                  
+                    $parameters = explode ('_',$matches[2]);
+                    $method = array_shift($parameters);
+
+                    return call_user_func_array(array($item, $method), $parameters);
+                },
+                $itemDom
+            );
+
+            return $itemDom;
+        }
+
+
+
+
+
+
+        // function render($object, $method = null, $forTemplateOf = null, $template = null){
+
+        //     if($object instanceof SD_Data){   
+        //         //if($object->renderOverride()){ $method = $object->renderOverride(); } 
+        //         if(method_exists($object, $method)){
+        //             $object->{$method}();
+        //             ///AQUI poner que del container que regrese el metodo del dato saque el Layout
+        //         } else { $dom = $this->getDataLayout($object, $method); }
+        //     }elseif ($object instanceof SI_Item) {  
+        //         if(method_exists($object, $method)){
+        //             $object->{$method}();
+        //         } else { 
+        //             $object->name($object->getClass().'_'.$method); 
+        //             $dom = $this->getItemLayout($object);     
+        //         }
+        //     }elseif ($object instanceof SI_Container) {       
+        //         $dom = $this->getContainerLayout($object, $method, $forTemplateOf); 
+        //     }elseif ($object instanceof SI_Page) {
+        //         $dom = $this->getPageLayout($object);
+        //         $dom = $this->addCSSandJSLinksToTemplate($dom);
+        //     }
+        //     return $this->fillDomWithDOE($object, $dom->html());
+        // }
 
         function renderFullPage($object, $method = null, $forTemplateOf = null, $template = null){
             $content = $this->render($object, $method, $forTemplateOf, $template );
@@ -228,7 +330,7 @@ class SR_main extends SC_BaseObject {
             return $ret;
         }
 
-        function fillDomWithObject($object, $htmlDomString){
+        function fillDomWithDOE($object, $htmlDomString){
 
             $filledItemHtml='';
             //$htmlDomString = str_replace("&#13;\n", "", $htmlDomString);
@@ -262,7 +364,7 @@ class SR_main extends SC_BaseObject {
                     foreach($object->items() as $item){
                         $item = $item["item"];
                         if($item instanceof SC_BaseObject){
-                            $filledItemsHtml.=$this->fillDomWithObject($item, $IINodes[$i]->html() )."\n\n";
+                            $filledItemsHtml.=$this->fillDomWithDOE($item, $IINodes[$i]->html() )."\n\n";
                         }elseif( is_string($item) OR is_numeric($item)){
                             if($item == 0){$item = (string)$item;}
                             $filledItemsHtml .=  str_replace('$val', $item, $IINodes[$i]->html());
@@ -291,9 +393,9 @@ class SR_main extends SC_BaseObject {
                                         ($value instanceof \SC_Element AND $object->selected($value->id()))
                                     )
                                 ){
-                                    $filledItemHtml .= $this->fillDomWithObject($value, $selectedItemHtml);
+                                    $filledItemHtml .= $this->fillDomWithDOE($value, $selectedItemHtml);
                                 }else{
-                                    $filledItemHtml .= $this->fillDomWithObject($value, $itemHtml);
+                                    $filledItemHtml .= $this->fillDomWithDOE($value, $itemHtml);
                                 }
                             }else{
                                 if( $key === 0 ){ $key = '0'; }else

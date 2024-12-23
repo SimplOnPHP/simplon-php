@@ -795,7 +795,7 @@ class SC_Element extends SC_BaseObject {
 
 		$body->addItem($title);
 		$body->addItem($form);	
-		sd('aaaa');
+
 		
         return $this->renderer->renderFullPage($body, 'showCreate', $this);
 	}

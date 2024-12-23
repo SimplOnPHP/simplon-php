@@ -38,6 +38,15 @@ class SC_BaseObject
 		return $words;
 	}
 
+	/**
+	 * Returns the object's class  prefixes AE, SC, SE, SD, AD, etc.
+	 *
+	 * @return string Class prefix AE, SC, SE, SD, AD, etc.
+	 */
+	public function getClassPrefix()
+	{
+		return substr( get_class($this),2);
+	}
 
 	/**
 	 * Returns the Methods of the Object
