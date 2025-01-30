@@ -1,0 +1,119 @@
+
+:root {
+    --spacing: 0.6rem;
+    --form-element-spacing-vertical: 0.01rem;
+    --form-element-spacing-horizontal: 0.01rem;
+    --pico-form-element-spacing-horizontal:0.5rem;
+    --pico-form-element-spacing-vertical:0.5rem;
+    --pico-spacing: 0.5rem;
+}
+.OA_header{
+    top: 0;
+    position: sticky;
+    background-color:var(--odd-table-background-color);
+    height :fit-content;
+}
+
+form {
+    margin-block-start: var(--pico-form-element-spacing-vertical);
+    margin-block-end: var(--pico-form-element-spacing-vertical);
+
+}
+
+/* THIS is defined in pico css but somehow it's not working */
+[data-theme=dark] {
+    --ins-color: #388e3c;
+}
+[data-theme=light],
+:root:not([data-theme=dark]) {
+    --ins-color: #388e3c;
+}
+
+
+
+html {
+    font-size: 4vw;
+    font-size: clamp(0.4em, 4vw, 1.3em);
+    hyphens: auto;
+}
+
+.OA_content{
+    padding: 0.5rem;
+}
+
+a{
+    display: block;
+}
+
+.SD_withLabel{
+    display: grid;
+	grid-template-columns: 2fr 11fr;
+}
+
+.SD_withLabel input, .SD_withLabel label{
+    display: grid;
+    align-content: center;
+    margin: var(--spacing) calc(var(--spacing)/4);
+}
+
+.SD_withLabel label{
+    display: grid;
+    text-align: right;
+	grid-template-columns: 8fr 1fr;
+}
+
+.SD_withLabel label>span:not(.required){
+    display: none;
+}
+
+.Action img{
+    height: 1rem;
+}
+
+
+:required{
+    background-color: var(--dropdown-hover-background-color);
+}
+
+
+.hidden{
+    display: none;
+}
+
+
+
+.SD_withLabel label[for="objID-8"][generated="true"] {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    transform: translateY(0%);
+}
+
+label.error{
+    color: var(--ins-color);
+    margin-top: -0.75em;
+    margin-bottom: 0.75em;
+    text-align: center;
+}
+.SD_withLabel label.error{
+    grid-column: 1 / -1;
+}
+
+.SR_horizontalContainer {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(auto-fill, minmax(0, 1fr));
+    column-gap: 0.4rem;
+}
+
+button {
+	width: 100%;
+};
+
+
+
+[data-theme=dark]{
+    .show-message-button {
+        filter: invert(100%);
+    }
+}

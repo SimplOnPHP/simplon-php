@@ -100,14 +100,34 @@ class SD_Password extends SD_String {
 		return $dataArray[$this->name];
 	}
 	
-	public function showInput($fill=false) {
-		if($this->encriptedFlag){ 
-			$fill=false;
+
+	public function showCreate() {
+		if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
+		}else{
+			$input = new SI_Password($this->name(), '', null, $this->label(), $this->required(), $this->ObjectId());	
 		}
-        $data_id = 'SimplOn_'.$this->instanceId();
-		return 
-            ($this->label() ? '<label for="'.$data_id.'">'.$this->label().': </label>' : '') .
-            '<input id="'.$data_id.'" class="'.$this->htmlClasses().'"  name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="password" />';
+		$inputBox = new (SC_Main::$RENDERER::$InputBox_type)($input, $this->label());
+		return $inputBox;
+	}
+		
+	public function showUpdate() {
+		if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
+		}else{		
+			$input = new SI_Password($this->name(), $this->val(), null, $this->label(), $this->required(), $this->ObjectId());
+		}
+		$inputBox = new (SC_Main::$RENDERER::$InputBox_type)($input, $this->label());
+		return $inputBox;
+	}
+
+	public function showDelete() {}
+
+	public function showSearch() {
+		if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
+		}else{	
+			$input = new SI_Password($this->name(), $this->val(), null, $this->label(), null, $this->ObjectId());
+		}
+		$inputBox = new (SC_Main::$RENDERER::$InputBox_type)($input, $this->label());
+		return $inputBox;
 	}
 
 

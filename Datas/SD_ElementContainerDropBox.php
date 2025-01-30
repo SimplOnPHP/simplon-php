@@ -60,6 +60,37 @@ class SD_ElementContainerDropBox extends SD_ElementContainer {
 	}
 
 
+	public function showCreate() {
+		if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
+		}else{
+			$input = new SI_Select($this->options(), $this->name(), '', $this->htmlId());
+		}
+		$inputBox = new (SC_Main::$RENDERER::$InputBox_type)($input, $this->label());
+		return $inputBox;
+	}
+		
+	public function showUpdate() {
+		if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
+		}else{
+			$input = new SI_Select($this->options(), $this->name(), $this->val(), null, $this->label(), $this->required(), $this->ObjectId());	
+		}
+		$inputBox = new (SC_Main::$RENDERER::$InputBox_type)($input, $this->label());
+		return $inputBox;
+	}
+
+	public function showDelete() {}
+
+	public function showSearch() {
+		if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
+		}else{
+			$input = new SI_Select($this->options(), $this->name(), $this->val(), null, $this->label(), null, $this->ObjectId());
+		}
+		$inputBox = new (SC_Main::$RENDERER::$InputBox_type)($input, $this->label());
+		return $inputBox;
+	}
+
+
+
+
 
 }
-

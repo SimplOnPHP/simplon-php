@@ -1,6 +1,7 @@
 <?php
 
 
+
 use voku\helper\HtmlDomParser;
 
 /**
@@ -14,63 +15,142 @@ use voku\helper\HtmlDomParser;
 class SI_Item extends SC_BaseObject {
 
     protected
-        $type = null,
-        $doe; 
+        // $doe, //Datta or Element
+        $start = null,
+        $end = null,
+        $itemStart = null,
+        $itemEnd = null,
+        $styles = null,
+        $object = null,
+        $class = null,
+        $content = null; 
+        
+    static
+        $cssfiles = [],
+        $jsfiles = [];
 
-    function __construct($doe) {
-        $this->doe = $doe;
-    } 
+    function setTagsVals($renderVals = null){
+        if($renderVals['class']){ $class = 'class="'.$renderVals['class'].'"'; }else{ $class=''; }  
+        $this->start = "<div $class >";
+        $this->end = "</div>\n";
+        // $this->itemStart = ;
+        // $this->itemEnd = ;
+        // $this->styles = ;
+        // $this->object = ;
+    }
 
-    function templatePath(){
-        $renderer=SC_Main::$RENDERER;
-        if(file_exists($renderer->Renderer_path().'/'.$this->getClass().'.html')){
-            $ret = $renderer->Renderer_path().'/'.$this->getClass().'.html'; 
-        }elseif($this->getClassPrefix() == 'AI'){
-            $apath = $renderer->Renderer_path().'/'.'A' . substr($this->getClass(), 1).'.html';
-            if(file_exists($apath)){$ret = $renderer->Renderer_path().'/'.$this->getClass().'.html';} 
-        }else{ $ret = parent::templatePath(); }
+    function __construct($content, $class = null){
+        $this->content = $content; 
+        $this->class = $class;
+    }
 
+
+    function __toString()
+    {
+        return $this->html();
+    }
+
+    function object($object = null, bool $pasToChilds = false){
+        if($object){
+            $this->object = $object;
+            if($pasToChilds AND is_array($this->content)){
+                foreach($this->content as $item){
+                    if($item instanceof SI_Item){
+                        $item->object($object, true);
+                    }
+                }
+            }elseif($this->content instanceof SI_Item){
+                $this->content->object($object, $pasToChilds);
+            }
+        }else{
+            return $this->object;
+        }
+    }
+
+    function html() {        
+        $vals = $this->getRenderVals();
+        $innerHTML = '';
+        if(is_array($vals['content'])){
+            foreach($vals['content'] as $item){
+                if(is_string($item)){
+                    $innerHTML .= $this->itemStart.$item.$this->itemEnd;
+                }elseif($item instanceof SI_Item){
+                    $innerHTML .= $this->itemStart.$item->html().$this->itemEnd;
+                }
+            }
+        }else{ $innerHTML = $vals['content']; }
+        return $this->start.$innerHTML.$this->end;
+    }
+
+    function addItem($item){
+        if(is_array($this->content)){
+            $this->content[] = $item;
+        }else{
+            $this->content = [$this->content, $item];
+        }
+    }
+
+    function getRenderVals(){
+        $ret = [];
+        foreach($this as $atribute => $value){
+            if(is_array($value) AND sizeof($value) == 2 AND  $value[0] instanceof SC_BaseObject AND is_string( $value[1] )){
+                if($this->object instanceof SC_BaseObject){ $value[0] = $this->object; }
+                $ret[$atribute] = $value();
+            }else{
+                $ret[$atribute] = &$this->$atribute;
+            }
+        }
+        $this->setTagsVals($ret);
         return $ret;
     }
 
-    function readTemplate(){
-        $renderer=SC_Main::$RENDERER;
-        $dom = HtmlDomParser::file_get_html($this->templatePath());
-        $renderer->getStyles($dom);
-        $renderer->getJS($dom);
-        $itemDom = $dom->findOne("body")->innerHtml();
-        $itemDom = HtmlDomParser::str_get_html($itemDom);
-        return $itemDom;
-    }
 
-    function setFillValues() {
-        $stringAttributes = [];
-        $attributes = get_object_vars($this);
-       
-        foreach ($attributes as $key => $value) {           
-            if (is_string($value) AND strpos($value, '::') === 0) {
-                $this->$key = $this->doe->{substr($value, 2)}();
-            }elseif(is_string($value)){
-                $this->$key = $value;
-            }
-        }
-    }
-
-    /**
-     * Sets the values to generate a Data or Element template that can later be filled independently of the SI_items defined in that method to have the chance to create elements view independent of the limitations of the Simplon Interface items.
-     */
-    function setDOETemplateValues(){
-        $stringAttributes = [];
-        $attributes = get_object_vars($this);
-        
-        foreach ($attributes as $key => $value) {
+    function addStylesToAutoCSS(){ 
+        global $cssTagsContent;
+     
+       if($this->styles AND SC_Main::$debug_mode){
+                     
+            $cssTagsContent[$this->getClass()] = $this->styles;
             
-            if (is_string($value) AND strpos($value, '::') === 0) {
-                $this->$key = substr($value, 2);
-            }elseif(is_string($value)){
-                $this->$key = '$'.$value;
+            $minifyed = minify_css($cssTagsContent[$this->getClass()]);
+            $minifyedWithMarks = "/* START_".$this->getClass()." */\n $minifyed \n/* END_".$this->getClass()." */";
+            
+            $file = SC_Main::$App_PATH.DIRECTORY_SEPARATOR.SC_Main::$RENDERER_FLAVOR.DIRECTORY_SEPARATOR.'css'.DIRECTORY_SEPARATOR.'simplon-auto.css';
+            $currentStylesFile = file_get_contents($file);
+
+            $regEx = '/(\/\* START_'.$this->getClass().' \*\/)(\\n.*\\n)(\/\* END_'.$this->getClass().' \*\/)/';
+            
+            //Put in $currentStile[2] whats now in the simplon-auto.css file 
+            preg_match($regEx, $currentStylesFile, $currentStile);
+            if(
+                array_key_exists(2, $currentStile) 
+                && 
+                !empty(trim($minifyed))
+                &&
+                (  trim($currentStile[2]) != trim($minifyed)  ) 
+            ){
+                //$StylesForFile = preg_replace($regEx, $minifyedWithMarks, $currentStylesFile);
+                $StylesForFile = str_replace($currentStile[2], "\n".$minifyed."\n", $currentStylesFile); 
+                if(!empty($currentStile[2]) AND $StylesForFile){
+                file_put_contents($file, trim($StylesForFile));
+                }
+            }elseif(!array_key_exists(2, $currentStile)  && !empty(trim($minifyed))){      
+                $regEx = '/\/\* START_'.$this->getClass().'\*\/\s*(.+?)\s*\/\* END_'.$this->getClass().'\*\//s';
+                preg_match($regEx, $currentStylesFile, $currentStile);
+                if(array_key_exists(0, $currentStile)){
+                    $StylesForFile = str_replace($currentStile[0], $minifyedWithMarks."\n", $currentStylesFile); 
+                    file_put_contents($file, trim($StylesForFile));
+                }else{
+                    file_put_contents($file, trim($currentStylesFile)."\n".trim($minifyedWithMarks));
+                }              
+            }elseif(empty(trim($minifyed))){
+                $StylesForFile = preg_replace($regEx, '', $currentStylesFile);
+                file_put_contents($file, trim($StylesForFile));
             }
-        }
-    }
+       }
+    } 
+
+
+
 }
 

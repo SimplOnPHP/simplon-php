@@ -19,5 +19,7 @@
 
 class SD_Image extends SD_File {
 
+	
+
 }
 

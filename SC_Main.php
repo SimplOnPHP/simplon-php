@@ -67,6 +67,7 @@ class SC_Main {
 		$SimplOn_PATH,		//Servers path to simplon dir
 		$App_PATH,			//Servers path to Application dir
 		$App_web_root,		//Web URL to Application web dir
+		$debug_mode = true,
 
 		$Layouts_Processing,	//Specifies what to do with Elements Layouts options are: (Always)OverWrite Update(just outdated parts)  Preserve(do not change anything)
 
@@ -80,8 +81,9 @@ class SC_Main {
 		/** @var SDS_DataStorage */
 		$DATA_STORAGE,
 
-		/** @var SR_main */
+		/** @var SR_htmlJQuery */
 		$RENDERER,
+		$RENDERER_FLAVOR,
 	
 	//Things rarely to be redefined
 
@@ -299,20 +301,22 @@ class SC_Main {
 	 */
 	static function run($ini = null) {
 
-		self::setup($ini);
 
+		self::setup($ini);
 
 		if(class_exists(self::$class) || class_exists('\\SimplOn\\Elements\\'.self::$class)) {
 			//$cp = self::$construct_params;
 
 			$rc = new \ReflectionClass(class_exists(self::$class) ? self::$class : '\\SimplOn\\Elements\\'.self::$class);
+			
 			if( 
 				isset(self::$method)
 				&&
 				($obj = $rc->newInstanceArgs(self::$construct_params))
 				&&
-				($obj instanceof SC_Element)
+				(($obj instanceof SC_Element))
 			){
+				
 				if(is_object(self::$PERMISSIONS) && (self::$class !='JS' && self::$class!='CSS')   ){
 					$mode='';
 					if(isset($obj::$methodsFamilies[self::$method])){$mode = $obj::$methodsFamilies[self::$method];}
@@ -334,6 +338,40 @@ class SC_Main {
 						echo call_user_func_array(array(self::$PERMISSIONS, 'showLogin'), self::$method_params);
 					}	
 				}else{
+					$method = self::$method;		
+					if(self::$dataName) {$obj = $obj->{self::$dataName};}
+					echo call_user_func_array(array($obj, self::$method), self::$method_params);
+				}
+			}elseif( 
+				isset(self::$method)
+				&&
+				($obj = $rc->newInstanceArgs(self::$construct_params))
+				&&
+				(($obj instanceof SD_ElementContainer))
+			){
+				
+				if(is_object(self::$PERMISSIONS) && (self::$class !='JS' && self::$class!='CSS')   ){
+					$mode='';
+					if(isset($obj::$methodsFamilies[self::$method])){$mode = $obj::$methodsFamilies[self::$method];}
+					
+					// If there is a user that can enter
+
+					if( self::$PERMISSIONS->canEnter($obj->element(),$mode) ){	
+						//if there is a set of values for the Element Datas set them
+						if($mode){
+							self::$PERMISSIONS->setValuesByPermissions($obj, $mode);
+						}
+						echo call_user_func_array(array($obj, self::$method), self::$method_params);
+					//if there is a user that can't enter
+					}elseif(self::$PERMISSIONS->logedIn()){
+						self::$SystemMessage='You can\'t access that page ';
+						echo call_user_func_array(array(self::$PERMISSIONS, 'showNoAccess'), self::$method_params);
+					//if there is no user or else
+					}else{
+						echo call_user_func_array(array(self::$PERMISSIONS, 'showLogin'), self::$method_params);
+					}	
+				}else{
+					$method = self::$method;		
 					if(self::$dataName) {$obj = $obj->{self::$dataName};}
 					echo call_user_func_array(array($obj, self::$method), self::$method_params);
 				}
@@ -372,10 +410,23 @@ class SC_Main {
 	 * Loads objects looking for the file by looking into the first letters of the class name
 	 */		
 	 static function load_obj( $classToLoad ){
+		
 		global $simplon_root;
 		global $app_root;
+		$nameSpace='';
 
+		////// --- for namespaced renderes ------
+		// if( str_contains($classToLoad, '\\') ){
+		// 	$temp = explode('\\',$classToLoad);
+
+		// 	$nameSpace = implode("\\", array_slice($temp, 0, -1));
+		// 	$classToLoad = end($temp);
+		// }
+
+				
 		$ClassKind = explode('_',$classToLoad)[0];
+
+		
 
 		if($ClassKind == 'SC'){ 							//Simplon Core
 			require_once($simplon_root.'/'.$classToLoad.'.php');
@@ -387,15 +438,33 @@ class SC_Main {
 			require_once($simplon_root.'/DataStorages/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'SR') {						//Simplon Render
 			require_once($simplon_root.'/Renderers/'.$GLOBALS['redenderFlavor'].'/'.$classToLoad.'.php');
-		}elseif ($ClassKind == 'SI') {						//Simplon Interface Data					//Simplon Render
-			require_once($simplon_root.'/Renderers/'.$GLOBALS['redenderFlavor'].'/'.$classToLoad.'.php');
+		}elseif ($ClassKind == 'SI') {						//Simplon Interface Item
+
+			////// --- for namespaced renderes ------
+			///// these two line are to be used in files that work with interface namespaces
+			///////// $R = SC_Main::$RENDERER_FLAVOR.'\\';
+			///////// $titulo  = new ($R.'SI_Title')('El Titulo',4);
+
+			// if(file_exists($app_root.'/'.$nameSpace.'/'.$classToLoad.'.php')){
+			// 	require_once($app_root.'/'.$nameSpace.'/'.$classToLoad.'.php');
+			// }else{
+			// 	require_once($simplon_root.'/Renderers/'.$nameSpace.'/'.$classToLoad.'.php');
+			// }
+
+			if(file_exists($app_root.'/'.self::$RENDERER_FLAVOR.'/'.$classToLoad.'.php')){
+				require_once($app_root.'/'.self::$RENDERER_FLAVOR.'/'.$classToLoad.'.php');
+			}else{
+				require_once($simplon_root.'/Renderers/'.self::$RENDERER_FLAVOR.'/'.$classToLoad.'.php');
+			}
+
 		}elseif ($ClassKind == 'AE') {						//App Element
 			require_once($app_root.'/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'AD') {						//App Datas
 			require_once($app_root.'/Datas/'.$classToLoad.'.php');
-		}elseif ($ClassKind == 'AI') {						//App Interface Data
-			require_once($app_root.'/InterfaceItems/'.$classToLoad.'.php');
 		}
 	}
 
+	static function render( $item ){
+		self::$RENDERER->render($item);
+	}
 }

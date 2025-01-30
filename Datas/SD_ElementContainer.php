@@ -26,6 +26,34 @@
  * @author RSL
  */
 class SD_ElementContainer extends SD_Data {
+
+	static
+		$AdminMsg,
+		$ReturnBtnMsg,
+		$CancelBtnMsg,
+
+		$SearchBtnMsg,
+		$SearchMsg,
+
+		$ViewBtnMsg,
+		$ViewMsg,
+
+		$CreateBtnMsg,
+		$CreatedMsg,
+		$CreateMsg,
+		$CreateError,
+
+		$UpdateBtnMsg,
+		$UpdatedMsg,
+		$UpdateMsg,
+		$UpdateError,
+
+		$DeleteBtnMsg,
+		$DeletedMsg,
+		$DeleteMsg,
+		$DeleteError;
+
+
 	protected 
 		/**
 		 * Logic parent
@@ -46,6 +74,10 @@ class SD_ElementContainer extends SD_Data {
 		$column;
 
 	public function __construct( $element, $label=null, $column = null, $flags=null, $element_id=null) {
+
+		if (is_string($element) AND class_exists($element)) {
+			$element = new $element();
+		}
 
 		$this->column = $column;
 
@@ -68,6 +100,36 @@ class SD_ElementContainer extends SD_Data {
 			array_pop($GLOBALS['callersStack']);
 		}
 		parent::__construct($label,$flags,$element_id);
+
+
+
+		static::$AdminMsg = $element->NamePlural().' '.SC_MAIN::L('Manager');
+
+		static::$ReturnBtnMsg = SC_MAIN::L('Return');
+		static::$CancelBtnMsg = SC_MAIN::L('Cancel');
+
+		static::$SearchBtnMsg = SC_MAIN::L('Search');
+		static::$SearchMsg = SC_MAIN::L('Search').' '.$element->NamePlural();
+ 
+		static::$ViewBtnMsg = SC_MAIN::L('View');
+		static::$ViewMsg = SC_MAIN::L('View of '.$element->Name());
+
+		static::$CreateBtnMsg = SC_MAIN::L('Create');
+		static::$CreateMsg = SC_MAIN::L('Create a '.$element->Name());
+		static::$CreatedMsg = SC_MAIN::L('A '.$element->Name().' has been created');
+		static::$CreateError = SC_MAIN::L('A '.$element->Name().' can\'t be created');
+
+		static::$UpdateBtnMsg = SC_MAIN::L('Update');
+		static::$UpdateMsg = SC_MAIN::L('Update a '.$element->Name());
+		static::$UpdatedMsg = SC_MAIN::L('The '.$element->Name().' has been updated');
+		static::$UpdateError = SC_MAIN::L('The '.$element->Name().' can\'t be updated');
+
+		static::$DeleteBtnMsg = SC_MAIN::L('Delete');
+		static::$DeleteMsg = SC_MAIN::L('Delete a '.$element->Name());
+		static::$DeletedMsg = SC_MAIN::L('A '.$element->Name().' has been deleted');
+		static::$DeleteError = SC_MAIN::L('The '.$element->Name().' has been deleted');
+
+
 
 	}
 
@@ -120,8 +182,94 @@ class SD_ElementContainer extends SD_Data {
 	}
 
 	function showSearch(){
-		return 'sdsdsd';
+		return 'Element Container Show search - to do';
 	}
+
+
+
+	function showCreate(){
+
+		if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
+		}else{
+			$input = new SI_ECInput($this);
+		}
+		$inputBox = new (SC_Main::$RENDERER::$InputBox_type)($input, $this->label());
+		return $inputBox;
+	}
+
+
+	function showElementCreate(){
+
+
+		$content = new SI_VContainer();
+		$content->addItem(new SI_Title($this->element::$CreateMsg,4));
+		
+		$form = new SI_Form($this->element->datasWith('create','show'), SC_Main::$RENDERER->action($this,'processElementCreate','id'));
+
+
+		//$form->addItem( new SI_HContainer([  new SI_Submit(SC_Main::L('Create')), new SI_CancelButton()  ]) );
+		$form->addItem( new SI_Submit(SC_Main::L('Create')) );
+		$form->addItem( new SI_CancelButton() );
+		
+		$content->addItem($form);
+
+		return $content;
+	}
+
+
+	function processElementCreate(){
+		try {
+			$this->element->fillFromRequest();
+			$this->element->validateForDB();
+		} catch (SC_ElementValidationException $ev) {
+			$data = array();
+			foreach ($ev->datasValidationMessages() as $key => $value) {
+				$data[] = array(
+				'func' => 'showValidationMessages',
+				'args' => array($key, $value[0])
+				);
+			}
+			$return = array(
+			'status' => true,
+			'type' => 'commands',
+			'data' => $data
+			);
+			$return = json_encode($return);
+			return $return;
+		}
+		try {
+			if ($this->element->create()) {
+					return $this->makeAppendSelection();
+			} else {
+				// @todo: error handling
+				user_error(static::$CreateError, E_USER_ERROR);
+			}
+		} catch (\PDOException $ev) {
+			//user_error($ev->errorInfo[1]);
+			//@todo handdle the exising ID (stirngID) in the DS
+			user_error($ev);
+		}
+
+	}
+	
+	function makeAppendSelection(){
+		$return = array(
+			'status' => true,
+			'type' => 'commands',
+			'data' => array(
+				array(
+					'func' => 'appendContainedElement',
+					'args' => array($this->showEmbededAppendInput(null,true))
+				),
+				array(
+					'func' => 'closeLightbox'
+				),
+			)
+		);
+		header('Content-type: application/json');
+		echo json_encode($return);
+	}
+
 
 	public function viewVal() {
 		if( $this->element->getId() != $this->val() ){

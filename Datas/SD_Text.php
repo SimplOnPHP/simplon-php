@@ -43,5 +43,13 @@ class SD_Text extends SD_Data {
 		$embeded = true,
 		$filterCriteria = 'name ~= :name';
 
+	// function showCreate(){
+
+	// 	$label = new SI_InputLabel($this->label(),$this->ObjectId(),$this->required());
+	// 	$input = new SI_StringInput($this->val(),$this->label(),$this->ObjectId(),$this->required());
+	// 	$ret = new SI_VInputBox($label,$input);
+	// 	return $ret;
+
+	// }
   
 }

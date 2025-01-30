@@ -26,75 +26,47 @@
  * @copyright (c) 2011, Rubén Schaffer Levine and Luca Lauretta
  * @category Data
  */
-class SD_Action extends SD_Data {
-    /**
-     *
-     * @var boolean $view,$create,$update and $list - these variables are 
-     * flags to indicate if this input will be displayed in the different templates
-     */
-    protected 
-		$view = true,
-		$create = false,
-		$update = false,
-		$read = false,
-		$list = true,
-		$icon = '',
+class SD_Action extends SD_ComplexData {
 
-        $fixedValue  = true,
-		$renderOverride = false;
-    /**
-     *
-     * @var string $validationNaN - 
-     */
-    public $validationNaN = '';
+	protected $methodToCall;
 
-	public function __construct( $method, $text, $icon=null, $label=null, $flags=null){
-		$this->method = $method;
-        $this->text = $text;
+	function __construct($label = null, $methodToCall, $text, $icon = null, $flags = null, $val = null, $filterCriteria = null){
 
-        if(file_exists($this->renderer()->imgsPath().DIRECTORY_SEPARATOR.$icon)){
-            $this->icon = $this->renderer()->imgsWebRoot().DIRECTORY_SEPARATOR.$icon;
-        }
-  
-		parent::__construct($label, $flags);
-	}
-    	
-	public function val($val=null){
-		if(isset($val)){
-			if(!$this->fixedValue){
-				$this->val = $val;
-			}
-		}else{
-			if(empty($this->val)){
-                return $this->renderer()->action($this->parent(),$this->method);
-			}else{
-				return $this->val;
-			}
-		}
+		$dataPrepare = null;
+		$this->methodToCall = $methodToCall;
+
+		$layout = new SI_Link([$this,'action'], $text,$icon);
+		
+		parent::__construct($label, $dataPrepare, $layout, $flags, $val, $filterCriteria);
+
 	}
 
-    function getLayout($method)
-    {
-		if(SC_Main::$PERMISSIONS instanceof SE_User){
+	function action(){
+		return SC_Main::$RENDERER->action($this->parent(),$this->methodToCall);
+	}
 
-			$permissions = SC_Main::$PERMISSIONS->getPermissions($this->parent());
+    // function getLayout($method)
+    // {
+	// 	if(SC_Main::$PERMISSIONS instanceof SE_User){
 
-			if($permissions == 'allow'){
-				//keep the same method for bellow;
-			}elseif($permissions == 'deny'){
-				$method = 'showEmpty';
-			}elseif(is_array($permissions)){
-				$actionMethod = strtolower(str_replace("show", "", $this->method)).'Action';
-				if(isset($permissions[$actionMethod])){
-					SC_Main::$PERMISSIONS->setCheckDataRule($this->parent(), $this, $permissions[$actionMethod]);
-				}
-			}
-		}
-		if(!empty($this->renderOverride) ){$method = $this->renderOverride;}
-		if(empty($this->icon)){
-			return $this->renderer()->getDataLayoutFromFile($this,$method);
-		}else{
-			return $this->renderer()->getDataLayoutFromFile($this,$method.'Icon');
-		}
-    }
+	// 		$permissions = SC_Main::$PERMISSIONS->getPermissions($this->parent());
+
+	// 		if($permissions == 'allow'){
+	// 			//keep the same method for bellow;
+	// 		}elseif($permissions == 'deny'){
+	// 			$method = 'showEmpty';
+	// 		}elseif(is_array($permissions)){
+	// 			$actionMethod = strtolower(str_replace("show", "", $this->method)).'Action';
+	// 			if(isset($permissions[$actionMethod])){
+	// 				SC_Main::$PERMISSIONS->setCheckDataRule($this->parent(), $this, $permissions[$actionMethod]);
+	// 			}
+	// 		}
+	// 	}
+	// 	if(!empty($this->renderOverride) ){$method = $this->renderOverride;}
+	// 	if(empty($this->icon)){
+	// 		return $this->renderer()->getDataLayoutFromFile($this,$method);
+	// 	}else{
+	// 		return $this->renderer()->getDataLayoutFromFile($this,$method.'Icon');
+	// 	}
+    // }
 }

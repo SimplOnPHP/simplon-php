@@ -43,10 +43,27 @@ abstract class SD_Id extends SD_Data
 	 * @param type $flags 
 	 */
 	function dataFlags($flags = null){
+		
 		parent::dataFlags($flags);
 		$this->required = true;
 	}
 	
+	public function showCreate() {
+		return null;
+	}
+		
+	public function showUpdate() {
+		return null;
+	}
+
+	public function showSearch() {
+		if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
+		}else{
+			$input = new SI_Input($this->name(), $this->val(), null, $this->label(), null, $this->ObjectId());
+		}
+		$inputBox = new (SC_Main::$RENDERER::$InputBox_type)($input, $this->label());
+		return $inputBox;
+	}
 	
 }
  

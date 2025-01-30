@@ -52,5 +52,4 @@ class SE_Role extends SC_Element
 			return $results[0]['id'];
 		}
 	}	
- 
 }

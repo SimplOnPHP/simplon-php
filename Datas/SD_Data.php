@@ -157,11 +157,10 @@ abstract class SD_Data extends SC_BaseObject {
 	
 	 $tip,
 	 $tipInline,
-	 $validationRequired = 'This field is required',
+	 $validationRequired,
+	 $invalidValueMessage,
 
-	/** @var SR_main */
-
-	
+	/** @var SR_htmlJQuery */
 	$renderer = null,
 	/**
 	 * search operands:
@@ -204,8 +203,10 @@ abstract class SD_Data extends SC_BaseObject {
 		$this->val = $val;
 		$this->label=$label;
 		
+		$this->validationRequired = SC_Main::L('This field is required');
+		$this->invalidValueMessage = SC_Main::L('Invalid value');
+		
         $this->filterCriteria($filterCriteria);
-	
 		if($flags)
 		{
 			$this->dataFlags($flags);
@@ -218,16 +219,16 @@ abstract class SD_Data extends SC_BaseObject {
 	 * LLama al reneder del dato para todas las llamadas que inicia con show y directo a la funcion el resto de funciones 
 	 * Esto permite llamar a  interfaces del dato sin que sean funciones, solo conque esten declaradas en la platilla de interfaz
 	*/
-	public function __call($name, $arguments) {
-		if(substr($name, 0, 4) === "show"){
+	// public function __call($name, $arguments) {
+	// 	if(substr($name, 0, 4) === "show"){
 
-			array_unshift($arguments,$name);
-			array_unshift($arguments,$this);
-			return call_user_func_array(array($this->renderer(), 'render'), $arguments);
-		}else {
-			return parent::__call($name, $arguments);
-		}
-	}
+	// 		array_unshift($arguments,$name);
+	// 		array_unshift($arguments,$this);
+	// 		return call_user_func_array(array($this->renderer(), 'render'), $arguments);
+	// 	}else {
+	// 		return parent::__call($name, $arguments);
+	// 	}
+	// }
 
 	/**
 	* User defined constructor, called within {@link __constructor()},
@@ -263,18 +264,67 @@ abstract class SD_Data extends SC_BaseObject {
 
 	public function val($val=null){
 		if(isset($val)){
-			if(!$this->fixedValue){
+			if(!$this->fixedValue && $this->isValid($val)){
 				$this->val = $val;
+			}elseif(!$this->isValid($val)){
+				throw new SC_DataValidationException($this->invalidValueMessage());
 			}
 		}else{
 			return $this->val;
 		}
 	}
 
+	public function isValid($val){
+		return true;
+	}
+
 	public function viewVal(){
 		return $this->val();
 	}
+
+
+
+	public function showView() {
+		return $this->viewVal();
+	}
+
+	public function showList() {
+		return $this->viewVal();
+	}
 	
+	public function showEmbeded() {
+		return $this->viewVal();
+	}
+
+	public function showCreate() {
+		if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
+		}else{
+			$input = new SI_Input($this->name(), '', null, $this->label(), $this->required(), $this->ObjectId());	
+		}
+		$inputBox = new (SC_Main::$RENDERER::$InputBox_type)($input, $this->label());
+		return $inputBox;
+	}
+		
+	public function showUpdate() {
+		if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
+		}else{		
+			$input = new SI_Input($this->name(), $this->val(), null, $this->label(), $this->required(), $this->ObjectId());
+		}
+		$inputBox = new (SC_Main::$RENDERER::$InputBox_type)($input, $this->label());
+		return $inputBox;
+	}
+
+	public function showDelete() {}
+
+	public function showSearch() {
+		if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
+		}else{	
+			$input = new SI_Input($this->name(), $this->val(), null, $this->label(), null, $this->ObjectId());
+		}
+		$inputBox = new (SC_Main::$RENDERER::$InputBox_type)($input, $this->label());
+		return $inputBox;
+	}
+
 	public function preRead() {}
 	
 	public function preCreate() {}

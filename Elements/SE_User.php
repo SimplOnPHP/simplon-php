@@ -49,6 +49,7 @@ class SE_User extends SC_Element
 
 		//We need to ensure there is an admin role in the DB
 		$role = new SE_Role();
+
 		///////////$role->asureRole('admin');
 
 		$this->userRole = new SD_ElementContainerDropBox($role,'Role',null,'RSL');
@@ -64,7 +65,7 @@ class SE_User extends SC_Element
         $this->menu = new SI_SystemMenu([]);
 
 	}
-	
+
 	public function processLogin(){
 		//Get the info from the form
 
@@ -107,7 +108,7 @@ class SE_User extends SC_Element
 		//Get the first user with the same name
 		$results = $this->dataStorage->readElements($this);
 		
-		$this->fillFromArray($results[0]);
+		try{$this->fillFromArray($results[0]);}catch(SC_ElementValidationException $ev){}
 
 		if($this->autenticate($recibedPassword)){
 			$this->dataStorage = null;
@@ -147,7 +148,7 @@ class SE_User extends SC_Element
 
 	public function fillFromRequest() {
 		if ($_REQUEST) {
-			$this->fillFromArray($_REQUEST);
+			try{$this->fillFromArray($_REQUEST);}catch(SC_ElementValidationException $ev){}
 			$this->password->encriptedFlag(False);			
 			return;
 		} else {
@@ -185,7 +186,7 @@ class SE_User extends SC_Element
 				'&nbsp;',
 				new SI_Image('Logo.webp'),
 				'&nbsp;']);
-				$picframe->style('  grid-template-columns: 1fr 4fr 1fr;
+				$picframe->styles('  grid-template-columns: 1fr 4fr 1fr;
   margin: 2rem 0;');
 		$content->addItem($picframe);
 
@@ -193,14 +194,18 @@ class SE_User extends SC_Element
 		$action = $this->renderer->action($this,'processLogin');
 		if($_SERVER['REQUEST_URI']){
 			$this->addData('sourceURL',new SD_Hidden(null,null,$_SERVER['REQUEST_URI']));
-        	$form = new SI_Form([$this->userName, $this->password, $this->sourceURL], $action, 'showLogin', 'showCreate');
+        	$form = new SI_Form([$this->userName->showCreate(), $this->password->showCreate(), $this->sourceURL->showCreate()], $action);
 		}else{
         	$form = new SI_Form([$this->userName, $this->password], $action, true, 'showCreate');
 		}
-		$form->addItem(new SI_SubmitButton(SC_MAIN::L('Login')));
+		$form->addItem(new SI_Submit(SC_MAIN::L('Login')));
 
 		$content->addItem($form);
-        return $this->renderer->renderFullPage($content, 'showView', $this, 'showLogin');;
+        //return $this->renderer->renderFullPage($content, 'showView', $this, 'showLogin');
+		
+		$page = new SI_systemScreen( $content,'',static::$AdminMsg );
+		return $page;
+
 	}
 	
 	function processCreate(){
@@ -313,6 +318,7 @@ class SE_User extends SC_Element
 	}
 
 	public function setCheckDataRule(SC_Element $element, $data, string $rule){
+
 		$result = null;
 		$rule = explode("_", $rule);
 
@@ -331,15 +337,16 @@ class SE_User extends SC_Element
 			}
 		}elseif($treatment == 'load'){// set the value but can be changed
 			if($rule[0] == 'CurrentUserId'){
-				$element->{'O'.$data}($this->id());
+				//$element->{'O'.$data}($this->id());
+				$element->{$data}($this->id());
 			}elseif($rule[0] == 'CurrentUserName'){
-				$element->{'O'.$data}($this->userName());
+				$element->{$data}($this->userName());
 			}elseif($rule[0] == 'CurrentUserRole'){
-				$element->{'O'.$data}($this->userRole());
+				$element->{$data}($this->userRole());
 			}elseif(property_exists($element, $rule[0])){ //other attribute
-				$element->{'O'.$data}($element->{$rule[0]}());
+				$element->{$data}($element->{$rule[0]}());
 			}else{ // constant TODO: how to use a constant that is equal to an attribute name
-				$element->{'O'.$data}($rule[0]);
+				$element->{$data}($rule[0]);
 			}
 		}elseif($treatment == 'viwableWhen'){ // Show the value when conditions meet
 			if($rule[0] == 'CurrentUserId'){
@@ -391,7 +398,7 @@ class SE_User extends SC_Element
 			}else{
 
 
-				// if the data has no name it's most likely added dinamically and might be reused to save ram in several instances of  the element to save ram, thus the renderOverride might be cleared
+				// if the data has no name it's most likely added dinamically and might be reused to save ram in several instances of  the element, thus the renderOverride might be cleared
 
 				// if(is_string($data)){$data = $element->{'O'.$data}();}//SD_Actions are sent as objects when add dinamically like in table bacause they maight 
 

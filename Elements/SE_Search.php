@@ -63,7 +63,7 @@ class SE_Search extends SC_Element
 			if(array_values($id_or_elementsTypes) === $id_or_elementsTypes) {
 				$this->elementsTypes = new SD_DArray('', 'vclsR', $id_or_elementsTypes);
 			} else {
-				$this->fillFromArray($id_or_elementsTypes);
+				try{$this->fillFromArray($id_or_elementsTypes);}catch(SC_ElementValidationException $ev){}
 			}
 		} else if(isset($id_or_elementsTypes)) {
 			$id = $id_or_elementsTypes;
@@ -149,8 +149,7 @@ class SE_Search extends SC_Element
 
 
 		if(is_array($params))
-			try{
-				$this->fillFromArray($params);
+			try{$this->fillFromArray($params);
 			}catch(SC_ElementValidationException $ev){}
 		else
 			try{
