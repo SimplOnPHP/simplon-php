@@ -8,7 +8,8 @@ class SI_Modal extends SI_Link {
         $this->href = $href;
         $this->content = $content;
         $this->icon = $icon;
-        $this->styles ='
+
+        $this->addStylesToAutoCSS('
             .modal-overlay {
                 display: none;
                 position: fixed;
@@ -62,18 +63,20 @@ class SI_Modal extends SI_Link {
             .modal-stack {
                 position: relative;
             }
-        ';
-        $this->addStylesToAutoCSS();
+        ');
     }
 
     function setTagsVals($renderVals = null) {
-        $onclick =  'onclick="Modal.open(\''.$renderVals['href'].'\')"';
+        $onclick =  "Modal.open('{$renderVals['href']}')";
         if($renderVals['icon'] AND is_string($renderVals['content'])){
             $image = new SI_Image($renderVals['icon'],$renderVals['content']);
-            $image->class('icon');
+            $image->addClass('icon');
             $renderVals['content'] = $image;
         }
-        $this->start = '<a '.$onclick.' class="SI_Link" href="#">';
+        //$this->start = '<a '.$onclick.' class="SI_Link" href="#">';
+        $this->start = new SI_Link('#', $renderVals['content'],$image);
+        $this->start->addAttribute('onClick',$onclick);
+        $this->start->addClass('SI_Link');
         $this->end = "</a>\n";
 
 

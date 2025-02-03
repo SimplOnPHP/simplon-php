@@ -8,9 +8,9 @@ class SI_SystemMenu extends SI_Item {
 
         $this->content = $content;
         $this->logo = $logo;
+        $this->addClass('SI_SystemMenu');
 
-
-        $this->styles = '
+        $this->addStylesToAutoCSS('
             .SI_SystemMenu{
                 display:grid;
                 grid-template-columns: 15fr 92fr auto auto 8fr;
@@ -68,8 +68,7 @@ class SI_SystemMenu extends SI_Item {
             html[data-theme="light"] .hamburgerMenuIcon {
                 filter: invert(1);
             }
-            ';
-        $this->addStylesToAutoCSS();
+            ');
         
         static::$cssfiles['pico.min.css'] = './css/pico.min.css'; 
         static::$cssfiles['simplon-base.css'] = './css/simplon-base.css'; 
@@ -86,7 +85,7 @@ class SI_SystemMenu extends SI_Item {
         elseif(empty($this->logo)){ @$logo = new SI_Image('favicon.ico'); }
         $hambuergerIcon = new SI_Image('menu.svg');
 
-        $this->start = '<div class="SI_SystemMenu">
+        $this->start = '<div '.$this->attributesString().'>
         <div class="logo">'.@$logo.'</div>
         <div>
             <div class="repeat items links">';

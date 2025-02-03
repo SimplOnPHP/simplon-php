@@ -16,9 +16,9 @@ class SI_Form extends SI_Item {
     function __construct( array $content, $action, $method = 'POST', $enctype="")
     {
         $this->content = $content;
-        $this->action = $action;
-        $this->method = $method;
-        $this->enctype = $enctype;
+        $this->addAttribute('method',$method);
+        $this->addAttribute('action',$action);
+        $this->addAttribute('enctype',$enctype);
         $this->ajax = true;
         
         static::$jsfiles['00_jquery-1.7.2.min'] = './js/00_jquery-1.7.2.min.js';
@@ -28,14 +28,9 @@ class SI_Form extends SI_Item {
     }
 
     function setTagsVals($renderVals = null) {
-        $method = $renderVals['method'] ?? 'post';
-        $action = $renderVals['action'] ?? '';
-        $enctype = $renderVals['enctype'] ?? 'multipart/form-data';
-        $id = $renderVals['id'] ?? '';
-        if($this->ajax){$renderVals['class'] .= ' Ajax';}
-        $class = $renderVals['class'] ? 'class="'.$renderVals['class'].'"' : '';
+        if($this->ajax){$this->addClass('Ajax');}
         
-        $this->start = "<form method=\"$method\" action=\"$action\" enctype=\"$enctype\" id=\"$id\" $class>";
+        $this->start = "<form {$this->attributesString()}>";
         $this->end = "</form>\n";
     }
 

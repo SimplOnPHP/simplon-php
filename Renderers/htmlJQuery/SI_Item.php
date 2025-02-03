@@ -20,22 +20,52 @@ class SI_Item extends SC_BaseObject {
         $end = null,
         $itemStart = null,
         $itemEnd = null,
-        $styles = null,
-        $object = null,
-        $class = null,
-        $content = null; 
+        $object = null,     //The object to wich the interface item bellongs normally an element or data
+        $content = null,
+
+        $styles = null,     
+        
+        $attributes = [];   
         
     static
+        $script = null,
         $cssfiles = [],
         $jsfiles = [];
 
-    function setTagsVals($renderVals = null){
-        if($renderVals['class']){ $class = 'class="'.$renderVals['class'].'"'; }else{ $class=''; }  
-        $this->start = "<div $class >";
+
+    function addAttribute($name, $value){
+        $this->attributes[$name] = $value;
+    }
+
+    function getAttribute($attribute){
+        return $this->attributes[$attribute];
+    }
+
+    function removeAttribute($name){
+        unset($this->attributes[$name]);
+    }
+
+
+    function addClass($class){
+        @$this->attributes['class'] .= ' '.$class;
+    }
+
+    function attributesString(){
+        $attributes = [];
+        foreach ($this->attributes as $key => $value) {
+            //$attrValue = is_callable($value) ? $value() : $value;
+            $attrValue = $value;
+            @$ret .= $key.'="'.$attrValue.'" ';
+        }
+        if(@$this->required){ $ret .= ' required ';}
+        return @$ret;
+    }
+
+    function setTagsVals($renderVals = null){ 
+        $this->start = "<div {$this->attributesString()} >\n";
         $this->end = "</div>\n";
         // $this->itemStart = ;
         // $this->itemEnd = ;
-        // $this->styles = ;
         // $this->object = ;
     }
 
@@ -93,7 +123,7 @@ class SI_Item extends SC_BaseObject {
     function getRenderVals(){
         $ret = [];
         foreach($this as $atribute => $value){
-            if(is_array($value) AND sizeof($value) == 2 AND  $value[0] instanceof SC_BaseObject AND is_string( $value[1] )){
+            if($atribute != 'attributes'  AND is_array($value) AND sizeof($value) == 2 AND $value[0] instanceof SC_BaseObject AND is_string( $value[1] )){
                 if($this->object instanceof SC_BaseObject){ $value[0] = $this->object; }
                 $ret[$atribute] = $value();
             }else{
@@ -105,12 +135,12 @@ class SI_Item extends SC_BaseObject {
     }
 
 
-    function addStylesToAutoCSS(){ 
+    function addStylesToAutoCSS($styles){ 
         global $cssTagsContent;
      
-       if($this->styles AND SC_Main::$debug_mode){
+       if(SC_Main::$debug_mode){
                      
-            $cssTagsContent[$this->getClass()] = $this->styles;
+            $cssTagsContent[$this->getClass()] = $styles;
             
             $minifyed = minify_css($cssTagsContent[$this->getClass()]);
             $minifyedWithMarks = "/* START_".$this->getClass()." */\n $minifyed \n/* END_".$this->getClass()." */";

@@ -15,18 +15,18 @@ class SI_VContainer extends SI_Item {
 
     function __construct( $content = null, $aligmment = null )
     {
-        $this->addStylesToAutoCSS();
         $this->aligmment = $aligmment;  
         $this->content = $content;
+        $this->addClass('SI_VContainer');
     }
 
     function itemStart($class = ''){
-        if($class) $class = " class='$class'";
-        return "<div$class>";
+        if($class) $class = "class='$class'";
+        return "<div $class>";
     }
 
     function setTagsVals($renderVals = null){
-        $this->start = "<div class='SI_VContainer'>";
+        $this->start = "<div {$this->attributesString()}>";
         $this->end = "</div>\n";
         $this->itemEnd = "</div>\n";
     }

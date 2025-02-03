@@ -18,39 +18,31 @@ class SI_HContainer extends SI_Item {
 
     function __construct( $content = null, $aligmment = null, $width = null )
     {
-        $this->styles = '
+        $this->addStylesToAutoCSS('
         .SI_HContainer {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr)); /* Adjust 150px to your minimum column size */
             gap: 0.2rem; /* Adjust the gap between columns and rows as needed */
             padding: 0.2rem 0; /* Optional: Add some padding around the container */
             box-sizing: border-box; /* Ensure padding is included in the total size */
-        }';
-        $this->addStylesToAutoCSS();
+        }');
 
         $this->aligmment = $aligmment;
-        $this->width = $width;
+        if($width){$this->addAttribute('style',"grid-template-columns: $width;");}
+        $this->addClass('SI_HContainer');
         $this->content = $content;
     }
 
     function itemStart($class = ''){
-        if($class) $class = " class='$class'";
-        return "<div$class>";
+        if($class) $class = "class='$class'";
+        return "<div $class>";
     }
 
     function setTagsVals($renderVals = null){
-        $width = $renderVals['width'];
-        
-        if($width){
-        $this->start = "<div class='SI_HContainer' style='grid-template-columns: $width;'>";}
-        else{
-            $this->start = "<div class='SI_HContainer'>";
-        }
+        $this->start = "<div {$this->attributesString()} >\n";
         $this->end = "</div>\n";
         $this->itemEnd = "</div>\n";
     }
-
-
 
     function html() {
         $renderVals = $this->getRenderVals();

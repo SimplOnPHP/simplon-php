@@ -6,8 +6,8 @@ class SI_VInputBox extends SI_InputBox {
         $this->end = "";
 
         if($renderVals['label']){ $label = new SI_InputLabel($renderVals['label'],$renderVals['input']->ObjectId(),$renderVals['input']->required()); }
-        else{ $renderVals['label'] = new SI_InputLabel($renderVals['input']->placeHolder(),$renderVals['input']->ObjectId(),$renderVals['input']->required()); }
-        $renderVals['input']->placeHolder('');
+        else{ $renderVals['label'] = new SI_InputLabel($renderVals['input']->getAttribute('placeHolder'),$renderVals['input']->ObjectId(),$renderVals['input']->required()); }
+        $renderVals['input']->removeAttribute('placeHolder');
         $this->content = new SI_VContainer([$label,$renderVals['input']]);
     }
 }

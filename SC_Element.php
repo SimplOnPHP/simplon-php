@@ -671,7 +671,7 @@ class SC_Element extends SC_BaseObject {
 			user_error($ev);
 		}
 	}
-
+	 
 	function showCreate(){
 
 		$content = new SI_VContainer();
@@ -899,6 +899,26 @@ class SC_Element extends SC_BaseObject {
 		SC_Main::render($page);
 
 	}
+
+	function showEmebeded(){
+		$this->fillFromDSById();
+
+
+		$content = new SI_VContainer();
+		$content->addItem(new SI_Divider(static::$ViewMsg,5));
+
+		foreach($this->datasWith('embeded','objects') as $data){
+			$content->addItem(new SI_HContainer([$data->label().':',$data->showEmbeded()],'r l','minmax(7rem, 1fr) 10fr'));
+		}
+
+		$page = new SI_systemScreen($content,SC_Main::$PERMISSIONS->menu(),static::$ViewMsg );
+		SC_Main::render($page);
+
+	}
+
+	
+
+
 
 	function showUpdate(){
 

@@ -4,7 +4,7 @@ class SI_Password extends SI_Input {
     
     function __construct($name, $value='', $placeHolder='(not changed)', $required=false, $id=false) {
         parent::__construct($name, $value, 'password', $placeHolder, $required, $id );
-        $this->styles ='
+        self::addStylesToAutoCSS('
             .password-container {
                 display: flex;
                 align-items: center;
@@ -20,8 +20,7 @@ class SI_Password extends SI_Input {
                 flex-shrink: 0;
                 margin-right: 0.2rem;
             }
-        ';
-        self::addStylesToAutoCSS();
+        ');
     }
 
     function setTagsVals($renderVals = null) {
@@ -34,21 +33,16 @@ class SI_Password extends SI_Input {
         $input = new SI_Input($name, $renderVals['value'], 'password', $placeholder, $required, $htmlId);
 
         $seeImage =  new SI_Image('see.svg', 'Toggle password visibility');
-        $seeImage->class("$htmlId");
+        $seeImage->addClass("$htmlId");
         $dontSeeImage =  new SI_Image('dontSee.svg', 'Toggle password visibility');
-        $dontSeeImage->class("$htmlId");
-        $seeImage->onclick('togglePasswordVisibility("'.$htmlId.'")');
-        $dontSeeImage->onclick('togglePasswordVisibility("'.$htmlId.'")');
-
-
+        $dontSeeImage->addClass("$htmlId");
+        $seeImage->addAttribute('onclick','togglePasswordVisibility("'.$htmlId.'")');
+        $dontSeeImage->addAttribute('onclick','togglePasswordVisibility("'.$htmlId.'")');
 
         $this->start = new SI_HContainer([
             $input, 
             $seeImage,$dontSeeImage
         ],'l l hidden','auto auto');
-
-
-       // $this->start = '<span>'.$input.$seeImage.$dontSeeImage.'</span>';
 
 
         $this->end = new SI_Script('
@@ -63,32 +57,5 @@ class SI_Password extends SI_Input {
                     }
             }
         ');
-
-//         $this->start = <<<HTML
-//             <div class="password-container">
-//                 <input id="$htmlId" 
-//                        name="$name" 
-//                        placeholder="$placeholder" 
-//                        type="password"
-//                        $required />
-//                 <i onclick="togglePasswordVisibility('$htmlId')" class="fas fa-eye"></i>
-//             </div>
-//             <script>
-//                 function togglePasswordVisibility(passwordFieldId) {
-//                     var passwordField = document.getElementById(passwordFieldId);
-//                     var icon = passwordField.nextElementSibling;
-                    
-//                     if (passwordField.type === "password") {
-//                         passwordField.type = "text";
-//                         icon.classList.remove("fa-eye");
-//                         icon.classList.add("fa-eye-slash");
-//                     } else {
-//                         passwordField.type = "password";
-//                         icon.classList.remove("fa-eye-slash");
-//                         icon.classList.add("fa-eye");
-//                     }
-//                 }
-//             </script>
-// HTML;
     }
 }

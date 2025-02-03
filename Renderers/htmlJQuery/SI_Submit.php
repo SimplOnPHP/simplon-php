@@ -4,18 +4,15 @@ class SI_Submit extends SI_Item {
 
     function __construct($content = '', $onclick = '', $id = false) {
         $this->content = $content;
-        $this->onclick = $onclick;
-        $this->id = $id;
+        $this->addAttribute('onclick',$onclick);
+        $this->addAttribute('type','submit');
+        $this->addAttribute('id',$id);
+        $this->addClass('SI_Button');
     }
 
     function setTagsVals($renderVals = null){
-        $id = $renderVals['id'] ? "id='{$renderVals['id']}'" : "";
-        $onclick = $renderVals['onclick'] ? "onclick='{$renderVals['onclick']}'" : "";
-        $this->start = "<button $id $onclick class='SI_Submit' type='submit'>";
+        $this->start = "<button {$this->attributesString()}>";
         $this->end = "</button>\n";
-
     }
-
-
 
 }

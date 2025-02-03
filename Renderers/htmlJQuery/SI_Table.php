@@ -8,7 +8,8 @@ class SI_Table extends SI_Item {
         $this->method = $method;
         $this->rowTitle = $rowTitle;
         $this->extraColumns = $extraColumns;
-        $this->styles = "
+        $this->addClass('SI_Table');
+        $this->addStylesToAutoCSS("
             [data-theme=dark] {
                 --table-background-color: #8d7e73;
                 --odd-table-background-color: #323232;
@@ -93,8 +94,7 @@ class SI_Table extends SI_Item {
                     margin: 0.1rem;
                 }
             }
-        ";
-        $this->addStylesToAutoCSS();
+        ");
         static::$cssfiles['pico.min.css'] = './css/pico.min.css';
     }
 
@@ -109,7 +109,7 @@ class SI_Table extends SI_Item {
             return $ret;
         }
 
-        $ret = "\n\n".'<div class="SI_Table">
+        $ret = "\n\n".'<div '.$this->getAttributes().'>
                 <div class="rows">'."\n";
         if($this->method){
             $ret .= $this->elementToHeader();

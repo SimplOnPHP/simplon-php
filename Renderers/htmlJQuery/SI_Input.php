@@ -11,22 +11,17 @@ use voku\helper\HtmlDomParser;
 class SI_Input extends SI_Item {
 
     function __construct( $name, $value='', $type=null, $placeHolder=False, $required=False, $id = False) {
-        $this->value = $value;
-        $this->type = $type;
-        $this->placeHolder = $placeHolder;
         $this->required = $required;
-        $this->id = $id;
-        $this->name = $name;
+        $this->addAttribute('value',$value);
+
+        if($type)           {$this->addAttribute('type',$type);}
+        if($placeHolder)    {$this->addAttribute('placeHolder',$placeHolder);}
+        if($id)             {$this->addAttribute('id',$id);}
+        if($name)           {$this->addAttribute('name',$name);}
     }
 
     function setTagsVals($renderVals = null) {
-        $required = $renderVals['required'] ? "required" : "";
-        $id = $renderVals['id'] ? "id='".$renderVals['id']."'" : "";
-        $type = $renderVals['type'] ? "type='".$renderVals['type']."'" : "";
-        $placeHolder = $renderVals['placeHolder'] ? "placeholder='".$renderVals['placeHolder']."'" : "";
-        $name = $renderVals['name'] ? 'name="'.$renderVals['name'].'"' : "";
-
-        $this->start = "<input $id $type $name value='".$renderVals['value']."' $placeHolder $required />";
+        $this->start = "<input {$this->attributesString()} />";
     }
 }
 

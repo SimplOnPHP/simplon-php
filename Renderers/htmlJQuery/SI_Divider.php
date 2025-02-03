@@ -9,8 +9,7 @@ class SI_Divider extends SI_Item {
         else { $width = ''; }
         $this->content = $content;
         $this->width = $width;
-
-        $this->styles = '
+        $this->addStylesToAutoCSS('
             div.divider {
                 display: flex;
                 align-items: center;
@@ -47,20 +46,20 @@ class SI_Divider extends SI_Item {
                 font-weight: bold;
                 unicode-bidi: isolate;               
             }
-            ';
-        $this->addStylesToAutoCSS();
+            ');
         
         static::$cssfiles['pico.min.css'] = './css/pico.min.css'; 
+        $this->addClass('divider');
     }
 
     function setTagsVals($renderVals = null) {
         if(empty($this->content)){ 
             $style = '';    
-            if($renderVals['width']){ $style = 'style="width:' . $renderVals['width'] .';';}
-            $this->start = "<hr class='divider' $style />"; 
+            if($renderVals['width']){ $this->addAttribute('style','width: '.$renderVals['width'].';'); }
+            $this->start = "<hr {$this->attributesString()} />"; 
         }
         else{
-            $this->start = '<div class="divider">';
+            $this->start = "<div {$this->attributesString()} >";
             $this->end = "</div>\n";
         }
     }
