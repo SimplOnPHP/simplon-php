@@ -24,19 +24,24 @@ class SI_ECInput extends SI_Input {
 
 
         $createAction = SC_Main::$RENDERER->encodeURL($this->element->getClass(), [$renderVals['element']->element()->getClass()],'showElementCreate');
-        $create = new SI_Modal($createAction, $renderVals['element']::$CreateMsg,'addIcon.webp');
+        $create = new SI_Modal($createAction, $renderVals['element']->CreateMsg(),'addIcon.webp');
 
         $selectAction = SC_Main::$RENDERER->encodeURL($this->element->getClass(), [$renderVals['element']->element()->getClass()],'showElementSelect');
-        $select = new SI_Modal($selectAction, $renderVals['element']::$CreateMsg,'selectIcon.webp');
+        $select = new SI_Modal($selectAction, $renderVals['element']->selectMsg(),'selectIcon.svg');
         
-        if($this->element->element()->id()) {$view = $this->element->element()->showEmebeded();}
-        else{ $view = SC_Main::L('Create or select a '.$this->element->element()->name());}
+        // if($this->element->element()->id()) {
+        //     $view = $this->element->element()->showEmebeded();
+        // }else{ 
+        //     $view = SC_Main::L('Create or select a '.$this->element->element()->name());
+        // }
+       
         $input = new SI_Input($this->element->name(),$this->element->val(),'hidden');
 
 
 
 
-        $this->start =  new SI_HContainer([$create,$select,$input.$view],null,'1rem 1rem auto');
+        $this->start = new SI_HContainer([$create,$select,$input.@$view],null,'1rem 1rem auto');
+        $this->end = '';	
        // $this->end = $action;	
     }
 }

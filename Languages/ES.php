@@ -185,4 +185,8 @@ SC_Main::$LangArray = [
     'View of tipo de archivo' => 'View of tipo de archivo',
     '' => '',
     'Create or select a tipo de archivo' => 'Create or select a tipo de archivo',
+    'Select' => 'Select',
+    'Select a rol' => 'Select a rol',
+    'Select a usuario' => 'Select a usuario',
+    'Select a tipo de archivo' => 'Select a tipo de archivo',
 ];

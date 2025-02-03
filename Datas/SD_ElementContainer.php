@@ -27,7 +27,7 @@
  */
 class SD_ElementContainer extends SD_Data {
 
-	static
+	protected
 		$AdminMsg,
 		$ReturnBtnMsg,
 		$CancelBtnMsg,
@@ -103,31 +103,34 @@ class SD_ElementContainer extends SD_Data {
 
 
 
-		static::$AdminMsg = $element->NamePlural().' '.SC_MAIN::L('Manager');
+		$this->AdminMsg = $element->NamePlural().' '.SC_MAIN::L('Manager');
 
-		static::$ReturnBtnMsg = SC_MAIN::L('Return');
-		static::$CancelBtnMsg = SC_MAIN::L('Cancel');
+		$this->ReturnBtnMsg = SC_MAIN::L('Return');
+		$this->CancelBtnMsg = SC_MAIN::L('Cancel');
 
-		static::$SearchBtnMsg = SC_MAIN::L('Search');
-		static::$SearchMsg = SC_MAIN::L('Search').' '.$element->NamePlural();
+		$this->SearchBtnMsg = SC_MAIN::L('Search');
+		$this->SearchMsg = SC_MAIN::L('Search').' '.$element->NamePlural();
  
-		static::$ViewBtnMsg = SC_MAIN::L('View');
-		static::$ViewMsg = SC_MAIN::L('View of '.$element->Name());
+		$this->ViewBtnMsg = SC_MAIN::L('View');
+		$this->ViewMsg = SC_MAIN::L('View of '.$element->Name());
 
-		static::$CreateBtnMsg = SC_MAIN::L('Create');
-		static::$CreateMsg = SC_MAIN::L('Create a '.$element->Name());
-		static::$CreatedMsg = SC_MAIN::L('A '.$element->Name().' has been created');
-		static::$CreateError = SC_MAIN::L('A '.$element->Name().' can\'t be created');
+		$this->selectBtnMsg = SC_MAIN::L('Select');
+		$this->selectMsg = SC_MAIN::L('Select a '.$element->Name());
 
-		static::$UpdateBtnMsg = SC_MAIN::L('Update');
-		static::$UpdateMsg = SC_MAIN::L('Update a '.$element->Name());
-		static::$UpdatedMsg = SC_MAIN::L('The '.$element->Name().' has been updated');
-		static::$UpdateError = SC_MAIN::L('The '.$element->Name().' can\'t be updated');
+		$this->CreateBtnMsg = SC_MAIN::L('Create');
+		$this->CreateMsg = SC_MAIN::L('Create a '.$element->Name());
+		$this->CreatedMsg = SC_MAIN::L('A '.$element->Name().' has been created');
+		$this->CreateError = SC_MAIN::L('A '.$element->Name().' can\'t be created');
 
-		static::$DeleteBtnMsg = SC_MAIN::L('Delete');
-		static::$DeleteMsg = SC_MAIN::L('Delete a '.$element->Name());
-		static::$DeletedMsg = SC_MAIN::L('A '.$element->Name().' has been deleted');
-		static::$DeleteError = SC_MAIN::L('The '.$element->Name().' has been deleted');
+		$this->UpdateBtnMsg = SC_MAIN::L('Update');
+		$this->UpdateMsg = SC_MAIN::L('Update a '.$element->Name());
+		$this->UpdatedMsg = SC_MAIN::L('The '.$element->Name().' has been updated');
+		$this->UpdateError = SC_MAIN::L('The '.$element->Name().' can\'t be updated');
+
+		$this->DeleteBtnMsg = SC_MAIN::L('Delete');
+		$this->DeleteMsg = SC_MAIN::L('Delete a '.$element->Name());
+		$this->DeletedMsg = SC_MAIN::L('A '.$element->Name().' has been deleted');
+		$this->DeleteError = SC_MAIN::L('The '.$element->Name().' has been deleted');
 
 
 
@@ -189,7 +192,10 @@ class SD_ElementContainer extends SD_Data {
 
 	function showCreate(){
 
-		if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
+		if($this->renderOverride()=='showEmpty'){
+			return '';
+		}elseif( $this->fixedValue() ){
+			$input =  new SI_FixedValue($this->name(), $this->viewVal());
 		}else{
 			$input = new SI_ECInput($this);
 		}
@@ -242,7 +248,7 @@ class SD_ElementContainer extends SD_Data {
 					return $this->makeAppendSelection();
 			} else {
 				// @todo: error handling
-				user_error(static::$CreateError, E_USER_ERROR);
+				user_error($this->CreateError, E_USER_ERROR);
 			}
 		} catch (\PDOException $ev) {
 			//user_error($ev->errorInfo[1]);

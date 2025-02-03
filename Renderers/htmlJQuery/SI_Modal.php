@@ -69,12 +69,12 @@ class SI_Modal extends SI_Link {
     function setTagsVals($renderVals = null) {
         $onclick =  "Modal.open('{$renderVals['href']}')";
         if($renderVals['icon'] AND is_string($renderVals['content'])){
-            $image = new SI_Image($renderVals['icon'],$renderVals['content']);
+            $image = new SI_Image($renderVals['icon'],$renderVals['content'].'');
             $image->addClass('icon');
-            $renderVals['content'] = $image;
+            $renderVals['content'] = '';
         }
         //$this->start = '<a '.$onclick.' class="SI_Link" href="#">';
-        $this->start = new SI_Link('#', $renderVals['content'],$image);
+        $this->start = new SI_Link('#', $image);
         $this->start->addAttribute('onClick',$onclick);
         $this->start->addClass('SI_Link');
         $this->end = "</a>\n";
