@@ -1,8 +1,9 @@
 <?php
+
 /*
-	Copyright © 2024 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
-	
-	This file is part of “SimplOn PHP” a Data Oriented Aproach free software development framework: you can redistribute it and/or modify it under the terms of the MIT License.
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
 */
 
 /*! \mainpage SimplOn PHP
@@ -69,7 +70,7 @@ class SC_Main {
 		$App_web_root,		//Web URL to Application web dir
 		$debug_mode = true,
 
-		$Layouts_Processing,	//Specifies what to do with Elements Layouts options are: (Always)OverWrite Update(just outdated parts)  Preserve(do not change anything)
+		//$Layouts_Processing,	//Specifies what to do with Elements Layouts options are: (Always)OverWrite Update(just outdated parts)  Preserve(do not change anything)
 
 		$DEFAULT_ELEMENT,
 		$DEFAULT_METHOD = 'showAdmin',
@@ -163,6 +164,12 @@ class SC_Main {
 				self::$PERMISSIONS = new AE_EmptyAdmin(); 
 				self::$PERMISSIONS->userName('emptyAdmin');
 			}
+
+			
+			if(self::$PERMISSIONS->defaultClass() ){self::$DEFAULT_ELEMENT = self::$PERMISSIONS->defaultClass();}
+			if(self::$PERMISSIONS->defaultMethod()){self::$DEFAULT_METHOD = self::$PERMISSIONS->defaultMethod();}
+
+
 		}
 		//Load the sub class of the User (or permisssions class) if it exisists
 		if(self::$LOAD_ROLE_CLASS && isset($role)){
@@ -175,6 +182,7 @@ class SC_Main {
 		}
 
 		self::decodeURL();
+
 	}
 
 	static function L($key) {
@@ -223,13 +231,14 @@ class SC_Main {
 
 		$server_URI = substr($_SERVER['REQUEST_URI'], strlen(self::$App_web_root));
 
+
         // Look if there is a double $qs and take whats at the end as mmesag
         $server_request = explode($qs.$qs,$server_URI);
 
         if (isset($server_request[1])) { 
-			self::$SystemMessage = urldecode($server_request[1]);		
+			static::$SystemMessage = urldecode($server_request[1]);	
 		 }else {
-			self::$SystemMessage = '';
+			static::$SystemMessage = '';
 		}
 
         $server_request = $server_request[0];
@@ -301,34 +310,37 @@ class SC_Main {
 	 */
 	static function run($ini = null) {
 
-
 		self::setup($ini);
 
 		if(class_exists(self::$class) || class_exists('\\SimplOn\\Elements\\'.self::$class)) {
 			//$cp = self::$construct_params;
 
 			$rc = new \ReflectionClass(class_exists(self::$class) ? self::$class : '\\SimplOn\\Elements\\'.self::$class);
-			
+		
+
+			$obj = $rc->newInstanceArgs(self::$construct_params);
+		
 			if( 
 				isset(self::$method)
 				&&
-				($obj = $rc->newInstanceArgs(self::$construct_params))
-				&&
-				(($obj instanceof SC_Element))
-			){
-				
+				(($obj instanceof SC_Element) OR ($obj instanceof Interfaces))
+			){				
 				if(is_object(self::$PERMISSIONS) && (self::$class !='JS' && self::$class!='CSS')   ){
 					$mode='';
 					if(isset($obj::$methodsFamilies[self::$method])){$mode = $obj::$methodsFamilies[self::$method];}
 					
 					// If there is a user that can enter
 
-					if( self::$PERMISSIONS->canEnter($obj,$mode) ){	
+					if( self::$PERMISSIONS->canEnter($obj,$mode)  ){	
 						//if there is a set of values for the Element Datas set them
 						if($mode){
 							self::$PERMISSIONS->setValuesByPermissions($obj, $mode);
 						}
-						echo call_user_func_array(array($obj, self::$method), self::$method_params);
+						// if(self::$PERMISSIONS instanceof SE_EmptyAdmin){
+						// 	echo call_user_func_array(array(self::$PERMISSIONS->allowedClass(), self::$PERMISSIONS->allowedMethod()), self::$method_params);
+						// }else{
+							echo call_user_func_array(array($obj, self::$method), self::$method_params);
+						// }
 					//if there is a user that can't enter
 					}elseif(self::$PERMISSIONS->logedIn()){
 						self::$SystemMessage='You can\'t access that page ';
@@ -345,21 +357,20 @@ class SC_Main {
 			}elseif( 
 				isset(self::$method)
 				&&
-				($obj = $rc->newInstanceArgs(self::$construct_params))
-				&&
-				(($obj instanceof SD_ElementContainer))
+				(($obj instanceof SD_ElementContainer) OR ($obj instanceof SD_ElementsContainer))
 			){
 				
 				if(is_object(self::$PERMISSIONS) && (self::$class !='JS' && self::$class!='CSS')   ){
 					$mode='';
 					if(isset($obj::$methodsFamilies[self::$method])){$mode = $obj::$methodsFamilies[self::$method];}
+
 					
 					// If there is a user that can enter
 
-					if( self::$PERMISSIONS->canEnter($obj->element(),$mode) ){	
+					if( self::$PERMISSIONS->canEnter($obj,$mode) ){	
 						//if there is a set of values for the Element Datas set them
 						if($mode){
-							self::$PERMISSIONS->setValuesByPermissions($obj, $mode);
+							self::$PERMISSIONS->setValuesByPermissions($obj->element(), $mode);
 						}
 						echo call_user_func_array(array($obj, self::$method), self::$method_params);
 					//if there is a user that can't enter
@@ -376,7 +387,7 @@ class SC_Main {
 					echo call_user_func_array(array($obj, self::$method), self::$method_params);
 				}
 			}
-			
+	
 			static::writeLangFile();
 		} else {
 			header('HTTP/1.1 404 File not found');
@@ -426,7 +437,7 @@ class SC_Main {
 				
 		$ClassKind = explode('_',$classToLoad)[0];
 
-		
+
 
 		if($ClassKind == 'SC'){ 							//Simplon Core
 			require_once($simplon_root.'/'.$classToLoad.'.php');
@@ -461,6 +472,8 @@ class SC_Main {
 			require_once($app_root.'/'.$classToLoad.'.php');
 		}elseif ($ClassKind == 'AD') {						//App Datas
 			require_once($app_root.'/Datas/'.$classToLoad.'.php');
+		}elseif ($ClassKind == 'Interfaces') {
+			require_once($app_root.'/'.$ClassKind.'.php');
 		}
 	}
 

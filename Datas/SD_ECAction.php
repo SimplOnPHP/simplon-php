@@ -1,35 +1,9 @@
 <?php
-
 /*
 Sow Peace License (MIT-Compatible with Attribution Visit)
 Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
 https://simplonphp.org/Sow-PeaceLicense.txt
 */
-class SI_Link extends SI_Item {
-	protected $href, $text, $onclick = '';
-	
-function __construct($href, $content, $icon = null, $Iconheight = '1.5em', $Iconwidth = '1.5em') {
-		if($href){$this->addAttribute('href', $href);}
-		$this->addClass('SI_Link');
-		$this->content = $content;
-		$this->icon = $icon;
-		$this->addStylesToAutoCSS('.SI_Link .icon{
-				height: '.$Iconheight.';
-				width: '.$Iconwidth.';
-		}');
-	}
-
-	function setTagsVals($renderVals = null) {
-		if($renderVals['icon'] AND is_string($renderVals['content'])){
-			$image = new SI_Image($renderVals['icon'],$renderVals['content']);
-			$image->addClass('icon');
-			$renderVals['content'] = $image;
-		}
-		$this->start = '<a '.$this->attributesString().'>';
-		$this->end = "</a>\n";
-	}
-}
-
 
 /**
  * Integer data type  
@@ -40,25 +14,39 @@ function __construct($href, $content, $icon = null, $Iconheight = '1.5em', $Icon
  * @copyright (c) 2011, Rubén Schaffer Levine and Luca Lauretta
  * @category Data
  */
-class SD_Action extends SD_ComplexData {
+class SD_ECAction extends SD_ComplexData {
 
-	protected $methodToCall, $action;
+	protected $methodToCall, $action, $ElementContainer;
 
-	function __construct($label = null, $methodToCall, $text, $icon = null, $flags = null, $val = null, $filterCriteria = null){
+	function __construct($label = null, $ElementContainer, $methodToCall, $text, $icon = null, $flags = null, $val = null, $filterCriteria = null){
 
 		$dataPrepare = null;
 		$this->methodToCall = $methodToCall;
 
-		$layout = new SI_Link([$this,'action'], $text,$icon);
-		
+        $this->ElementContainer = $ElementContainer;
+		$layout = new SI_AjaxLink([$this,'action'], $text,$icon);
+
 		parent::__construct($label, $dataPrepare, $layout, $flags, $val, $filterCriteria);
 
 	}
 
 	function action($action = null){
 		if($action){$this->action = $action;}
-		elseif(!$this->action){return SC_Main::$RENDERER->action($this->parent(),$this->methodToCall);}
-		else{return $this->action;}
+		elseif(!$this->action){ 
+            
+            $elementId = $this->parent()->getId() ? $this->parent()->getId() : null;
+
+			if($this->ElementContainer->tagId()){ @$methodVars[] = $this->ElementContainer->tagId();}
+			if($this->ElementContainer->name()){ @$methodVars[] = $this->ElementContainer->name();}
+
+            return
+            SC_Main::$RENDERER->encodeURL(
+                $this->ElementContainer->getClass(),
+                [$this->ElementContainer->element()->getClass(),$elementId],
+                $this->methodToCall,
+                @$methodVars
+            );
+        }else{return $this->action;}
 	}
 
     // function getLayout($method)

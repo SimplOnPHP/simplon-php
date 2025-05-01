@@ -1,22 +1,43 @@
 <?php
 
-use voku\helper\HtmlDomParser;
-
+/*
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
+*/
 class SE_User extends SC_Element
 {	
 	public static $storageChecked;
+
+	protected 
+		$defaultClass,
+		$defaultMethod;
+
 	static 
 		$permissions,
+		$menu,
 		$cantAccessMsg;
 	
 	protected
 		$asesorCreate,
 		$validationAceptedMessage = 'Welcome:',
-		$validationRejectedMessage = "User and Password don't match Please try again";		
+		$validationRejectedMessage = "User and Password don't match Please try again";
+		
+	static
+		$CantAccessMsg,
+		$CantAccessHomeLinkMsg;	
 
-	public function construct($id = null, &$specialDataStorage = null)
+	public function construct($id = null, $storage = null)
 	{
-		static::$cantAccessMsg = SC_Main::L('You can\'t access this page');
+		if($storage){
+			$this->$storage($storage);
+		}
+		
+		static::$CantAccessMsg = SC_Main::L('We\'re sorry, but it looks like you don’t have permission to access this page.
+		If you believe this is an error, please check with your administrator or support team for further assistance.
+		Thank you for your understanding!');
+		static::$CantAccessHomeLinkMsg = SC_Main::L('Click here to go to your home page');
+
 		self::$permissions = array(
 			'admin' => array('*'=>'allow'),
 			'user' => array(
@@ -38,10 +59,10 @@ class SE_User extends SC_Element
 			),
 		);
 
-        $this->id = new SD_NumericId(null); 
-		$this->userName = new SD_String('User','VCUSlRe');
-		$this->password = new SD_Password('Password');
-		$this->fullName = new SD_String('Nombre Completo','SL');
+        $this->id = new SD_AutoIncrementId(null); 
+		$this->userName = new SD_String(SC_Main::L('User'),'VCUSlRe');
+		$this->password = new SD_Password(SC_Main::L('Password'));
+		$this->fullName = new SD_String(SC_Main::L('Full name'),'SL');
 
 		//$this->role = new SD_Hidden('admin','vcuslerf',$_SERVER['REQUEST_URI']);
 		$this->sourceURL = new SD_Hidden(null,'vcuslerf',$_SERVER['REQUEST_URI']);
@@ -52,11 +73,12 @@ class SE_User extends SC_Element
 
 		///////////$role->asureRole('admin');
 
-		$this->userRole = new SD_ElementContainerDropBox($role,'Role',null,'RSL');
+		$this->userRole = new SD_ElementContainer($role,SC_Main::L('Role'),null,'RSL');
+		$this->userRole->layout(new SI_Select());
 		//Needed  to load the options before SE_User is created 
 		//$this->userRole->options();
 
-		$this->processLoginLink = $this->renderer()->action($this,'processLogin');
+///$this->processLoginLink = $this->renderer()->action($this,'processLogin');
 		//$this->logoutLink = $this->renderer()->action($this,'logout');
 
 		// self::$formMethods = parent::$formMethods ;
@@ -181,13 +203,13 @@ class SE_User extends SC_Element
 	
 	function showLogin(){
 
-		$content = new SI_VContainer();
+		$content = new SI_VContainer(null,'c c c');
+		$content->addItem(new SI_Spacer('3rem','3rem'));
 			$picframe = new SI_HContainer([
 				'&nbsp;',
-				new SI_Image('Logo.webp'),
+				new SI_Image('Logo.webp', SC_Main::$App_Name.' logo','300rem'),
 				'&nbsp;']);
-				$picframe->styles('  grid-template-columns: 1fr 4fr 1fr;
-  margin: 2rem 0;');
+
 		$content->addItem($picframe);
 
 
@@ -200,7 +222,8 @@ class SE_User extends SC_Element
 		}
 		$form->addItem(new SI_Submit(SC_MAIN::L('Login')));
 
-		$content->addItem($form);
+		
+		$content->addItem(new SI_HContainer([' ',$form,' ']));
         //return $this->renderer->renderFullPage($content, 'showView', $this, 'showLogin');
 		
 		$page = new SI_systemScreen( $content,'',static::$AdminMsg );
@@ -223,7 +246,7 @@ class SE_User extends SC_Element
 		return parent::processUpdate();
 	}
 
-	public function canEnter(SC_Element $element, string $method = null){
+	public function canEnter( $element, string $method = null){
 
 		$premissions = $this->getPermissions($element, $this->userRole->viewVal(), $method);
 
@@ -301,11 +324,11 @@ class SE_User extends SC_Element
 		$element->datasMode($mode);
 
 		if(
-			isset($element::$permissions[$this->userRole->viewVal()]) &&
-			isset($element::$permissions[$this->userRole->viewVal()][$mode]) &&
-			is_array($element::$permissions[$this->userRole->viewVal()][$mode])
+			isset($element->permissions()[$this->userRole->viewVal()]) &&
+			isset($element->permissions()[$this->userRole->viewVal()][$mode]) &&
+			is_array($element->permissions()[$this->userRole->viewVal()][$mode])
 		){
-			foreach($element::$permissions[$this->userRole->viewVal()][$mode] as $data=>$rule){
+			foreach($element->permissions()[$this->userRole->viewVal()][$mode] as $data=>$rule){
 				//If the rules are for the element itself
 				if(empty($data)){
 					// just ignore because this is checked in the canEnter function
@@ -438,14 +461,21 @@ self::$permissions = array(
  */
 
 
-
-	public function getPermissions(SC_Element $element, $userRole=null,  $method = null){
+	/**
+	 * @param SC_Element|SD_ElementContainer $element
+	 * @param string|null $userRole
+	 * @param string|null $method
+	 */
+	public function getPermissions( $element, $userRole=null,  $method = null){
+		
 		$ret='';
-		$elementPermissions = $element::$permissions;
+		$elementPermissions = $element->permissions();
 		$methodsFamilies = $element::$methodsFamilies;
 		if(!$method){$method = SC_Main::$method;}
 		if(array_key_exists($method, $methodsFamilies)) { $method = $methodsFamilies[$method];}
+		
 		if(!$userRole){$userRole = SC_Main::$PERMISSIONS->OuserRole()->viewVal();}
+
 		if(isset($elementPermissions[$userRole])){
 			if(isset($elementPermissions[$userRole][$method])){
 				$ret = $elementPermissions[$userRole][$method];

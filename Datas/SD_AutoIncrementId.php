@@ -1,5 +1,10 @@
 <?php
 
+/*
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
+*/
 /**
  * NumericId data type
  * 
@@ -9,7 +14,7 @@
  * @copyright (c) 2011, Rubén Schaffer Levine and Luca Lauretta
  * @category Data
  */
-class SD_NumericId extends SD_Id
+class SD_AutoIncrementId extends SD_Id
 {
 	
 	/**

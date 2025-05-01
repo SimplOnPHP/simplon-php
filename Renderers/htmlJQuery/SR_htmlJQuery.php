@@ -1,6 +1,11 @@
 <?php
 
-use voku\helper\HtmlDomParser;
+/*
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
+*/
+//use voku\helper\HtmlDomParser;
 
 class SR_htmlJQuery extends SC_BaseObject {
 
@@ -51,6 +56,8 @@ class SR_htmlJQuery extends SC_BaseObject {
             }elseif(is_string($object)){
                 $class = $object;
                 $clean = 'id';
+            }else{
+ 
             }
 
             if(!empty($message)){ $message = SC_Main::$URL_METHOD_SEPARATOR.SC_Main::$URL_METHOD_SEPARATOR.urlencode($message); }
@@ -92,7 +99,7 @@ class SR_htmlJQuery extends SC_BaseObject {
                     // method
                     $url.= $this->URL_METHOD_SEPARATOR . $method;
                     
-                    // method params
+                    // method params                    
                     if(!empty($method_params) && is_array($method_params)) {
                         $tempArr = array();
                         foreach($method_params as $param){
@@ -102,8 +109,7 @@ class SR_htmlJQuery extends SC_BaseObject {
                     }
                 }
             }
-            $qs = SC_Main::$URL_METHOD_SEPARATOR;
-    
+            
             return $url;
         }
 

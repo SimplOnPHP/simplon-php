@@ -1,14 +1,19 @@
 <?php
 
+/*
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
+*/
 
-
-use voku\helper\HtmlDomParser;
-
-/**
- * Los Items de interfaz SI_Item (Simplon Interface Item) son objetos que representan elementos de la interfaz de usuario.
- * Estos elementos deben ser redefinidos para cada Renderer ya que dependen de este.
- */
 class SI_Input extends SI_Item {
+
+    protected $required = false,
+        $placeHolder = false,
+        $id = false,
+        $name = '',
+        $attributes = array();
+
 
     function __construct( $name, $value='', $type=null, $placeHolder=False, $required=False, $id = False) {
         $this->required = $required;
@@ -24,4 +29,3 @@ class SI_Input extends SI_Item {
         $this->start = "<input {$this->attributesString()} />";
     }
 }
-

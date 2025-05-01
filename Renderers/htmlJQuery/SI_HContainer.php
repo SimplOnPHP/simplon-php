@@ -1,7 +1,10 @@
 <?php
 
-
-use voku\helper\HtmlDomParser;
+/*
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
+*/
 
 /**
  * Los Items de interfaz SI_Item (Simplon Interface Item) son objetos que representan elementos de la interfaz de usuario.
@@ -14,9 +17,9 @@ use voku\helper\HtmlDomParser;
 class SI_HContainer extends SI_Item {
 
     protected
-        $width;
+        $widths;
 
-    function __construct( $content = null, $aligmment = null, $width = null )
+    function __construct( $content = null, $aligmment = null, $widths = null )
     {
         $this->addStylesToAutoCSS('
         .SI_HContainer {
@@ -28,7 +31,7 @@ class SI_HContainer extends SI_Item {
         }');
 
         $this->aligmment = $aligmment;
-        if($width){$this->addAttribute('style',"grid-template-columns: $width;");}
+        if($widths){$this->addAttribute('style',"grid-template-columns: $widths;");}
         $this->addClass('SI_HContainer');
         $this->content = $content;
     }

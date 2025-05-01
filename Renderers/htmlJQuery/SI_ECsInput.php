@@ -10,7 +10,7 @@ https://simplonphp.org/Sow-PeaceLicense.txt
  * Los Items de interfaz SI_Item (Simplon Interface Item) son objetos que representan elementos de la interfaz de usuario.
  * Estos elementos deben ser redefinidos para cada Renderer ya que dependen de este.
  */
-class SI_ECInput extends SI_Input {
+class SI_ECsInput extends SI_Input {
 
     protected $elementConteiner;
 
@@ -30,14 +30,14 @@ class SI_ECInput extends SI_Input {
         $tagId=substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
 
         if($this->elementConteiner->allowCreateButton()){
-            $createAction = SC_Main::$RENDERER->encodeURL($this->elementConteiner->getClass(), [$renderVals['element']->getClass()],'showElementCreate',[$tagId]);
+            $createAction = SC_Main::$RENDERER->encodeURL($this->elementConteiner->getClass(), [$renderVals['element']->getClass()],'showElementCreate',[$tagId,$renderVals['elementConteiner']->name()]);
             $create = new SI_Modal($createAction, $renderVals['elementConteiner']->CreateMsg(),'addIcon.svg');
         }else{
             $create = '';
         }
 
         if($this->elementConteiner->checkPermissions($this->elementConteiner->element(),'showList')){
-            $selectAction = SC_Main::$RENDERER->encodeURL($this->elementConteiner->getClass(), [$renderVals['element']->getClass()],'showElementSelect',[$tagId]);
+            $selectAction = SC_Main::$RENDERER->encodeURL($this->elementConteiner->getClass(), [$renderVals['element']->getClass()],'showElementSelect',[$tagId,$renderVals['elementConteiner']->name()]);
             $select = new SI_Modal($selectAction, $renderVals['elementConteiner']->selectMsg(),'selectIcon.svg');
         }else{
             $select = '';
@@ -53,14 +53,8 @@ class SI_ECInput extends SI_Input {
             //$view = SC_Main::L('Create or select a '.$this->elementConteiner->element()->name());
             $view = $this->value;
         }
-       
-        $input = new SI_Input($this->elementConteiner->name(),$this->elementConteiner->val(),'hidden');
-        $input->addClass('value');
 
-
-
-
-        $this->start = new SI_HContainer([$create,$input.$select,@$view],null,'1rem 1rem auto');
+        $this->start = new SI_HContainer([$create,$select,@$view],null,'1rem 1rem auto');
         $this->start->addAttribute('id',$tagId);
         $this->end = '';	
        // $this->end = $action;	

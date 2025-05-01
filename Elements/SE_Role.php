@@ -1,5 +1,10 @@
 <?php
 
+/*
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
+*/
 class SE_Role extends SC_Element
 {	
 	static
@@ -32,7 +37,7 @@ class SE_Role extends SC_Element
 	);
 
 	public function construct($id = null, &$specialDataStorage = null){
-        $this->id = new SD_NumericId(); 
+        $this->id = new SD_AutoIncrementId(); 
 		$this->roleName = new SD_String('Rol','S');
 	}
 

@@ -1,10 +1,10 @@
 <?php
-/*
-	Copyright © 2024 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
-	
-	This file is part of “SimplOn PHP” a Data Oriented Aproach free software development framework: you can redistribute it and/or modify it under the terms of the MIT License.
-*/
 
+/*
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
+*/
 
 /**
  * Object to add Geters, Seters and other desired functionality to all SimplOn objects

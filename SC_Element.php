@@ -1,8 +1,9 @@
 <?php
+
 /*
-	Copyright © 2024 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
-	
-	This file is part of “SimplOn PHP” a Data Oriented Aproach free software development framework: you can redistribute it and/or modify it under the terms of the MIT License.
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
 */
 
 /*
@@ -281,8 +282,6 @@ class SC_Element extends SC_BaseObject {
 		else
 		$this->storage($this->getClass());
 
-
-		
 		$this->renderer = SC_Main::$RENDERER;
 
 		//Assings the storage element for the SimplonElement. (a global one : or a particular one)
@@ -346,8 +345,6 @@ class SC_Element extends SC_BaseObject {
 		// 	&& (SC_Main::$PERMISSIONS !== $this)
 		// 	&& ( !in_array($this,SC_Main::$PERMISSIONS::$excentObjects) )
 		// 	){ 
-		// // sd($this);
-		// // sd( SC_Main::$PERMISSIONS->excentObjects() );
 		// 		SC_Main::$PERMISSIONS->setValuesByPermissions($this, '' );
 		// 	}
 
@@ -367,7 +364,9 @@ class SC_Element extends SC_BaseObject {
 		return $ret;
 	}
 
-
+	function permissions(){
+		return static::$permissions;
+	}
 
 	/**
 	 * User defined constructor, called within {@link __constructor()},
@@ -512,15 +511,17 @@ class SC_Element extends SC_BaseObject {
 	 */
 	public function fillFromRequest() {
 		if ($_REQUEST) {	
-			try{$this->fillFromArray($_REQUEST);}catch(SC_ElementValidationException $ev){}
-			
+						
 			if(!empty($_FILES)){
 				foreach ($_FILES as $key => $value) {
 					if ( $this->$key instanceof SD_File && is_array($value) ) {
-						$this->$key->val($value);
+						$_REQUEST[$key] = $value;
 					}
 				}
 			}
+			try{$this->fillFromArray($_REQUEST);}catch(SC_ElementValidationException $ev){}
+
+
 			return;
 		} else {
 			return false;
@@ -554,7 +555,7 @@ class SC_Element extends SC_BaseObject {
 			$dataArray = $this->dataStorage->readElement($this);
 			try{$this->fillFromArray($dataArray);}catch(SC_ElementValidationException $ev){}
 		} else {
-			throw new SC_Exception('The object of class: ' . $this->getClass() . " has no id so it can't be filled using method fillElementById");
+			throw new SC_Exception('The object of class: ' . $this->getClass() . " has no id so it can't be filled using method fillFromDSById");
 		}
 	}
 
@@ -686,7 +687,7 @@ class SC_Element extends SC_BaseObject {
 		
 		$content->addItem($form);
 
-		$page = new SI_systemScreen($content,SC_Main::$PERMISSIONS->menu(),SC_Main::L(static::$CreateBtnMsg) );
+		$page = new SI_systemScreen($content,SC_Main::L(static::$CreateBtnMsg) );
 		return $page;
 
 	}
@@ -728,11 +729,10 @@ class SC_Element extends SC_BaseObject {
 	function showNoAccess() {
 
 		$content = new SI_VContainer();
-		$content->addItem(new SI_Title(static::$CantAccessMsg,4));
+		$content->addItem(new SI_Title( SC_Main::$PERMISSIONS::$CantAccessMsg,4));
 		$content->addItem(new SI_Link( SC_Main::$PERMISSIONS->defaultAction(),SC_Main::L(SC_Main::$PERMISSIONS::$CantAccessHomeLinkMsg )));
 		
-
-		$page = new SI_systemScreen($content,SC_Main::$PERMISSIONS->menu(),SC_Main::L(SC_Main::$PERMISSIONS::$CantAccessMsg) );
+		$page = new SI_systemScreen($content,SC_Main::L(SC_Main::$PERMISSIONS::$CantAccessMsg) );
 		return $page;
 	}
 
@@ -771,7 +771,7 @@ class SC_Element extends SC_BaseObject {
 		}
 		try {
 			if ($this->create()) {
-					return $this->makeAppendSelection();
+					return $this->makeChangeSelection();
 			} else {
 				// @todo: error handling
 				user_error(static::$CreateError, E_USER_ERROR);
@@ -856,20 +856,6 @@ class SC_Element extends SC_BaseObject {
 		return $ret;
 	}	
 
-	function showEmbededAppendInput($template = null, $partOnly = false,$action=null,$nextStep=null){
-
-		//$ret = $this->renderer->render($this,'showEmbededUpdateInput',$template,$partOnly,$action);
-		$ret = $this->renderer->render($this,'showEmbededAppendInput', null,$template, $action);
-		$canEdit = true;
-		
-		if($canEdit == false){
-			//$ret = \phpQuery::newDocumentHTML($ret);
-			//$ret['.SimplOn.actions .UpdateSelect']->remove();
-			//$ret = $ret->htmlOuter();
-		}
-		return $ret;
-	}
-
 	function showEmbededSearchInput($template = null, $partOnly = false,$action=null,$nextStep=null){
 
 		//$ret = $this->renderer->render($this,'showEmbededUpdateInput',$template,$partOnly,$action);
@@ -895,25 +881,19 @@ class SC_Element extends SC_BaseObject {
 			$content->addItem(new SI_HContainer([$data->label().':',$data->showView()],'r l','minmax(7rem, 1fr) 10fr'));
 		}
 
-		$page = new SI_systemScreen($content,SC_Main::$PERMISSIONS->menu(),static::$ViewMsg );
+		$page = new SI_systemScreen($content,static::$ViewMsg );
 		SC_Main::render($page);
 
 	}
 
-	function showEmebeded(){
+	function showEmbeded(){
 		$this->fillFromDSById();
 
-
-		$content = new SI_VContainer();
-		$content->addItem(new SI_Divider(static::$ViewMsg,5));
-
 		foreach($this->datasWith('embeded','objects') as $data){
-			$content->addItem(new SI_HContainer([$data->label().':',$data->showEmbeded()],'r l','minmax(7rem, 1fr) 10fr'));
+			@$ret .= $data->showEmbeded().' ';
 		}
 
-		$page = new SI_systemScreen($content,SC_Main::$PERMISSIONS->menu(),static::$ViewMsg );
-		SC_Main::render($page);
-
+		return $ret;
 	}
 
 	
@@ -923,7 +903,7 @@ class SC_Element extends SC_BaseObject {
 	function showUpdate(){
 
 		$content = new SI_VContainer();
-		$content->addItem(new SI_Title(static::$updateMsg,4));
+		$content->addItem(new SI_Title(static::$UpdateMsg,4));
 		
 		$form = new SI_Form($this->datasWith('update','show'), SC_Main::$RENDERER->action($this,'processupdate'));
 
@@ -934,7 +914,10 @@ class SC_Element extends SC_BaseObject {
 		
 		$content->addItem($form);
 
-		$page = new SI_systemScreen($content,SC_Main::$PERMISSIONS->menu(),SC_Main::L(static::$UpdateBtnMsg) );
+		//SC_Main::$PERMISSIONS->menu();
+
+		$page = new SI_systemScreen($content,SC_Main::L(static::$UpdateBtnMsg) );
+		
 		return $page;
 	}
 
@@ -1044,7 +1027,7 @@ class SC_Element extends SC_BaseObject {
 			$form->addItem( new SI_CancelButton() );
 		$content->addItem($form);
 
-		$page = new SI_systemScreen($content,SC_Main::$PERMISSIONS->menu(),SC_Main::L(static::$ViewMsg) );
+		$page = new SI_systemScreen($content,SC_Main::L(static::$ViewMsg) );
 		SC_Main::render($page);
 		
 	}
@@ -1203,7 +1186,7 @@ class SC_Element extends SC_BaseObject {
 		$this->fillFromRequest();
 
 		$content = new SI_VContainer();
-		$content->addItem(new SI_Link(SC_Main::$RENDERER->action($this,'showCreate'), static::$CreateMsg,'addIcon.webp'));
+		$content->addItem(new SI_Link(SC_Main::$RENDERER->action($this,'showCreate'), static::$CreateMsg,'addIcon.svg'));
 
 		$content->addItem(new SI_Divider(new SI_Title(static::$SearchMsg,5)));
 
@@ -1216,9 +1199,9 @@ class SC_Element extends SC_BaseObject {
 			$elements = $this->dataStorage->readElements($this, 'Elements');
 
 				$dataPrepare = function(){
-					$viewAction = new SD_Action('view action','showView',SC_Main::L('View'),'viewIcon.webp');
-					$updateAction = new SD_Action('update action','showUpdate',SC_Main::L('Update'),'editIcon.webp');
-					$deleteAction = new SD_Action('delete action','showDelete',SC_Main::L('Delete'),'deleteIcon.webp');
+					$viewAction = new SD_Action('view action','showView',SC_Main::L('View'),'viewIcon.svg');
+					$updateAction = new SD_Action('update action','showUpdate',SC_Main::L('Update'),'editIcon.svg');
+					$deleteAction = new SD_Action('delete action','showDelete',SC_Main::L('Delete'),'deleteIcon.svg');
 						
 					
 					$viewAction->parent($this->parent());
@@ -1236,7 +1219,7 @@ class SC_Element extends SC_BaseObject {
 
 		//$menu = new SI_SystemMenu();
 		//$menu->addItem(new SI_Link(SC_Main::$RENDERER->action($this,'showSearch'), static::$SearchMsg));
-		$page = new SI_systemScreen( $content,SC_Main::$PERMISSIONS->menu(),static::$AdminMsg );
+		$page = new SI_systemScreen( $content,static::$AdminMsg );
 		return $page;
 	}
 
@@ -1316,7 +1299,7 @@ class SC_Element extends SC_BaseObject {
 	 */
 	function getLabelsAndNames(){
 		$data = 'SD_ata';
-		$numId = 'SD_NumericId';
+		$numId = 'SD_AutoIncrementId';
 		$labels = array();
 		$dataNames = array();
 		foreach ($this as $name => $dataObj) {
@@ -1344,7 +1327,7 @@ class SC_Element extends SC_BaseObject {
 	 * @return array
 	 */
 	function storeAllFlags() {
-		$type = 'SD_NumericId';
+		$type = 'SD_AutoIncrementId';
 		$flagsName = array();
 		$flagsStatus = array();
 		foreach ($this->dataAttributes() as $dataName) {
@@ -1374,7 +1357,7 @@ class SC_Element extends SC_BaseObject {
 	 */
 
 	function changeCurrentFlags($chosenDatas = array(), $flag, $status = true) {
-		$type = 'SD_NumericId';
+		$type = 'SD_AutoIncrementId';
 		if (isset($chosenDatas)) {
 			foreach ($chosenDatas as $data){
 				if(method_exists($this,$flag))
@@ -1519,7 +1502,7 @@ class SC_Element extends SC_BaseObject {
 	 */
 	public function assignDatasName() {
 		foreach ($this as $name => $data) {
-			if (($data instanceof SD_Data) && !$data->name()) {
+			if (($data instanceof SD_Data) && empty($data->name())) {
 				$data->name($name);
 			}
 		}
@@ -1626,7 +1609,7 @@ class SC_Element extends SC_BaseObject {
 		echo json_encode($return);
 	}
 
-	function makeAppendSelection(){
+	function makeChangeSelection(){
 		$return = array(
 			'status' => true,
 			'type' => 'commands',

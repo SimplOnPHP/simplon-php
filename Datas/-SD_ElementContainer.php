@@ -1,20 +1,8 @@
 <?php
 /*
-	Copyright © 2011 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
-	
-	This file is part of “SimplOn PHP”.
-	
-	“SimplOn PHP” is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation version 3 of the License.
-	
-	“SimplOn PHP” is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License
-	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
 */
 
 
@@ -25,7 +13,7 @@
  * 
  * @author RSL
  */
-class SD_ElementContainer extends SD_Data {
+class -SD_ElementContainer extends SD_Data {
 	protected 
 		/**
 		 * Logic parent
@@ -120,7 +108,7 @@ class SD_ElementContainer extends SD_Data {
 
 	public function viewVal() {
 		if( $this->element->getId() != $this->val() ){
-			$this->element->fillElementById($this->val());
+			$this->element->fillFromDSById($this->val());
 		}
 		return $this->element->showEmbededStrip();
 	}

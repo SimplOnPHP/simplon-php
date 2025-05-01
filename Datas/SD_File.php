@@ -1,20 +1,8 @@
 <?php
 /*
-	Copyright © 2011 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
-	
-	This file is part of “SimplOn PHP”.
-	
-	“SimplOn PHP” is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation version 3 of the License.
-	
-	“SimplOn PHP” is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License
-	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
 */
 
 class SD_File extends SD_String {
@@ -23,8 +11,14 @@ class SD_File extends SD_String {
 		$path = null,
 		$fileName = null;
 
+		public function __construct($path = './files', $label=null, $flags=null, $val=null, $filterCriteria=null)
+		{
+			$this->path($path);
+			parent::__construct($label, $flags, $val, $filterCriteria);
+		}
 
 		function val($val = null) {
+			
 			if(!empty($val)){
 				// Check if it's an array, meaning it's likely from $_FILES (an upload)
 				// name: 'graph.png'
@@ -57,6 +51,25 @@ class SD_File extends SD_String {
 			}
 		}
 
+		public function fileName($fileName = null) {
+			if ($fileName !== null) {
+				$this->fileName = $fileName;
+			} else {
+				if ($this->fileName === null && !empty($this->val)) {
+					// Extract filename from the path stored in val
+					$pathParts = explode(DIRECTORY_SEPARATOR, $this->val);
+					$this->fileName = end($pathParts);
+				}
+				return $this->fileName;
+			}
+		}	
+
+		public function doUpdate(){
+			return ($this->update())
+				? array(array($this->name(),$this->getClass(),$this->val()))
+				: null;
+		}
+
 		// function downloadVal(){
 		// 	return $this->downloadPath().DIRECTORY_SEPARATOR.$this->fileName();
 		// }
@@ -81,5 +94,63 @@ class SD_File extends SD_String {
 			}
 		}
 
+		public function showCreate() {
+			if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
+			}else{
+				$input = new SI_FileBox($this->name(), '',  $this->label(), $this->required(), $this->ObjectId());	
+			}
+			$inputBox = new (SC_Main::$RENDERER::$InputBox_type)($input, $this->label());
+			return $inputBox;
+		}
+			
+		public function showUpdate() {
+			if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
+			}elseif($this->val()){
+				$input = $this->viewVal();
+
+				$input = new class($this->name(), $this->viewVal(), 'file', $this->label(), $this->required(), $this->ObjectId()) extends SI_Input {	
+					function setTagsVals($renderVals = null) {
+						$href = $this->getAttribute('value');
+						$name = basename($href);
+						$link = new SI_Link($href, $name);
+						$classTag= substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
+						$link->addClass($classTag);
+
+						$showInputLink = new SI_Link('#', 'Show', 'removeIcon.svg');
+						$showInputLink->addClass($classTag);
+
+						$showInputLink->addAttribute('onclick',"$('.$classTag').hide(); $('.".$classTag."2').show();");
+
+
+						$input = new SI_FileBox($this->name(), $this->getAttribute('value'), $this->placeHolder(), $this->required(), $this->ObjectId());
+						$input->addClass('hidden');
+						$input->addClass($classTag.'2');
+						$hideInputLink = new SI_Link('#', 'return', 'return.svg');
+						$hideInputLink->addClass('hidden');
+						$hideInputLink->addClass($classTag.'2');
+						$hideInputLink->addAttribute('onclick',"$('.$classTag').show(); $('.".$classTag."2').hide();");
+
+
+						$this->start = $link.$showInputLink.$input.$hideInputLink;
+					}
+				};
+			}else{
+				$input = new SI_FileBox($this->name(), $this->val(), $this->label(), $this->required(), $this->ObjectId());
+			}
+
+			$inputBox = new (SC_Main::$RENDERER::$InputBox_type)($input, $this->label());
+			return $inputBox;
+		}
+	
+		public function showDelete() {}
+	
+		public function showSearch() {
+			if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
+			}else{	
+				$input = new SI_Input($this->name(), $this->val(), null, $this->label(), null, $this->ObjectId());
+			}
+			$inputBox = new (SC_Main::$RENDERER::$InputBox_type)($input, $this->label());
+			return $inputBox;
+		}
 }
 

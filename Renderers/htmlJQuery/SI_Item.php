@@ -1,8 +1,10 @@
 <?php
 
-
-
-use voku\helper\HtmlDomParser;
+/*
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
+*/
 
 /**
  * Los Items de interfaz SI_Item (Simplon Interface Item) son objetos que representan elementos de la interfaz de usuario.
@@ -16,12 +18,14 @@ class SI_Item extends SC_BaseObject {
 
     protected
         // $doe, //Datta or Element
+        $SI_Item = null,
         $start = null,
         $end = null,
         $itemStart = null,
         $itemEnd = null,
         $object = null,     //The object to wich the interface item bellongs normally an element or data
         $content = null,
+        $tag = 'div',
 
         $styles = null,     
         
@@ -38,7 +42,11 @@ class SI_Item extends SC_BaseObject {
     }
 
     function getAttribute($attribute){
-        return $this->attributes[$attribute];
+        if(is_array(@$this->attributes[$attribute]) AND sizeof(@$this->attributes[$attribute]) == 2 AND @$this->attributes[$attribute][0] instanceof SC_BaseObject AND is_string( @$this->attributes[$attribute][1] )){
+            return @$this->attributes[$attribute]();
+        }else{
+            return @$this->attributes[$attribute];
+        }
     }
 
     function removeAttribute($name){
@@ -47,29 +55,30 @@ class SI_Item extends SC_BaseObject {
 
 
     function addClass($class){
-        @$this->attributes['class'] .= ' '.$class;
+        @$this->attributes['class'] .= $class.' ';
     }
 
     function attributesString(){
         $attributes = [];
         foreach ($this->attributes as $key => $value) {
-            //$attrValue = is_callable($value) ? $value() : $value;
-            $attrValue = $value;
-            @$ret .= $key.'="'.$attrValue.'" ';
+
+            $attrValue = $this->getAttribute($key);
+
+            @$ret .= $key.'="'.trim($attrValue).'" ';
         }
         if(@$this->required){ $ret .= ' required ';}
         return @$ret;
     }
 
     function setTagsVals($renderVals = null){ 
-        $this->start = "<div {$this->attributesString()} >\n";
-        $this->end = "</div>\n";
+        $this->start = "<{$this->tag()} {$this->attributesString()} >\n";
+        $this->end = "</{$this->tag()}>\n";
         // $this->itemStart = ;
         // $this->itemEnd = ;
         // $this->object = ;
     }
 
-    function __construct($content, $class = null){
+    function __construct($content = null, $class = null){
         $this->content = $content; 
         $this->class = $class;
     }
@@ -97,23 +106,28 @@ class SI_Item extends SC_BaseObject {
         }
     }
 
-    function html() {        
+    function html() {       
         $vals = $this->getRenderVals();
-        $innerHTML = '';
-        if(is_array($vals['content'])){
-            foreach($vals['content'] as $item){
-                if(is_string($item)){
-                    $innerHTML .= $this->itemStart.$item.$this->itemEnd;
-                }elseif($item instanceof SI_Item){
-                    $innerHTML .= $this->itemStart.$item->html().$this->itemEnd;
+        if(empty($vals['SI_Item'])){
+            $innerHTML = '';
+            if(is_array($vals['content'])){
+                foreach($vals['content'] as $item){
+                    if(is_string($item)){
+                        $innerHTML .= $this->itemStart.$item.$this->itemEnd;
+                    }elseif($item instanceof SI_Item){
+                        $innerHTML .= $this->itemStart.$item->html().$this->itemEnd;
+                    }
                 }
-            }
-        }else{ $innerHTML = $vals['content']; }
-        return $this->start.$innerHTML.$this->end;
+            }else{ $innerHTML = $vals['content']; }
+            return $this->start.$innerHTML.$this->end;
+        }else{
+            return $vals['SI_Item']->html();
+        }
+
     }
 
     function addItem($item){
-        if(is_array($this->content)){
+        if(is_array($this->content) OR empty($this->content)){
             $this->content[] = $item;
         }else{
             $this->content = [$this->content, $item];
@@ -123,7 +137,8 @@ class SI_Item extends SC_BaseObject {
     function getRenderVals(){
         $ret = [];
         foreach($this as $atribute => $value){
-            if($atribute != 'attributes'  AND is_array($value) AND sizeof($value) == 2 AND $value[0] instanceof SC_BaseObject AND is_string( $value[1] )){
+
+            if($atribute != 'attributes'  AND is_array($value) AND sizeof($value) == 2 AND @$value[0] instanceof SC_BaseObject AND is_string( @$value[1] )){
                 if($this->object instanceof SC_BaseObject){ $value[0] = $this->object; }
                 $ret[$atribute] = $value();
             }else{

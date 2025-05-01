@@ -1,6 +1,12 @@
 <?php
 
 
+/*
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
+*/
+
 class SI_Table extends SI_Item {
 
     function __construct( $content = null, $extraColumns = [], $method = null, $rowTitle = null) {
@@ -109,7 +115,7 @@ class SI_Table extends SI_Item {
             return $ret;
         }
 
-        $ret = "\n\n".'<div '.$this->getAttributes().'>
+        $ret = "\n\n".'<div '.$this->attributesString().'>
                 <div class="rows">'."\n";
         if($this->method){
             $ret .= $this->elementToHeader();
@@ -173,11 +179,10 @@ class SI_Table extends SI_Item {
 
         return $ret;
     }
-
     
     function setRenderVals(){
         foreach($this as $atribute => $value){
-            if(is_array($value) AND sizeof($value) == 2 AND  $value[0] instanceof SC_BaseObject AND is_string( $value[1] )){
+            if(is_array($value) AND sizeof($value) == 2 AND  @$value[0] instanceof SC_BaseObject AND is_string( @$value[1] )){
                 if($this->object instanceof SC_BaseObject){ $value[0] = $this->object; }
                 $this->$atribute = $value();
             }

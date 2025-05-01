@@ -1,7 +1,16 @@
 <?php
 
-class SI_Select extends SI_Input {
-    //private $placeHolder;
+/*
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
+*/
+
+class SI_Select extends SI_Options {
+
+    protected
+        $options,
+        $selected;
 
     function __construct($options = array(), $name = '', $selected = null, $required = False, $id = false, $placeHolder  = '') {
         $this->options = $options;
@@ -19,6 +28,7 @@ class SI_Select extends SI_Input {
     }
 
     function setTagsVals($renderVals = null) {
+        
         $this->start = "<select {$this->attributesString()}>";
         $this->end = "</select>";
 
@@ -28,6 +38,7 @@ class SI_Select extends SI_Input {
         }
         foreach($renderVals['options'] as $value => $text) {
             $selectedAttr = ($value == $renderVals['selected']) ? 'selected' : '';
+            $this->addAttribute('value',$value);
             $content .= "<option {$this->attributesString()} $selectedAttr>$text</option>";
         }
         

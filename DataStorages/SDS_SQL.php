@@ -1,20 +1,8 @@
 <?php
 /*
-	Copyright © 2011 Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
-	
-	This file is part of “SimplOn PHP”.
-	
-	“SimplOn PHP” is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation version 3 of the License.
-	
-	“SimplOn PHP” is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License
-	along with “SimplOn PHP”.  If not, see <http://www.gnu.org/licenses/>.
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
 */
 
 abstract class SDS_SQL extends SDS_DataStorage
@@ -23,7 +11,7 @@ abstract class SDS_SQL extends SDS_DataStorage
 	public $db;
 	
 	static $typesMap = array(
-		'SD_NumericId'		=> 'int(11) auto_increment',
+		'SD_AutoIncrementId'		=> 'int(11) auto_increment',
 		'SD_StringId'    	=> 'varchar(240)',
         
 		'SD_Integer'   	=> 'int(11)',
@@ -36,7 +24,9 @@ abstract class SDS_SQL extends SDS_DataStorage
 		'SD_String'    	=> 'varchar(240)',
 				
 		'SD_Text'      => 'text',
+		'SD_DArray'      => 'text',
 		'SD_ElementContainer' => '_ForeignKey_',
+		'SD_ElementsContainer' => '_ForeignKey_'
 	);
 	
 	static $operandsMap = array(
@@ -117,6 +107,7 @@ abstract class SDS_SQL extends SDS_DataStorage
 		$elementDataKeys = array_keys($elementData);
 		
 		$alters = array();
+
 		
 		foreach($this->db->query('SHOW COLUMNS FROM `'.$element->storage().'`')->fetchAll() as $dbColumn){
 			if(!in_array($dbColumn['Field'], $elementDataKeys)) {
@@ -128,13 +119,16 @@ abstract class SDS_SQL extends SDS_DataStorage
 		}
 
 		foreach($this->db->query('SHOW INDEXES FROM `'.$element->storage().'`')->fetchAll() as $dbIndex){
-			//if( $dbIndex['Column_name']!=$element->fieldId() && !$element->{'O'.$dbIndex['Column_name']}()->search() ) {
-				// DROP INDEX
-				$alters[] = 'DROP INDEX `'.$dbIndex['Key_name'].'`';
-				/*
-			} else {
-				$dbIndexes[$dbColumn['Column_name']] = $dbIndex;
-			}*/
+	
+			$alters[] = 'DROP INDEX `'.$dbIndex['Key_name'].'`';
+
+			// if( $dbIndex['Column_name']!=$element->fieldId() && !$element->{'O'.$dbIndex['Column_name']}()->search() ) {
+			// 	// DROP INDEX
+			// 	$alters[] = 'DROP INDEX `'.$dbIndex['Key_name'].'`';		
+			// } else {
+			// 	$Column_name = $dbIndex['Column_name'];
+			// 	$dbIndexes[$Column_name] = $dbIndex;
+			// }
 		}
 
 		$dbColumnsKeys = array_keys($dbColumns);

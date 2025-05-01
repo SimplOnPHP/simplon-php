@@ -1,5 +1,10 @@
 <?php
 
+/*
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
+*/
 
 use \SC_Main as SC_Main;
 
@@ -19,12 +24,11 @@ abstract class SI_TemplateItem extends SI_Item {
         $template = null;
 
     function __construct($content)
-    {
-        
-        $this->template = HtmlDomParser::file_get_html($this->getTemplatePath());
-        $this->getStylesAndScriptsLinks();
-        $this->addStylesTagsToAutoCSS();
+    { 
+        $this->template = HtmlDomParser::file_get_html($this->getTemplatePath()); 
         $this->content = $content;
+        $this->getStylesAndScriptsLinks();
+        $this->addCSSandJSLinksToTemplate();
     }
 
     function html() {
@@ -46,10 +50,14 @@ abstract class SI_TemplateItem extends SI_Item {
                 }
                 return $ret;
             },
-           str_replace('&#13;', '', $this->template->html())
+            str_replace('&#13;', '', $this->template->html())
             
         );
 
+        $this->addStylesTagsToAutoCSS();
+        $this->getStylesAndScriptsLinks();
+
+        
         return $html;
     }
 
@@ -74,7 +82,7 @@ abstract class SI_TemplateItem extends SI_Item {
             $headInnerHtml='';
             // Add new stylesheet links
              $headInnerHtml .= "\n";
-            foreach (self::$cssfiles as $cssfile) {
+            foreach (static::$cssfiles as $cssfile) {
                 
                 if (substr($cssfile, 0, 4) == 'http' && substr($cssfile, -4) == '.css') {
                     $headInnerHtml .= '<link rel="stylesheet" href="' . $cssfile . '" />'. "\n";
@@ -87,7 +95,10 @@ abstract class SI_TemplateItem extends SI_Item {
                 $element->outertext = '';
             }
             // Add new script tags
-            foreach (self::$jsfiles as $jsfile) {
+            
+            ksort(static::$jsfiles);
+            static::$jsfiles = array_unique(static::$jsfiles);
+            foreach (static::$jsfiles as $jsfile) {
                 if (substr($jsfile, 0, 4) == 'http' && substr($jsfile, -3) == '.js') {
                     $headInnerHtml .= '<script type="text/javascript" src="' . $jsfile . '"></script>' . "\n";
                 } else {
@@ -102,10 +113,10 @@ abstract class SI_TemplateItem extends SI_Item {
 
     function getStylesAndScriptsLinks($dom = null){
 
-        
         if(!$dom){$dom = $this->template;}
+
         // get head the CSS Links
-        foreach ($dom->find('head link[rel="stylesheet"]') as $domLink) {
+        foreach ($dom->find('head link[rel="stylesheet"]') as $domLink) {    
             // Get the href attribute of each link
             $link = $domLink->href;
             if(substr($link, 0, 4) == 'http' && substr($link, -4) == '.css'){ SI_Item::$cssfiles[$link]=$link; }
@@ -116,7 +127,7 @@ abstract class SI_TemplateItem extends SI_Item {
            $link = $domLink->src;
            if(substr($link, 0, 4) == 'http' && substr($link, -3) == '.js'){ SI_Item::$jsfiles[$link]=$link; }
            elseif(substr($link, -3) == '.js'){SI_Item::$jsfiles[basename($link)]=$link;}
-        }
+        }        
     }
 
     function addStylesTagsToAutoCSS($dom = null){

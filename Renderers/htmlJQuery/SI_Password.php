@@ -1,5 +1,11 @@
 <?php
 
+/*
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
+*/
+
 class SI_Password extends SI_Input {
     
     function __construct($name, $value='', $placeHolder='(not changed)', $required=false, $id=false) {
@@ -24,20 +30,21 @@ class SI_Password extends SI_Input {
     }
 
     function setTagsVals($renderVals = null) {
+
         $required = $renderVals['required'] ? "required" : "";
         $htmlId = $this->instanceId();
-        $name = $renderVals['name'];
-        $placeholder = $renderVals['placeHolder'];
+        $name = $this->getAttribute('name');
+        $placeholder = $this->getAttribute('placeHolder');
 
 
-        $input = new SI_Input($name, $renderVals['value'], 'password', $placeholder, $required, $htmlId);
+        $input = new SI_Input($name, @$renderVals['value'], 'password', $placeholder, $required, $htmlId);
 
-        $seeImage =  new SI_Image('see.svg', 'Toggle password visibility');
+        $seeImage =  new SI_Image('viewIcon.svg', 'Toggle password visibility');
         $seeImage->addClass("$htmlId");
         $dontSeeImage =  new SI_Image('dontSee.svg', 'Toggle password visibility');
         $dontSeeImage->addClass("$htmlId");
-        $seeImage->addAttribute('onclick','togglePasswordVisibility("'.$htmlId.'")');
-        $dontSeeImage->addAttribute('onclick','togglePasswordVisibility("'.$htmlId.'")');
+        $seeImage->addAttribute('onclick',"togglePasswordVisibility('$htmlId')");
+        $dontSeeImage->addAttribute('onclick',"togglePasswordVisibility('$htmlId')");
 
         $this->start = new SI_HContainer([
             $input, 

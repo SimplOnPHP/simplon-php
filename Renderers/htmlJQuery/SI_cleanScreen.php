@@ -1,6 +1,11 @@
 <?php
 
 
+/*
+Sow Peace License (MIT-Compatible with Attribution Visit)
+Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
+https://simplonphp.org/Sow-PeaceLicense.txt
+*/
 use \SC_Main as SC_Main;
 
 use voku\helper\HtmlDomParser;
