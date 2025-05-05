@@ -1,5 +1,4 @@
 <?php
-
 /**
  * -----------------------------------------------------------------------------------------
  * Based on `https://github.com/mecha-cms/mecha-cms/blob/master/system/kernel/converter.php`

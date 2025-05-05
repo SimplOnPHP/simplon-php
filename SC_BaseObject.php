@@ -1,5 +1,4 @@
 <?php
-
 /*
 Sow Peace License (MIT-Compatible with Attribution Visit)
 Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
@@ -7,8 +6,19 @@ https://simplonphp.org/Sow-PeaceLicense.txt
 */
 
 /**
- * Object to add Geters, Seters and other desired functionality to all SimplOn objects
+ * Provides base functionality for all SimplOn classes.
  *
+ * This class offers common utilities like:
+ * - Retrieving class name information (full name, prefix, words).
+ * - Introspecting methods and attributes.
+ * - Automatic getter and setter generation via the magic __call method for both
+ *   instance and static properties.
+ * - Checking for the existence of attributes and properties.
+ * - Clearing property values.
+ * - Generating unique instance identifiers for UI linking.
+ *
+ * @version 1b.1.0
+ * @package SimplOn\Core
  * @author RSL
  */
 class SC_BaseObject
@@ -16,7 +26,7 @@ class SC_BaseObject
 	/**
 	 * Returns the object's class
 	 *
-	 * @return string Class of the object
+	 * @return string The short class name of the object instance.
 	 */
 	public function getClass()
 	{
@@ -26,9 +36,12 @@ class SC_BaseObject
 	
 	
 	/**
-	 * Returns the object's class without the prefixes AE_, SC_, SE_, SD_, AD_, etc.
+	 * Returns the object's class name as space-separated words.
+	 * By default, it removes common SimplOn prefixes (AE_, SC_, SE_, SD_, AD_, etc.).
+	 * For example, 'SC_MyExampleClass' becomes 'My Example Class'. Usefull to get human readable names.
 	 *
-	 * @return string Class of the object without the prefixes AE_, SC_, SE_, SD_, AD_, etc.
+	 * @param bool $getPrefix Optional. If true, the prefix is included in the output (e.g., 'SC_ My Example Class'). Defaults to false.
+	 * @return string The class name formatted as space-separated words, potentially including the prefix.
 	 */
 	public function getClassWords($getPrefix = false)
 	{
@@ -39,9 +52,9 @@ class SC_BaseObject
 	}
 
 	/**
-	 * Returns the object's class  prefixes AE, SC, SE, SD, AD, etc.
+	 * Returns the object's class name without the first two characters.
 	 *
-	 * @return string Class prefix AE, SC, SE, SD, AD, etc.
+	 * @return string The class name with the first two characters removed.
 	 */
 	public function getClassPrefix()
 	{
@@ -49,9 +62,10 @@ class SC_BaseObject
 	}
 
 	/**
-	 * Returns the Methods of the Object
+	 * Returns an array containing the names of the object's methods
+	 * and the keys of its attributes.
 	 *
-	 * @return array[int]string
+	 * @return string[] An array containing both method names and attribute keys.
 	 */
 	public function getMethods()
 	{
@@ -61,11 +75,12 @@ class SC_BaseObject
 
 	
 	/**
-	 * Returns the Keys of the Object attributes.
+	 * Returns the names (keys) of the object's attributes (properties).
+	 * Optionally filters attributes to include only those whose value is an instance
+	 * of a specific class.
 	 *
-	 * @param string $class Filter only attributes instance of $class.
-	 *
-	 * @return array(int => string)
+	 * @param string|null $class Optional. The fully qualified class name to filter by. If null, all attribute keys are returned.
+	 * @return string[] An array containing the names of the matching attributes.
 	 */
 	public function getAttributeKeys($class = null) {
 		$ret = array();

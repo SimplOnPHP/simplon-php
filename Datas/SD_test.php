@@ -1,5 +1,4 @@
 <?php
-
 /*
 Sow Peace License (MIT-Compatible with Attribution Visit)
 Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
