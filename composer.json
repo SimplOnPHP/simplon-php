@@ -1,8 +1,6 @@
 {
-    "name": "rslaqui/simplon-php",
     "require": {
         "voku/simple_html_dom": "^4.8",
         "filp/whoops": "^2.15"
-    },
-    "prefer-stable": true
+    }
 }
