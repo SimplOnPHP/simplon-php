@@ -113,8 +113,8 @@ class SD_Date extends SD_String {
 	/*
 	public function showInput($fill = true) {
             return 
-            ($this->label() ? '<label for="'.$this->htmlId().'">'.$this->label().': </label>' : '') .
-            '<input id="'.$this->htmlId().'" class="'.$this->htmlClasses('date').'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->viewVal().'"':'').' type="text" />';
+            ($this->label() ? '<label for="'.$this->InterfaceId().'">'.$this->label().': </label>' : '') .
+            '<input id="'.$this->InterfaceId().'" class="'.$this->htmlClasses('date').'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->viewVal().'"':'').' type="text" />';
 	}
 	*/
 }

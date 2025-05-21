@@ -150,6 +150,14 @@ abstract class SD_Data extends SC_BaseObject {
 
 	/** @var SR_htmlJQuery */
 	$renderer = null,
+	
+	/**
+	 * The name of the input field for forms.
+	 *
+	 * @access protected
+	 * @var string
+	 */
+	$inputName,
 	/**
 	 * search operands:
 	 * >
@@ -173,18 +181,22 @@ abstract class SD_Data extends SC_BaseObject {
 	 * 
 	 * a <= x <= b
 	 * a > x || x < b
+	 * @var string
 	 */
 	$filterCriteria = 'name == :name';
 
 	
 	/**
-	 * - Assings the Label, Flags, Value(val) and Serch operand if recibed
-	 * - Calls user defined construct
-	 * 
-	 * @param string $label Human readable descrition of the atribute, it's intended to apear in forms and tables
-	 * @param string $flags VCUSRLF flags sets when the Data will be used within an element {@see dataFlags}
-	 * @param mixed $val If sended sets the value of the data since it's creation
-	 * @param string $searchOp Determines how the data value will be cmpared/evalueted in queries to the Data Storage
+	 * Constructs a new SD_Data instance.
+	 *
+	 * Initializes the Data object with a label, optional flags, an initial value, and filter criteria.
+	 * Sets default validation messages for required fields and invalid values using the localization function.
+	 * Applies the provided flags if available.
+	 *
+	 * @param string|null $label Human readable description of the attribute, intended to appear in forms and tables. Defaults to null.
+	 * @param string|null $flags VCUSRLF flags indicating where the Data will be used within an Element. {@see dataFlags}. Defaults to null.
+	 * @param mixed $val If provided, sets the initial value of the data. Defaults to null.
+	 * @param string|null $filterCriteria Determines how the data value will be compared/evaluated in queries to the Data Storage. Defaults to null.
 	 */
 	public function __construct($label=null, $flags=null, $val=null, $filterCriteria=null)
 	{
@@ -226,6 +238,14 @@ abstract class SD_Data extends SC_BaseObject {
  
    
 	
+    /**
+	 * Gets or sets the renderer for this Data object.
+	 * If no renderer is set for this Data object, it attempts to get the renderer from its parent Element.
+	 * If no parent or renderer is found, it defaults to the global renderer.
+	 *
+	 * @param SR_htmlJQuery|null $renderer Optional. The renderer instance to set. If null, the current renderer is returned.
+	 * @return SR_htmlJQuery The renderer instance.
+	 */
    public function renderer($renderer=null){
 		if(isset($val)){
 			$this->renderer = $renderer;
@@ -240,16 +260,37 @@ abstract class SD_Data extends SC_BaseObject {
 		}
 	}
 
+	/**
+	 * Sets and fixes the value of the Data object, preventing further changes.
+	 * It also sets a render override to 'showFixedValue', thats used on the form interfaces.
+	 *
+	 * @param mixed $val The value to set and fix.
+	 */
 	public function fixValue($val){
 		$this->val($val);
 		$this->fixedValue = true;
 		$this->renderOverride = 'showFixedValue';
 	}
 
+	/**
+	 * Returns a stripped-down, embedded representation of the Data value.
+	 * By default, this returns the raw value. Child classes can override this for specific formatting.
+	 *
+	 * @return mixed The stripped-down embedded value.
+	 */
 	public function showEmbededStrip(){
 		return $this->val();
 	}
 
+	/**
+	 * Gets or sets the value of the Data object.
+	 * If a value is provided, it attempts to set it after validation, unless the value is fixed.
+	 * If no value is provided, it returns the current value.
+	 *
+	 * @param mixed $val Optional. The value to set. Defaults to null.
+	 * @return mixed The current value of the Data object if no value is provided for setting.
+	 * @throws SC_DataValidationException If a value is provided but is not valid according to the `isValid` method.
+	 */
 	public function val($val=null){
 		if(isset($val)){
 			if(!$this->fixedValue && $this->isValid($val)){
@@ -262,28 +303,75 @@ abstract class SD_Data extends SC_BaseObject {
 		}
 	}
 
+	/**
+	 * Validates the given value.
+	 * This is a base implementation that always returns true. Child classes should override this method
+	 * to provide specific validation logic for their data type.
+	 *
+	 * @param mixed $val The value to validate.
+	 * @return bool True if the value is valid, false otherwise.
+	 */
 	public function isValid($val){
 		return true;
 	}
 
+	/**
+	 * Returns the value of the Data object for viewing.
+	 *
+	 * This method provides the raw value suitable for simple display.
+	 *
+	 * @return mixed The current value of the Data object.
+	 */
 	public function viewVal(){
 		return $this->val();
 	}
 
 
 
+	/**
+	 * Displays the data for a single item view.
+	 *
+	 * This method is typically used to render the data in a detailed view of an element.
+	 * Returns the formatted value appropriate for a detailed view.
+	 *
+	 * @return mixed The rendered output for viewing.
+	 */
 	public function showView() {
 		return $this->viewVal();
 	}
 
+	/**
+	 * Displays the data for a list view.
+	 *
+	 * This method is used to render the data when multiple elements are displayed in a list or table.
+	 * Returns the formatted value appropriate for a list view.
+	 *
+	 * @return mixed The rendered output for listing.
+	 */
 	public function showList() {
 		return $this->viewVal();
 	}
 	
+	/**
+	 * Displays the data in an embedded context.
+	 *
+	 * This method is used when the data is displayed as part of another element.
+	 * Returns the formatted value appropriate for embedding.
+	 *
+	 * @return mixed The rendered output for embedding.
+	 */
 	public function showEmbeded() {
 		return $this->viewVal();
 	}
 
+	/**
+	 * Generates the input field for creating a new data entry.
+	 *
+	 * This method provides the interface item element required for capturing the data when creating a new element.
+	 * Returns the appropriate input field for creation.
+	 *
+	 * @return mixed The input element for creation.
+	 */
 	public function showCreate() {
 		if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
 		}else{
@@ -293,6 +381,14 @@ abstract class SD_Data extends SC_BaseObject {
 		return $inputBox;
 	}
 		
+	/**
+	 * Generates the input field for updating an existing data entry.
+	 *
+	 * This method provides the interface item element required for modifying the data of an existing element.
+	 * Returns the appropriate input field for updating, potentially pre-filled with the current value.
+	 *
+	 * @return mixed The input element for updating.
+	 */
 	public function showUpdate() {
 		if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
 		}else{		
@@ -302,8 +398,24 @@ abstract class SD_Data extends SC_BaseObject {
 		return $inputBox;
 	}
 
+	/**
+	 * Generates the output for displaying the data in a deletion context.
+	 *
+	 * This method is used to render the data when an element is being prepared for deletion.
+	 * Child classes should override this method to provide a specific representation for deletion.
+	 *
+	 * @return mixed The rendered output for deletion.
+	 */
 	public function showDelete() {}
 
+	/**
+	 * Generates the input field or display for searching based on this data.
+	 *
+	 * This method is used to create the form element or display representation for searching.
+	 * Returns the appropriate input field or display for searching.
+	 *
+	 * @return mixed The input element or display for searching.
+	 */
 	public function showSearch() {
 		if($this->renderOverride()=='showEmpty'){return '';}elseif($this->fixedValue()) {$input =  new SI_FixedValue($this->name(), $this->viewVal());
 		}else{	
@@ -313,58 +425,160 @@ abstract class SD_Data extends SC_BaseObject {
 		return $inputBox;
 	}
 
+	/**
+	 * Performs actions before data is read from the data source.
+	 *
+	 * This method is a hook for executing custom logic before the data is fetched or read.
+	 */
 	public function preRead() {}
 	
+	/**
+	 * Performs actions before data is created in the data source.
+	 *
+	 * This method is a hook for executing custom logic before the data is stored for a new element.
+	 */
 	public function preCreate() {}
 		
+	/**
+	 * Performs actions before data is updated in the data source.
+	 *
+	 * This method is a hook for executing custom logic before the data is updated for an existing element.
+	 */
 	public function preUpdate() {}
 
+	/**
+	 * Performs actions before data is deleted from the data source.
+	 *
+	 * This method is a hook for executing custom logic before the data is removed for an element.
+	 */
 	public function preDelete() {}
 
+	/**
+	 * Performs actions before a search is executed on the data source.
+	 *
+	 * This method is a hook for executing custom logic before search criteria are applied.
+	 */
 	public function preSearch() {}
 	
 	//----
 
+	/**
+	 * Prepares data for a read operation from the data source.
+	 *
+	 * This method is called by the parent Element's `processData('doRead')` method.
+	 * It should return an array of data relevant for reading if the data is fetchable.
+	 *
+	 * @return array|null An array containing data for the read operation, or null if the data is not fetchable.
+	 * @see SC_Element::processData()
+	 */
 	public function doRead(){
 		return ($this->fetch())
 			? array(array($this->name(), $this->getClass()))
 			: null;
 	}
-	
+
+	/**
+	 * Prepares data for a create operation in the data source.
+	 *
+	 * This method is called by the parent Element's `processData('doCreate')` method.
+	 * It should return an array of data relevant for creation if the data is creatable.
+	 *
+	 * @return array|null An array containing data for the create operation, or null if the data is not creatable.
+	 * @see SC_Element::processData()
+	 */
 	public function doCreate(){
 		return ($this->create())
 			? array(array($this->name(), $this->getClass(), $this->val()))
 			: null;
 	}
-		
+
+	/**
+	 * Prepares data for an update operation in the data source.
+	 *
+	 * This method is called by the parent Element's `processData('doUpdate')` method.
+	 * It should return an array of data relevant for updating if the data is updatable.
+	 *
+	 * @return array|null An array containing data for the update operation, or null if the data is not updatable.
+	 * @see SC_Element::processData()
+	 */
 	public function doUpdate(){
 		return ($this->update())
 			? array(array($this->name(),$this->getClass(),$this->val()))
 			: null;
 	}
 
+	/**
+	 * Prepares data for a search operation on the data source.
+	 *
+	 * This method is called by the parent Element's `processData('doSearch')` method.
+	 * It should return an array of data relevant for searching if the data is searchable and fetchable.
+	 *
+	 * @return array|null An array containing data for the search operation, or null if the data is not searchable or fetchable.
+	 * @see SC_Element::processData()
+	 */
 	public function doSearch(){
 		return ($this->search() && $this->fetch())
 			? array(array($this->name(), $this->getClass(), $this->val(), $this->filterCriteria()))
 			: null;		
 	}
 
+	/**
+	 * Performs actions during a delete operation.
+	 *
+	 * This method is called by the parent Element's `processData('doDelete')` method.
+	 * Child classes can override this to perform specific actions during deletion.
+	 * @see SC_Element::processData()
+	 */
 	public function doDelete(){}
 
-	
-	
+
+	/**
+	 * Performs actions after data is read from the data source.
+	 *
+	 * This method is a hook for executing custom logic after the data has been fetched or read.
+	 * It is called by the parent Element's `processData('postRead')` method.
+	 * @see SC_Element::processData()
+	 */
 	public function postRead()
 	{}
-	
+
+	/**
+	 * Performs actions after data is created in the data source.
+	 *
+	 * This method is a hook for executing custom logic after the data has been stored for a new element.
+	 * It is called by the parent Element's `processData('postCreate')` method.
+	 * @see SC_Element::processData()
+	 */
 	public function postCreate()
 	{}
-		
+
+	/**
+	 * Performs actions after data is updated in the data source.
+	 *
+	 * This method is a hook for executing custom logic after the data has been updated for an existing element.
+	 * It is called by the parent Element's `processData('postUpdate')` method.
+	 * @see SC_Element::processData()
+	 */
 	public function postUpdate()
 	{}
 
+	/**
+	 * Performs actions after data is deleted from the data source.
+	 *
+	 * This method is a hook for executing custom logic after the data has been removed for an element.
+	 * It is called by the parent Element's `processData('postDelete')` method.
+	 * @see SC_Element::processData()
+	 */
 	public function postDelete()
 	{}
 
+	/**
+	 * Performs actions after a search is executed on the data source.
+	 *
+	 * This method is a hook for executing custom logic after search criteria have been applied.
+	 * It is called by the parent Element's `processData('postSearch')` method.
+	 * @see SC_Element::processData()
+	 */
 	public function postSearch()
 	{}
 	
@@ -377,18 +591,23 @@ abstract class SD_Data extends SC_BaseObject {
 		));
 	}
     
+	/**
+	 * Clears the value of the Data object.
+	 */
 	public function clearValue() {
-        $this->val=null;
+        $this->clear('val');
 	}
 
 	
 	/**
 	 * Sets create, update, search, list, required and fetch flags according to the letters in $flags
 	 *
-	 *  @param ing $flags This ing indicates the SimplOndata where it must be used by the SimplOnelement's to do so if sended the
-	 * sting must contain the first letter of any the following "uses": view, create, update, search, list, required.
-	 * if the letter is included (the order desn't matter) that use will be set to true if not to false.
-	 * see the help avobe to see what each of this does.
+	 * The flags are represented by a string where each character indicates a specific use case:
+	 * 'v' (view), 'c' (create), 'u' (update), 's' (search), 'l' (list), 'e' (embeded), 'r' (required), 'f' (fetch).
+	 * Uppercase letters set the flag to true, lowercase letters set it to false.
+	 *
+	 * @param string|null $flags Optional. A string containing the flags to set. If null, the current flags string is returned.
+	 * @return string|void Returns the current flags string if $flags is null, otherwise sets the flags and returns nothing.
 	 */
 	function dataFlags($flags = null) {
 		// @todo: Optimizar esta parte
@@ -420,7 +639,7 @@ abstract class SD_Data extends SC_BaseObject {
 	/**
 	 * Tells PHP how to render this object as a string
 	 *
-	 * @return ing
+	 * @return string
 	 */
 	public function __toString() {
 		return (string)$this->val();
@@ -430,7 +649,10 @@ abstract class SD_Data extends SC_BaseObject {
 	 * Gives the name of the field for the create or update forms (usualy an HTML form)
 	 *
 	 * @param $prefijoNombre =null valor que se puede usar para distinguir los diversos de dos elementos
-	 * @return ing
+	 * Gives the name of the field for the create or update forms (usually an HTML form).
+	 *
+	 * @param string|null $inputName Optional. The name to set for the input field. If null, the current input name is returned or derived.
+	 * @return string The name of the input field.
 	 */
 	public function inputName($inputName=null){
 		if($inputName){
@@ -442,19 +664,35 @@ abstract class SD_Data extends SC_BaseObject {
 		
 	}
 
-	function htmlId() {
+	/**
+	 * Returns a unique Interface ID for the Data object instance.
+	 *
+	 * This ID can be used for generating unique Interface element IDs in forms or other interfaces.
+	 *
+	 * @return string A unique Interface ID for the instance.
+	 */
+	function InterfaceId() {
         return $this->instanceId();
     }
 
+	/**
+	 * Returns the value to be used in input fields, based on the `printValInInput` flag.
+	 *
+	 * @return mixed|string The data value or an empty string.
+	 */
 	function inputVal(){
         if($this->printValInInput){ return $this->val(); }
 		else{ return '';  }
 	}
 
 	/**
-	 * Returns the label for the input
+	 * Returns or sets the label for the data object.
+	 * If setting, it updates the internal label.
+	 * If getting and no label is set, it generates one from the data name and applies localization.
 	 *
-	 * @return ing
+	 * @access public
+	 * @param string|null $label Optional. The label to set. If null, the current label is returned.
+	 * @return string The localized label for the data object.
 	 */
 	public function label($label=null){
 		if($label){

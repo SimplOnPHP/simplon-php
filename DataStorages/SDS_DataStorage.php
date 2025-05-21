@@ -8,7 +8,7 @@ https://simplonphp.org/Sow-PeaceLicense.txt
 
 /**
  *
- * @author Rub�n Schaffer Levine
+ * @author Ruben Schaffer Levine
  */
 abstract class SDS_DataStorage extends SC_BaseObject{
 	public $db;

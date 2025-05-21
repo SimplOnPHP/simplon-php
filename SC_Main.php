@@ -5,54 +5,59 @@ Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
 https://simplonphp.org/Sow-PeaceLicense.txt
 */
 
-/*! \mainpage SimplOn PHP
- *
- * \section intro_sec What is SimplOn?
- *
- * SimplOn is a web framework based on the concept of embedding meta-data 
- * into PHP objects to automate CRUD tasks and rendering them 
- * (ie. in HTML format).
- * 
- * \section core_obj_sec SimplOn uses two core objects
- *
- * \subsection datas_subsec Datas
- * 
- * Replaces regular object's attributes, contains informations 
- * about value's type and where to display it.
- *  
- * \subsection elements_subsec Elements
- * 
- * Replaces regular objects, using Datas as attributes and offers 
- * a standard interface to Data Storages (MySQL, MongoDB, ...) 
- * and Renderers (HTML, XML, JSON, ...).
- * 
- * \see http://tinyurl.com/SimplON-chart
- * 
- * \section http_api Simple HTTP API
- * 
- * SimplOn uses a HTTP API simple to read and write.
- * It is structured in the following way:
- * \code
- * /Foo/cp1/cp2/cpN!Moo/mp1/mp2/mpN
- * \endcode
- * Where \c cp are construct parameters for the element \c Foo, 
- * while \c mp are parameters for the element's method \c Moo.
- * 
- * Since Datas have methods too, the way to call those methods is:
- * \code
- * /Foo/cp1/cp2/cpN!Doo!Moo/mp1/mp2/mpN
- * \endcode
- * Where \c Doo is a \c Foo's Data and \c Moo is \c Doo's method.
- * 
- * To create or update an Element, a HTTP POST must be sent
- * containing an array with keys corresponding to Element's 
- * Data names and their corresponding values.
- */
-
 spl_autoload_register( __NAMESPACE__ . '\\SC_Main::load_obj');
 
 /**
- *  SC_Main Is the calss to initialize everithing deccode de URL and execute the software.
+ * The main orchestrator for SimplOn applications.
+ *
+ * This central class is responsible for initializing the application environment,
+ * decoding incoming URLs, handling configuration, managing permissions,
+ * autoloading classes, and executing the requested actions. It serves as the
+ * primary entry point and controller for the framework.
+ *
+ * Key Responsibilities:
+ * - Loading configuration from INI files or arrays.
+ * - Setting up global application parameters (paths, database, renderer, etc.).
+ * - Decoding URLs based on the SimplOn HTTP API structure:
+ *   `/Element/constructParam1/..!Method/methodParam1..`
+ *   `/Element/constructParam1/..!DataName!Method/methodParam1..`
+ * - Managing user sessions and permissions via a configurable permission class.
+ * - Handling language settings and providing a translation mechanism.
+ * - Autoloading SimplOn core, element, data, storage, renderer, and application classes.
+ * - Instantiating the target Element and executing the requested method after permission checks.
+ *
+ * @package SimplOn\Core
+ * @author RSL, Luca Lauretta
+ * @version 1b.1.0 // Assuming this version, adjust if needed
+ *
+ * @property string $App_Name Name of the application.
+ * @property string $LOCAL_ROOT Server's absolute path to the main public directory.
+ * @property string $WEB_ROOT Web URL corresponding to $LOCAL_ROOT.
+ * @property string $SimplOn_PATH Server's absolute path to the SimplOn framework directory.
+ * @property string $App_PATH Server's absolute path to the application's code directory.
+ * @property string $App_web_root Web URL corresponding to $App_PATH (often within $WEB_ROOT).
+ * @property bool $debug_mode If true, enables detailed error reporting for development.
+ * @property string $DEFAULT_ELEMENT The default Element class to use if none is specified in the URL.
+ * @property string $DEFAULT_METHOD The default method to call on an Element if none is specified.
+ * @property bool $DEV_MODE If true, enables development-specific settings (potentially overlaps with debug_mode).
+ * @property string|object|bool $PERMISSIONS Class name or instance responsible for handling permissions (e.g., 'SE_User'). Set to false to disable.
+ * @property bool $LOAD_ROLE_CLASS Whether to load a specific subclass of the $PERMISSIONS class based on user role.
+ * @property array|SDS_DataStorage $DATA_STORAGE Configuration array for the data storage driver or the instantiated DataStorage object.
+ * @property SR_htmlJQuery $RENDERER The instantiated renderer object.
+ * @property string $RENDERER_FLAVOR The specific flavor/directory name of the renderer being used (e.g., 'htmlJQuery').
+ * @property array $VCRSL Configuration for View-Create-Read-Search-List flags (Likely internal).
+ * @property string[] $VCRSLMethods List of standard VCRSL method flags.
+ * @property string $URL_METHOD_SEPARATOR Character used to separate Element/Data from Method in the URL (default: '!').
+ * @property bool $QUICK_DELETE If true, allows deletion without confirmation prompts.
+ * @property int $LIMIT_ELEMENTS Default limit for listing elements in administrative views.
+ * @property string $LANG The current language code (e.g., 'en', 'es').
+ * @property array $LangArray Associative array holding language translations [key => translation].
+ * @property string $SystemMessage A message to be displayed to the user, often set during redirects.
+ * @property string $class The Element class name decoded from the URL.
+ * @property string $method The method name decoded from the URL.
+ * @property string|null $dataName The Data name if a Data method is being called, decoded from the URL.
+ * @property array $construct_params Parameters for the Element's constructor, decoded from the URL.
+ * @property array $method_params Parameters for the method, decoded from the URL.
  */
 class SC_Main {
 	const DEFAULT_INI = 'dof.ini';
@@ -112,10 +117,30 @@ class SC_Main {
 		$method_params;
 	
 	/**
-	 * Loads all the parameters specific to a website and loads needed classes.
+	 * Initializes the SimplOn application environment by loading configuration,
+	 * setting up error reporting, handling permissions, and decoding the incoming URL.
 	 *
-	 * @param mixed	$ini	Can be either the path to a ini file or an array with configuration parameters.
-	 * @return unknown_type
+	 * This method first attempts to load configuration from the default INI file
+	 * (`dof.ini`). If an `$ini` parameter is provided (either a path to an INI file
+	 * or an associative array), it will override the default configuration.
+	 *
+	 * It then configures PHP error reporting based on the `DEV_MODE` setting.
+	 *
+	 * If a permission class is configured (`self::$PERMISSIONS`), it instantiates
+	 * the permission class, ensures the necessary storage for it, and attempts to
+	 * load a logged-in user based on the session. If no users are found in the
+	 * database, a temporary `AE_EmptyAdmin` is instantiated to allow initial user
+	 * creation. Default element and method might be overridden by the permission
+	 * object's settings. It also handles loading a role-specific subclass if
+	 * `self::$LOAD_ROLE_CLASS` is true and a user role is detected.
+	 *
+	 * Finally, it calls `self::decodeURL()` to parse the request URI.
+	 *
+	 * @param mixed $ini Optional. Can be either the absolute path to an INI file
+	 *                   (string) or an associative array containing configuration
+	 *                   parameters. These parameters will override any settings
+	 *                   loaded from the default INI file. Defaults to `null`.
+	 * @return void
 	 */
 	static function setup($ini = null) {
         if (session_status() !== PHP_SESSION_ACTIVE) { session_start(); }
@@ -129,7 +154,7 @@ class SC_Main {
 				self::fillFromArray(parse_ini_file($ini));
 			}
 		}
-			
+
 		if(self::$DEV_MODE) {
 			error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_USER_DEPRECATED);
 			ini_set('display_errors', true);
@@ -140,12 +165,12 @@ class SC_Main {
 
 
 		if(self::$PERMISSIONS){
-			$permissionsClass = self::$PERMISSIONS; // Get the class name from the static property		
+			$permissionsClass = self::$PERMISSIONS; // Get the class name from the static property
 			self::$PERMISSIONS = new $permissionsClass(); //set the object
 
 			self::$DATA_STORAGE->ensureElementStorage(self::$PERMISSIONS);
 
-			if(isset($_SESSION["permissionID"])){			
+			if(isset($_SESSION["permissionID"])){
 				self::$PERMISSIONS->fillFromDSById($_SESSION["permissionID"]); // Instantiate the class
 				$role=self::$PERMISSIONS->OuserRole()->viewVal();
 				if($role){
@@ -157,19 +182,17 @@ class SC_Main {
 			}
 
 			$results = self::$DATA_STORAGE->readElements(self::$PERMISSIONS);
-		
+
 			//if there is no user in the database allow a temporary admin that can create users
 			if(!$results){
-				self::$PERMISSIONS = new AE_EmptyAdmin(); 
+				self::$PERMISSIONS = new AE_EmptyAdmin();
 				self::$PERMISSIONS->userName('emptyAdmin');
 			}
 
-			
 			if(self::$PERMISSIONS->defaultClass() ){self::$DEFAULT_ELEMENT = self::$PERMISSIONS->defaultClass();}
 			if(self::$PERMISSIONS->defaultMethod()){self::$DEFAULT_METHOD = self::$PERMISSIONS->defaultMethod();}
-
-
 		}
+
 		//Load the sub class of the User (or permisssions class) if it exisists
 		if(self::$LOAD_ROLE_CLASS && isset($role)){
 			$class = 'AE_'.ucfirst($role); 
@@ -184,6 +207,19 @@ class SC_Main {
 
 	}
 
+	/**
+	 * Retrieves a translated string for a given key from the loaded language array.
+	 *
+	 * If the key does not exist in the current language array (`self::$LangArray`),
+	 * the key itself is returned, and the key-value pair is added to the array
+	 * for potential later writing to the language file by `writeLangFile()`.
+	 *
+	 * This function serves as the primary method for internationalization
+	 * within the SimplOn framework.
+	 *
+	 * @param string $key The key of the string to retrieve from the language array.
+	 * @return string The translated string if the key exists, otherwise the key itself.
+	 */
 	static function L($key) {
 		// Check if the key exists in the Lang array
 		if (isset(static::$LangArray[$key])) {
@@ -195,8 +231,22 @@ class SC_Main {
 		}
 	}
 
+	/**
+	 * Writes the current contents of `self::$LangArray` to the corresponding
+	 * language file based on the configured language (`self::$LANG`) and renderer path.
+	 *
+	 * This function serializes the associative array into a PHP file format that
+	 * can be later included to load the translations. It's typically called
+	 * at the end of a request lifecycle (e.g., within the `run()` method)
+	 * to persist any new language keys encountered during the request.
+	 *
+	 * Note: This method assumes the renderer object (`self::$RENDERER`) has a
+	 * `SimplOn_path()` method to determine the base path for language files.
+	 *
+	 * @return void
+	 */
 	static function writeLangFile(){
-		
+
 			$langFile = static::$RENDERER->SimplOn_path() . DIRECTORY_SEPARATOR . 'Languages' . DIRECTORY_SEPARATOR . static::$LANG . '.php';
 
 			// Generate the content for the file with the updated LangArray
@@ -205,17 +255,26 @@ class SC_Main {
 				$contents .= "    '" . addslashes($k) . "' => '" . addslashes($v) . "',\n";
 			}
 			$contents .= "];\n";
-			
+
 			// Write the updated array back to the file
 			file_put_contents($langFile, $contents);
 	}
 
 
 	/**
-	 * Gets URL and breaks it into the class andd method that needs to be executed as well as the message that has to be displayed
-	 * 
+	 * Gets URL and breaks it into the class and method that needs to be executed as well as the message that has to be displayed
+	 *
+	 * This function parses the request URI to determine the target class, method,
+	 * and associated parameters based on the defined URL structure.
+	 *
+	 * @modifies SC_Main::$class The Element class name decoded from the URL.
+	 * @modifies SC_Main::$construct_params Parameters for the Element's constructor, decoded from the URL.
+	 * @modifies SC_Main::$dataName The Data name if a Data method is being called, decoded from the URL.
+	 * @modifies SC_Main::$method The method name decoded from the URL.
+	 * @modifies SC_Main::$method_params Parameters for the method, decoded from the URL.
+	 *
 	 */
-	static function decodeURL($e = '') {
+	static function decodeURL() {
 		$string_delimiter = '\'';
         $qs = self::$URL_METHOD_SEPARATOR;
 
@@ -304,8 +363,20 @@ class SC_Main {
 	}
 		
 	/**
-	 * Loads de Ini parameters
-	 * Instanciates the class and runs the method
+	 * The main execution entry point for the SimplOn application.
+	 *
+	 * This method orchestrates the entire request lifecycle. It first calls the setup method
+	 * to initialize the application environment, load configuration, and process the incoming URL.
+	 * It then attempts to instantiate the target class identified by the URL and execute the
+	 * requested method with the decoded parameters. It also incorporates permission checks
+	 * if a permission class is configured and writes the language file at the end.
+	 *
+	 * If the target class is not found, a 404 header is sent and a PHP error is triggered.
+	 *
+	 * @param mixed $ini Optional. Can be either the path to an INI file or an array
+	 *                   containing configuration parameters to override defaults.
+	 * @return void This method outputs content directly and does not return a value
+	 *              on successful execution, except in the case of a class not found error.
 	 */
 	static function run($ini = null) {
 

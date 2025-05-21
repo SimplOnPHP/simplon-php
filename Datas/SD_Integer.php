@@ -67,8 +67,8 @@ class SD_Integer extends SD_Data {
     
     public function showInput($fill=true) {
         return 
-        ($this->label() ? '<label for="'.$this->htmlId().'">'.$this->label().': </label>' : '') .
-        '<input id="'.$this->htmlId().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="number" />';
+        ($this->label() ? '<label for="'.$this->InterfaceId().'">'.$this->label().': </label>' : '') .
+        '<input id="'.$this->InterfaceId().'" name="'.$this->inputName().'" '.(($fill)?'value="'.$this->val().'"':'').' type="number" />';
     }
 	
 //	public function validationMessages(){

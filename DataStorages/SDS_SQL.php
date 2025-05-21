@@ -571,26 +571,50 @@ abstract class SDS_SQL extends SDS_DataStorage
 		if (isset($group)) {
 			$group = implode(',', $group);
 		}
+		$fields = []; // Initialize $fields array
 		$storages = is_array($element->storage())
                         ? $element->storage() 
                         : array($element->getClass() => $element->storage());
 		foreach ($element->processData('doRead') as $dataInfo) {
 			foreach ($dataInfo as $fieldInfo) {
-				$fields[] = $fieldInfo[0];
+				if (!in_array($fieldInfo[0], $fields)) { // Avoid duplicates
+					$fields[] = $fieldInfo[0];
+				}
 			}
 		}
+
+		$selects = [];
 		foreach ($storages as $class => $storage) {
-			$storage_fields = $fields; 
-			$addFields =
-				'"'.strtr($class,array('\\'=>'\\\\')).'" as `SimplOn_class`, '.
-				'"'.$element->fieldId().'" as `SimplOn_fieldId`, '.
-				'"'.$element->fieldId().'" as `SimplOn_id`, '. 
-				'"'.$element->fieldId().'", ';
+			$storage_fields = $fields; // These are raw column names from $element->processData('doRead')
+
+			$current_select_expressions = [];
+            // Meta fields: single quotes for string literals, backticks for identifiers
+            $current_select_expressions[] = "'".strtr($class,array('\\'=>'\\\\'))."' AS `SimplOn_class`";
+            $current_select_expressions[] = "`".$element->fieldId()."` AS `SimplOn_fieldId`";
+            $current_select_expressions[] = "`".$element->fieldId()."` AS `SimplOn_id`"; // For ORDER BY
+
+            foreach ($storage_fields as $sf_name) {
+                 $current_select_expressions[] = "`" . $sf_name . "`"; // Backtick quote column names
+            }
+            // Use array_unique to prevent selecting the exact same expression multiple times.
+            $select_clause_str = implode(', ', array_unique($current_select_expressions));
+
 			$where = $this->filterCriteria($element);
 
-			$selects[] = ' (SELECT '.$addFields.implode(', ', $storage_fields).' FROM '.$storage.' '. ($where ? 'WHERE '.$where : '').' '.($group? 'GROUP BY '.$group:'').') ';
+			$group_sql_part = '';
+            if (isset($group) && !empty($group)) {
+                $group_cols = explode(',', $group);
+                // Quote group by columns with backticks
+                $quoted_group_cols = array_map(function($col) { return '`'.trim($col).'`'; }, $group_cols);
+                // Filter out empty results from trim (e.g. if $group was just ',')
+                $quoted_group_cols = array_filter($quoted_group_cols, function($c){ return $c !== '``';});
+                if (!empty($quoted_group_cols)) {
+                    $group_sql_part = 'GROUP BY ' . implode(',', $quoted_group_cols);
+                }
+            }
+			$selects[] = ' (SELECT '.$select_clause_str.' FROM `'.$storage.'` '. ($where ? 'WHERE '.$where : '').' '.$group_sql_part.') ';
 		}
-		$query_string = implode("\n".' UNION ', $selects).' ORDER BY SimplOn_id desc';
+		$query_string = implode("\n".' UNION ', $selects).' ORDER BY `SimplOn_id` desc'; // Quote SimplOn_id for ORDER BY
 		$query = $this->db->prepare($query_string);
 		$values = $this->obtainValues($element, $query_string);
 		$query->execute($values);

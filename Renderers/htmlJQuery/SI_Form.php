@@ -13,6 +13,10 @@ https://simplonphp.org/Sow-PeaceLicense.txt
  * En el Renderer htmlJQuery deben tener solo el atributo $doe que guarda a el Dato o Elemento del que forma parte el item de interfaz y atributos sencillos de valor de string para guardar los valores de lo que debe sustiturse en pantalla
  * 
  */
+
+
+use voku\helper\HtmlDomParser;
+
 class SI_Form extends SI_Item {
     function __construct( array $content, $action, $method = 'POST', $enctype="")
     {
