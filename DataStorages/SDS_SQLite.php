@@ -310,7 +310,7 @@ class SDS_SQLite extends SDS_SQL
 					// if the table is not empty. For simplicity, we'll add NOT NULL.
 					// If this causes issues on non-empty tables, a DEFAULT clause would be needed.
 					// Example: DEFAULT '' for TEXT, DEFAULT 0 for INTEGER.
-					// However, SD_Data types usually handle their default values internally.
+					// However, SC_Data types usually handle their default values internally.
 					$columnDefinition .= ' NOT NULL';
 					// Consider adding a generic default based on type if issues arise with existing data:
 					// $defaultVal = "DEFAULT ''"; // for TEXT

@@ -11,9 +11,9 @@ https://simplonphp.org/Sow-PeaceLicense.txt
  * 
  * Encapsulates an Element so it acts as a Data. 
  * 
- * @author RSL
+ * @author Ruben Schaffer
  */
-class SD_ElementContainer extends SD_Data {
+class SD_ElementContainer extends SC_Data {
 
 	protected
 		$layout,	
@@ -373,7 +373,7 @@ class SD_ElementContainer extends SD_Data {
 			return true;
 		//if there is a user that can't enter
 		}elseif(SC_MAIN::$PERMISSIONS->logedIn()){
-			SC_MAIN::$SystemMessage='You can\'t access that page ';
+			//SC_MAIN::$SystemMessage='You can\'t access that page ';
 			return false;
 		//if there is no user or else
 		}else{

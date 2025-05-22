@@ -278,4 +278,5 @@ SC_Main::$LangArray = [
 		Thank you for your understanding!' => 'We\'re sorry, but it looks like you don’t have permission to access this page.
 		If you believe this is an error, please check with your administrator or support team for further assistance.
 		Thank you for your understanding!',
+    'Concat' => 'Concat',
 ];

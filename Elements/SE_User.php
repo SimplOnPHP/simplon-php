@@ -42,7 +42,7 @@ class SE_User extends SC_Element
 			'user' => array(
 				'Admin'=>'deny',
 				'View'=>array(
-					'updateAction'=>'viwableWhen_id_=_CurrentUserId',
+					'updateAction'=>'viewableWhen_id_=_CurrentUserId',
 					'createAction'=>'hide',
 					'deleteAction'=>'hide',
 				),
@@ -370,7 +370,7 @@ class SE_User extends SC_Element
 			}else{ // constant TODO: how to use a constant that is equal to an attribute name
 				$element->{$data}($rule[0]);
 			}
-		}elseif($treatment == 'viwableWhen'){ // Show the value when conditions meet
+		}elseif($treatment == 'viewableWhen'){ // Show the value when conditions meet
 			if($rule[0] == 'CurrentUserId'){
 				$rule[0] = $this->id();
 			}elseif($rule[0] == 'CurrentUserName'){
@@ -444,7 +444,7 @@ self::$permissions = array(
 	'admin' => array('*'=>'allow'),
 	'Asesor' => array(
 		'View'=>array(
-			'updateAction'=>'viwableWhen_id_=_CurrentUserId',
+			'updateAction'=>'viewableWhen_id_=_CurrentUserId',
 			'createAction'=>'hide',
 			'deleteAction'=>'hide',
 		),

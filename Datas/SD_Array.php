@@ -4,7 +4,16 @@ Sow Peace License (MIT-Compatible with Attribution Visit)
 Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
 https://simplonphp.org/Sow-PeaceLicense.txt
 */
-class SD_Array extends SD_Data {
+
+/**
+* 
+* 
+*
+* @version 1b.1.0
+* @package SimplOn\Datas
+* @author Ruben Schaffer 
+*/
+class SD_Array extends SC_Data {
 	
 	protected $view = true;
 	protected $create = true;

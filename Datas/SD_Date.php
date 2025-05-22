@@ -35,9 +35,6 @@ class SD_Date extends SD_String {
 	protected 
 		$filterCriteria = 'name = :name';
        
-		
-
-
 	/**
 	 * 
 	 * function val - This function allows validate the date format and if it's true

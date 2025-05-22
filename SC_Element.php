@@ -10,10 +10,9 @@ https://simplonphp.org/Sow-PeaceLicense.txt
  * Elements are fundamental building blocks in SimplOn, representing a set of related data and providing a standardized way to interact with that data.
  * They include the information required to allow datastorage and render clases extend traditional object capabilities capabilities allowing 
  * for common tasks such as displaying, storing, searching, and generating user interfaces like forms.
- 
  * 
  * Elements work in conjunction with SimplON Data objects. Each attribute of an Element that holds data intended for interaction (display, storage, etc.) 
- * should be an instance of a SimplON Data class (or a class extending SD_Data). These Data objects encapsulate the data itself along with important metadata
+ * should be an instance of a SimplON Data class (or a class extending SC_Data). These Data objects encapsulate the data itself along with important metadata
  * about how the data should be handled (e.g., whether it should be shown in a view, included in a form, searchable, validated, etc.).
  *
  * By combining the Element's methods and the metadata within its Data attributes, SimplOn's Renderers and DataStorage classes can automatically generate 
@@ -24,7 +23,7 @@ https://simplonphp.org/Sow-PeaceLicense.txt
  *
  * @version 1b.1.0
  * @package SimplOn\Core
- * @author RSL 
+ * @author Ruben Schaffer 
  * 
  **/
 
@@ -112,11 +111,11 @@ class SC_Element extends SC_BaseObject {
 	public static $quickDelete;
 
 	/**
-	 * Stores a list of Element's attributes of type SD_Data.
+	 * Stores a list of Element's attributes of type SC_Data.
 	 * 
 	 * TODO: Evalute if can be made static
 	 * 
-	 * @var array containing objects of type SD_Data
+	 * @var array containing objects of type SC_Data
 	 */
 	protected $dataAttributes;
 
@@ -138,7 +137,7 @@ class SC_Element extends SC_BaseObject {
 		admin' => array('*'=>'allow'),
 			'Asesor' => array(
 				'View'=>array(
-					'updateAction'=>'viwableWhen_id_=_CurrentUserId',
+					'updateAction'=>'viewableWhen_id_=_CurrentUserId',
 					'deleteAction'=>'hide',
 				),
 				'Search'=>'allow',
@@ -486,7 +485,7 @@ class SC_Element extends SC_BaseObject {
 			}
 		}
 
-		if (@$this->$name instanceof SD_Data) {
+		if (@$this->$name instanceof SC_Data) {
 			if ($arguments) {
 				return $this->$name->val($arguments[0]);
 			}else {
@@ -503,7 +502,7 @@ class SC_Element extends SC_BaseObject {
 			$letter = substr($name, 0, 1);
 			$Xname = substr($name, 1);
 
-			if (($letter == strtoupper($letter)) && (@$this->$Xname instanceof SD_Data)) {
+			if (($letter == strtoupper($letter)) && (@$this->$Xname instanceof SC_Data)) {
 				switch ($letter) {
 				case 'O': //Get the object / Change the object
 					if ($arguments) {
@@ -555,7 +554,7 @@ class SC_Element extends SC_BaseObject {
 		if (is_array($array_of_data)) {
 			foreach ($array_of_data as $dataName => $value) {
 				
-				if (isset($this->$dataName) && ($this->$dataName instanceof SD_Data)) {	
+				if (isset($this->$dataName) && ($this->$dataName instanceof SC_Data)) {	
 
 				try {
 						$this->$dataName($value);
@@ -1570,7 +1569,6 @@ function validateForDB() {
 					$updateAction = new SD_Action('update action','showUpdate',SC_Main::L('Update'),'editIcon.svg');
 					$deleteAction = new SD_Action('delete action','showDelete',SC_Main::L('Delete'),'deleteIcon.svg');
 						
-					
 					$viewAction->parent($this->parent());
 					$updateAction->parent($this->parent());
 					$deleteAction->parent($this->parent());
@@ -1659,7 +1657,7 @@ function validateForDB() {
 	 * Generates an associative array mapping Data attribute labels to their names.
 	 *
 	 * This method iterates through the Element's Data attributes. For each attribute
-	 * that is an instance of SD_Data, is configured to be fetched (fetch() is true),
+	 * that is an instance of SC_Data, is configured to be fetched (fetch() is true),
 	 * has a non-empty label, and is not an instance of SD_AutoIncrementId,
 	 * it adds an entry to the result array where the key is the attribute's label
 	 * and the value is the attribute's name.
@@ -1692,7 +1690,7 @@ function validateForDB() {
 	 * Stores the 'search' flag status for all relevant Data attributes.
 	 *
 	 * This method iterates through the Element's Data attributes that are instances
-	 * of SD_Data, are configured to be fetched (fetch() is true), and are not
+	 * of SC_Data, are configured to be fetched (fetch() is true), and are not
 	 * instances of SD_AutoIncrementId. It records the current boolean value of
 	 * the 'search' flag for each such attribute in an associative array. This is
 	 * useful for temporarily changing search flags and later restoring them.
@@ -1901,7 +1899,7 @@ function validateForDB() {
 		$parent = $this;
 
 		foreach ($this as $data) {
-			if ($data instanceof SD_Data) {
+			if ($data instanceof SC_Data) {
 				if ($data->hasAttribute('parent') && empty($data->parent()) ) {
 					$data->parent($parent);
 				}
@@ -1913,7 +1911,7 @@ function validateForDB() {
 	 * Assigns the name attribute of each Data object within the Element instance.
 	 *
 	 * This method iterates through the properties of the Element. If a property
-	 * is an instance of `SD_Data` and its `name` property is not already set,
+	 * is an instance of `SC_Data` and its `name` property is not already set,
 	 * this method sets the Data object's `name` property to the name of the
 	 * attribute in the Element instance.
 	 *
@@ -1923,7 +1921,7 @@ function validateForDB() {
 	 */
 	public function assignDatasName() {
 		foreach ($this as $name => $data) {
-			if (($data instanceof SD_Data) && empty($data->name())) {
+			if (($data instanceof SC_Data) && empty($data->name())) {
 				$data->name($name);
 			}
 		}
@@ -1958,23 +1956,23 @@ function validateForDB() {
 	 * Adds a Data attribute to the Element instance dynamically.
 	 *
 	 * This method allows adding new Data objects to an Element instance at runtime.
-	 * It assigns the provided `$attribute` (an instance of `SD_Data`) to the
+	 * It assigns the provided `$attribute` (an instance of `SC_Data`) to the
 	 * Element instance as a property with the name specified by `$attributeName`.
 	 * It also sets the name of the Data attribute itself and adds it to the
 	 * list of data attributes for the Element.
 	 *
 	 * @param string $attributeName The name of the attribute to add to the Element.
-	 * @param SD_Data $attribute The SD_Data object to add as an attribute.
+	 * @param SC_Data $attribute The SC_Data object to add as an attribute.
 	 * @return SC_Element The current Element instance, allowing for method chaining.
 	 */
-	public function addData($attributeName, SD_Data $attribute) {
+	public function addData($attributeName, SC_Data $attribute) {
 		///RSL 2022 fix de error que tronaba en ciertas lecturas por falta name en el atributo
 		$attribute->name($attributeName);
 		static::$onTheFlyAttributes[$attributeName]=$attribute;
 		$this->$attributeName = $attribute;
 		
 
-		if ($attribute instanceof SD_Data) {
+		if ($attribute instanceof SC_Data) {
 			if (is_array($this->dataAttributes)) {
 				if(!in_array($attributeName, $this->dataAttributes)){
 					$this->dataAttributes[] = $attributeName;
@@ -2001,7 +1999,7 @@ function validateForDB() {
 	 * @return SC_Element The current Element instance, allowing for method chaining.
 	 */
 	public function removeData($attributeName) {
-		if ($attribute instanceof SD_Data) {
+		if ($attribute instanceof SC_Data) {
 			unset($obj->$attributeName);
 			unset(static::$onTheFlyAttributes[$attributeName]);
 			SC_Main::removeData($this->getClass(), $attributeName);
@@ -2023,7 +2021,7 @@ function validateForDB() {
 	public function addDatas() {
 		foreach (static::$onTheFlyAttributes as $attributeName => $attribute) {
 			$this->$attributeName = clone $attribute;
-			if ($attribute instanceof SD_Data) {
+			if ($attribute instanceof SC_Data) {
 				if (is_array($this->dataAttributes)) {
 					$this->dataAttributes[] = $attributeName;
 				} else {
@@ -2246,10 +2244,10 @@ function validateForDB() {
 	 * Returns an array of attribute names (properties) of the Element instance
 	 * that are instances of the specified class type.
 	 *
-	 * @param string $type The class type to filter attributes by. Defaults to 'SD_Data'.
+	 * @param string $type The class type to filter attributes by. Defaults to 'SC_Data'.
 	 * @return array An array of attribute names that are instances of the specified type.
 	 */
-	function attributesTypes($type = 'SD_Data') {
+	function attributesTypes($type = 'SC_Data') {
 		$a = array();
 		foreach ($this as $name => $data) {
 			if ($data instanceof $type) {
@@ -2263,11 +2261,11 @@ function validateForDB() {
 	 * Returns an array of attribute names (properties) of the Element instance
 	 * that are instances of the specified class type and have a specific flag or method returning true.
 	 *
-	 * @param string $type The class type to filter attributes by. Defaults to 'SD_Data'.
+	 * @param string $type The class type to filter attributes by. Defaults to 'SC_Data'.
 	 * @param string $what The name of the method or attribute to check for a true value. Defaults to 'fetch'.
 	 * @return array An array of attribute names that match the criteria.
 	 */
-	function attributesTypesWith($type = 'SD_Data', $what = 'fetch') {
+	function attributesTypesWith($type = 'SC_Data', $what = 'fetch') {
 		$a = null;
 		foreach ($this as $name => $data) {
 

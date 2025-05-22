@@ -11,9 +11,9 @@ https://simplonphp.org/Sow-PeaceLicense.txt
  * 
  * Encapsulates an Element so it acts as a Data. 
  * 
- * @author RSL
+ * @author Ruben Schaffer
  */
-class SD_ElementsContainer extends SD_Data {
+class SD_ElementsContainer extends SC_Data {
 
 	protected
 	/**

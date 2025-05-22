@@ -27,8 +27,8 @@ spl_autoload_register( __NAMESPACE__ . '\\SC_Main::load_obj');
  * - Instantiating the target Element and executing the requested method after permission checks.
  *
  * @package SimplOn\Core
- * @author RSL, Luca Lauretta
- * @version 1b.1.0 // Assuming this version, adjust if needed
+ * @author Luca Lauretta, RSL
+ * @version 1b.1.0 
  *
  * @property string $App_Name Name of the application.
  * @property string $LOCAL_ROOT Server's absolute path to the main public directory.
@@ -413,7 +413,7 @@ class SC_Main {
 						// }
 					//if there is a user that can't enter
 					}elseif(self::$PERMISSIONS->logedIn()){
-						self::$SystemMessage='You can\'t access that page ';
+						self::$SystemMessage='You can\'t access that page';
 						echo call_user_func_array(array(self::$PERMISSIONS, 'showNoAccess'), self::$method_params);
 					//if there is no user or else
 					}else{
@@ -436,7 +436,6 @@ class SC_Main {
 
 					
 					// If there is a user that can enter
-
 					if( self::$PERMISSIONS->canEnter($obj,$mode) ){	
 						//if there is a set of values for the Element Datas set them
 						if($mode){

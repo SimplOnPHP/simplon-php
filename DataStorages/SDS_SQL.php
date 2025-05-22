@@ -41,7 +41,7 @@ abstract class SDS_SQL extends SDS_DataStorage
 	public function getElementsData(&$element, $filters = null, $range = '0,500' ) {
 		/*@var element Element*/
 		
-		if($element instanceof SD_Data) {
+		if($element instanceof SC_Data) {
 			$whatToGet = $this->getWhatFromElement($element);
 			$fromWhere = $element->storage();
 			if(!$filters){ $filters = $this->getFiltersFromElement($element); }else

@@ -19,7 +19,7 @@ https://simplonphp.org/Sow-PeaceLicense.txt
  *
  * @version 1b.1.0
  * @package SimplOn\Core
- * @author RSL
+ * @author Ruben Schaffer
  */
 class SC_BaseObject
 {

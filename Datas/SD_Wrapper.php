@@ -16,7 +16,7 @@ https://simplonphp.org/Sow-PeaceLicense.txt
  */
 use voku\helper\HtmlDomParser;
 
-class SD_Wrapper extends SD_Data {
+class SD_Wrapper extends SC_Data {
 
 	protected 
 		$object,	
@@ -66,7 +66,7 @@ class SD_Wrapper extends SD_Data {
 			}catch(Exception $e){
 				return call_user_func_array($parentMethod, $arguments);
 			}
-		}elseif($this->object instanceof SD_Data){
+		}elseif($this->object instanceof SC_Data){
 			if (str_starts_with($name, 'show')) { 
 				//TODO check  What other methods should give priority to the object method
 				// Objects method has priority over parent method
@@ -88,7 +88,7 @@ class SD_Wrapper extends SD_Data {
 
 	function getLayout($method){
 
-		if($this->object instanceof SD_Data){
+		if($this->object instanceof SC_Data){
 			$this->object->parent = $this->parent;
 			return $this->renderer()->getDataLayout($this->object, $method);
 		}elseif($this->object instanceof SI_Item){

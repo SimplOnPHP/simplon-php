@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpdocumentor
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://www.phpdoc.org/schema/latest.xsd"
+>
+    <paths>
+        <output>D:\1_Simplon\docs</output>
+        <source>
+            <dsn>D:\1_Simplon\simplon-php</dsn>
+            <path>./</path>
+            <ignore>
+                <path>vendor</path>
+            </ignore>
+        </source>
+    </paths>
+    <version>3</version>
+    <api>
+        <source dsn="D:\1_Simplon\simplon-php">
+            <path>./</path>
+        </source>
+        <extensions>
+            <extension>php</extension>
+        </extensions>
+        <visibility>public,protected,private</visibility>
+        <default-package-name>SimplOn</default-package-name>
+        <markers>
+            <marker>TODO</marker>
+            <marker>FIXME</marker>
+        </markers>
+    </api>
+    <template name="default"/>
+</phpdocumentor>

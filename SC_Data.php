@@ -5,50 +5,18 @@ Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
 https://simplonphp.org/Sow-PeaceLicense.txt
 */
 
-
-
 /**
- * @todo Agregar posibilidad de especificar indices de b�squeda:
- * una posible soluci�n es la de usar el parametro $flags usando el metodo search()
- * de ahi entender si un dato se va a usar para la b�squeda
- * y tambi�n dar la posibilidad de un "override" para especificar
- * de modo explicito, si se quiere o no un indice en dicho dato.
- * Basandose sobre el tipo de dato, elegir el tipo de indice
- * o basarse sobr un atributo del dato.
- */
-
-
-/**
-* __construct($label=null,$campo=null,$inputName=null,$val=null)	Si los parametros estan vacios causará que se use la clase
-* __toString()										Regresa el campo que se debe usar para generar consultas a la Fuente de datos - En SQL puede permite (SELECTS) complejos usando la asigancion " AS "
-* inputName($prefijo=null)											Regresa la str del name del input para los formularios
-* strValorQuery()													Valor como se debe usar en los Querys SQL  (es decir con comillas en el caso de los strings)
-* strQueryValueColum()												Da la asiganacion de valor para los Updates de SQL
-* HTML()															Regresa el valor como debe imprimirse en HTML
-* createInput($prefijo=null,$printval=false)						Input a desplegarse cuando se desea moar un formaulario de captura del dato
-* updateInput($prefijo=null,$printval=true)							Input a desplegarse cuando se desea moar un formaulario de edicion del dato
-* InputBuscador($prefijo)											 para de los campos de busqueda del buscador
-* Where()															 para armar las consultas la seccion Where de las consultas SQL
-* Label()															Regresa la  para poner como etiqueta antes de los inputs
-* Header()															Regresa los necesariso para inlcuir librerias JA
-**/
-
-
-
-/**
-* Componente para basico definir campos de los elementos
+* Base class for all SimplOn Datas.
 *
-* @version	1.0
-* @author	Ruben Schaffer
-* @todo		-Poner funciones UTF8 en setval
-* 			-Agregar excepciones: al asignar valor(si el valor es viable), al llenar desde fuente de datoso y/o REQUEST (validad si el dato esta en el arreglo)
-* 			-Funciones set de -labael campo campoAS e imputname- que verifique que tiene estan en l formato correcto
+* Datas function in Elements as regular attributes work on regular objects
+* Each data of an Element holds it's value as regular attributes do and metadata intended for automate display and storage funtions. 
+*
+* @version 1b.1.0
+* @package SimplOn\Core
+* @author Ruben Schaffer 
 */
 
-
-
-
-abstract class SD_Data extends SC_BaseObject {
+abstract class SC_Data extends SC_BaseObject {
 
 	protected
 
@@ -187,7 +155,7 @@ abstract class SD_Data extends SC_BaseObject {
 
 	
 	/**
-	 * Constructs a new SD_Data instance.
+	 * Constructs a new SC_Data instance.
 	 *
 	 * Initializes the Data object with a label, optional flags, an initial value, and filter criteria.
 	 * Sets default validation messages for required fields and invalid values using the localization function.

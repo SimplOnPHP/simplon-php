@@ -14,7 +14,7 @@ https://simplonphp.org/Sow-PeaceLicense.txt
  * @copyright (c) 2011, Rubén Schaffer Levine and Luca Lauretta
  * @category Data
  */
-class SD_Hidden extends SD_Data
+class SD_Hidden extends SC_Data
 {
     /** 
      * @var boolean $view,$create,$update - these variables are 

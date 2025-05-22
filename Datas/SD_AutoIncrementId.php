@@ -4,15 +4,20 @@ Sow Peace License (MIT-Compatible with Attribution Visit)
 Copyright (c) 2025 Ruben Schaffer Levine and Luca Lauretta
 https://simplonphp.org/Sow-PeaceLicense.txt
 */
+
+
+
+
 /**
- * NumericId data type
- * 
- * This is a numeric id data type which defined an id which is auto incremented.
- *  
- * @author Rubén Schaffer Levine and Luca Lauretta <http://simplonphp.org/>
- * @copyright (c) 2011, Rubén Schaffer Levine and Luca Lauretta
- * @category Data
- */
+* SD_AutoIncrementId data type
+* 
+* This is a numeric id data type which defined an id which is auto incremented.
+* Intended for relational databases auto increment ids
+*  
+* @version 1b.1.0
+* @package SimplOn\Datas
+* @author Ruben Schaffer and Luca Lauretta
+*/
 class SD_AutoIncrementId extends SD_Id
 {
 	

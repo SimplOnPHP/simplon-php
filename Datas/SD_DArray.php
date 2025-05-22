@@ -6,7 +6,7 @@ https://simplonphp.org/Sow-PeaceLicense.txt
 */
 
 
-class SD_DArray extends SD_Data {
+class SD_DArray extends SC_Data {
 	
 	protected $view = true;
 	protected $create = true;

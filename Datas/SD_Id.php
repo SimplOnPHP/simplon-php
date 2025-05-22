@@ -14,7 +14,7 @@ https://simplonphp.org/Sow-PeaceLicense.txt
 * @author	Ruben Schaffer
 * @category Data
 */
-abstract class SD_Id extends SD_Data
+abstract class SD_Id extends SC_Data
 {
 	
 	
