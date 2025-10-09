@@ -2,6 +2,8 @@ SimplOn PHP Framework
 =====================
 SimplOn PHP is the first framework implementing the Data Oriented Approach.
 
+Join the conversation: https://join.slack.com/t/doasimplon/shared_invite/zt-3fix80m8x-LrN69zBmFtDb6gFnfB7xIQ
+
 Tutorial
 --------
 You can find an example application of how to use SimplOn PHP in the following
